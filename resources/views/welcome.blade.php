@@ -1,5 +1,7 @@
-@extends ("layout")
+@extends ("layouts.master")
 
 @section ("content")
-    <p>Дарова!</p>
+    <div>
+        <p>Дарова!</p>
+    </div>
 @endsection
