@@ -10,6 +10,16 @@
                 <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
             </li>
 
+            @if (!Auth::check())
+                <li class="nav-item">
+                    <a class="nav-link" href="/login">Sign In</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/register">Sign Up</a>
+                </li>
+            @endif
+
             @if (Auth::check())
                 <li class="nav-item">
                     <a href="#" class="nav-link ml-auto">{{ Auth::user()->name }}</a>
