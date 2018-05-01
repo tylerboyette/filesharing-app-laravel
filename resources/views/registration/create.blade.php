@@ -7,8 +7,8 @@
         {{ csrf_field() }}
         
         <div class="form-group">
-            <label for="name">Name:</label>
-            <input type="text" class="form-control" id="name" name="name">
+            <label for="username">Username:</label>
+            <input type="text" class="form-control" id="username" name="username">
         </div>
 
         <div class="form-group">

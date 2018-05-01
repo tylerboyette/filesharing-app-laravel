@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use App\User;
 
 class RegistrationController extends Controller
@@ -20,7 +21,13 @@ class RegistrationController extends Controller
             "password" => "required|confirmed|min:6"
         ]);
 
-        $user = User::create(request(["name", "email", "password"]));
+        $hashedPassword = Hash::make($request->input("password"));
+
+        $user = User::create([
+            "username" => $request->input("username"),
+            "email" => $request->input("email"),
+            "password" => $hashedPassword
+        ]);
 
         auth()->login($user);
 

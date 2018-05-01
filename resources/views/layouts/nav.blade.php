@@ -22,7 +22,11 @@
 
             @if (Auth::check())
                 <li class="nav-item">
-                    <a href="#" class="nav-link ml-auto">{{ Auth::user()->name }}</a>
+                    <a href="#" class="nav-link">{{ Auth::user()->username }}</a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="/logout" class="nav-link">Sign Out</a>
                 </li>
             @endif
         </ul>
