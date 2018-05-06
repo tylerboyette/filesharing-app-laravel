@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Intervention\Image\ImageManagerStatic as Image;
 
 
@@ -24,6 +25,7 @@ class UsersController extends Controller
                 "avatar" => "image|mimes:jpg,png,jpeg"
             ]);
 
+            // Renaming, resizing image and saving to the public disk
             $avatar = $request->file("avatar");
             $filename = time() . "." . $avatar->getClientOriginalExtension();
             Image::make($avatar)->resize(150, 150)->save(
@@ -32,9 +34,16 @@ class UsersController extends Controller
 
             $user = Auth::user();
 
-            $user->avatar_name = $filename;
+            $previousUserAvatarName = $user->avatar_name;
 
+            // Saving new avatar to the database
+            $user->avatar_name = $filename;
             $user->save();
+
+            // Deleting previous avatar from the storage
+            if ($previousUserAvatarName !== "default.png") {
+                File::delete(public_path("/uploads/avatars/" . $previousUserAvatarName));
+            }
         }
 
         return back();
