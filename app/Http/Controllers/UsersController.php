@@ -22,13 +22,17 @@ class UsersController extends Controller
     {
         if ($request->hasFile("avatar")) {
             $request->validate([
-                "avatar" => "image|mimes:jpg,png,jpeg"
+                "avatar" => "image|mimes:jpg,png,jpeg|max:2048"
             ]);
 
             // Renaming, resizing image and saving to the public disk
             $avatar = $request->file("avatar");
             $filename = time() . "." . $avatar->getClientOriginalExtension();
-            Image::make($avatar)->resize(150, 150)->save(
+            Image::make($avatar)->resize(
+                300, 300, function($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            })->save(
                 public_path("/uploads/avatars/" . $filename)
             );
 
