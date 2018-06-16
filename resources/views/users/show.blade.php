@@ -15,6 +15,10 @@
             <div class="form-group">
                 <button type="submit" class="btn btn-primary">Upload</button>
             </div>
+
+            @if ($errors->has("avatar"))
+                <div class="invalid-feedback">{{ $errors->first("avatar") }}</div>
+            @endif
         </form>
     @endif
 @endsection

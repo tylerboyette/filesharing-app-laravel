@@ -6,8 +6,6 @@ use App\Http\Requests\AvatarUpdateRequest;
 use App\Services\AvatarService;
 use App\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File;
-
 
 
 class UsersController extends Controller
@@ -29,18 +27,20 @@ class UsersController extends Controller
     public function updateAvatar(AvatarUpdateRequest $request)
     {
         $avatar = $request->file("avatar");
-        $this->avatarService->handleUploadedAvatar($avatar);
-        $filename = $this->avatarService->makeAvatarName($avatar);
+        if (!is_null($avatar)) {
+            $this->avatarService->handleUploadedAvatar($avatar);
+            $filename = $this->avatarService->makeAvatarName($avatar);
 
-        $user = Auth::user();
+            $user = Auth::user();
 
-        $previousUserAvatarName = $user->avatar_name;
+            $previousUserAvatarName = $user->avatar_name;
 
-        // Saving new avatar to the database
-        $user->avatar_name = $filename;
-        $user->save();
+            // Saving new avatar to the database
+            $user->avatar_name = $filename;
+            $user->save();
 
-        $this->avatarService->deleteAvatarFromStorage($previousUserAvatarName);
+            $this->avatarService->deleteAvatarFromStorage($previousUserAvatarName);
+        }
 
         return back();
     }
