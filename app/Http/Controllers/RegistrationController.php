@@ -8,6 +8,11 @@ use App\User;
 
 class RegistrationController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware("guest");
+    }
+
     public function store(RegistrationRequest $request)
     {
         $hashedPassword = Hash::make($request->input("password"));
@@ -21,6 +26,6 @@ class RegistrationController extends Controller
 
         auth()->login($user);
 
-        return response()->json(["success" => "You have successfully registered!"]);
+        return response()->json(["success" => "You have successfully registered"]);
     }
 }

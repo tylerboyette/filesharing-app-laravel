@@ -26,7 +26,11 @@ class RegistrationForm {
             encode: true
         })
             .done(function (data) {
-                console.log(data);
+                    $.ajax({
+                       url: "/",
+                       data: data,
+                       dataType: "json"
+                    })
             })
             .fail(function(data) {
                 self.handleValidationErrors(data.responseJSON.errors);

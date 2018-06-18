@@ -14,6 +14,7 @@ class UsersController extends Controller
 
     public function __construct(AvatarService $avatarService)
     {
+        $this->middleware("auth")->only("updateAvatar");
         $this->avatarService = $avatarService;
     }
 

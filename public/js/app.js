@@ -35954,7 +35954,11 @@ var RegistrationForm = function () {
                 dataType: "json",
                 encode: true
             }).done(function (data) {
-                console.log(data);
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default.a.ajax({
+                    url: "/",
+                    data: data,
+                    dataType: "json"
+                });
             }).fail(function (data) {
                 self.handleValidationErrors(data.responseJSON.errors);
             });
