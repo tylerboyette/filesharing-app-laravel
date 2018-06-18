@@ -8,11 +8,6 @@ use App\User;
 
 class RegistrationController extends Controller
 {
-    public function create()
-    {
-        return view("registration.create");
-    }
-
     public function store(RegistrationRequest $request)
     {
         $hashedPassword = Hash::make($request->input("password"));
@@ -26,6 +21,6 @@ class RegistrationController extends Controller
 
         auth()->login($user);
 
-        return redirect()->home();
+        return response()->json(["success" => "You have successfully registered!"]);
     }
 }

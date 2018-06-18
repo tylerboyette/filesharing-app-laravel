@@ -84,13 +84,13 @@
                             {{ csrf_field() }}
 
                             <div class="form-group">
-                                <label for="email">Email:</label>
-                                <input type="email" name="email" class="form-control" id="email">
+                                <label for="loginEmail">Email:</label>
+                                <input type="email" name="email" class="form-control" id="loginEmail">
                             </div>
 
                             <div class="form-group">
-                                <label for="password">Password:</label>
-                                <input type="password" name="password" class="form-control" id="password">
+                                <label for="loginPassword">Password:</label>
+                                <input type="password" name="password" class="form-control" id="loginPassword">
                             </div>
 
                         </div>

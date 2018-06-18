@@ -35941,15 +35941,11 @@ var RegistrationForm = function () {
     }, {
         key: "handleFormSubmission",
         value: function handleFormSubmission(event) {
+            var self = this;
             event.preventDefault();
+            this.clearErrors();
 
-            var formData = {
-                "username": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=username]").val(),
-                "email": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=email]").val(),
-                "password": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=password]").val(),
-                "password_confirmation": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=password_confirmation]").val(),
-                "_token": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=_token]").val()
-            };
+            var formData = this.grabFormData();
 
             __WEBPACK_IMPORTED_MODULE_0_jquery___default.a.ajax({
                 type: "POST",
@@ -35960,9 +35956,38 @@ var RegistrationForm = function () {
             }).done(function (data) {
                 console.log(data);
             }).fail(function (data) {
-                var errors = data.responseJSON;
-                console.log(errors.errors.email);
+                self.handleValidationErrors(data.responseJSON.errors);
             });
+        }
+    }, {
+        key: "grabFormData",
+        value: function grabFormData() {
+            return {
+                "username": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=username]").val(),
+                "email": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=email]").val(),
+                "password": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=password]").val(),
+                "password_confirmation": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=password_confirmation]").val(),
+                "_token": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=_token]").val()
+            };
+        }
+    }, {
+        key: "handleValidationErrors",
+        value: function handleValidationErrors(errors) {
+            var errorNames = Object.keys(errors);
+
+            errorNames.forEach(function (errorName) {
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=" + errorName + "]").addClass("is-invalid").after(function () {
+                    if (!__WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=" + errorName + "]+div.invalid-feedback").length) {
+                        return "<div class=\"invalid-feedback\">" + errors[errorName] + "</div>";
+                    }
+                });
+            });
+        }
+    }, {
+        key: "clearErrors",
+        value: function clearErrors() {
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".invalid-feedback").remove();
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input").removeClass("is-invalid");
         }
     }]);
 
