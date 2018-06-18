@@ -27,29 +27,23 @@
 
                                 <div class="form-group">
                                     <label for="username">Username:</label>
-                                    <input type="text" class="form-control @if ($errors->has("username")){{ "is-invalid" }}@endif"
-                                           id="username" name="username" value="{{ old("username") }}">
-                                    @if ($errors->has("username"))
-                                        <div class="invalid-feedback">{{ $errors->first("username") }}</div>
-                                    @endif
+                                    <input type="text" class="form-control"
+                                           id="username" name="username">
+                                    <div class="invalid-feedback username-error"></div>
                                 </div>
 
                                 <div class="form-group">
                                     <label for="email">Email:</label>
-                                    <input type="email" class="form-control @if ($errors->has("email")){{ "is-invalid" }}@endif"
-                                           id="email" name="email" value="{{ old("email") }}">
-                                    @if ($errors->has("email"))
-                                        <div class="invalid-feedback">{{ $errors->first("email") }}</div>
-                                    @endif
+                                    <input type="email" class="form-control"
+                                           id="email" name="email">
+                                    <div class="invalid-feedback email-error"></div>
                                 </div>
 
                                 <div class="form-group">
                                     <label for="password">Password:</label>
-                                    <input type="password" class="form-control @if ($errors->has("email")){{ "is-invalid" }}@endif"
+                                    <input type="password" class="form-control"
                                            id="password" name="password">
-                                    @if ($errors->has("password"))
-                                        <div class="invalid-feedback">{{ $errors->first("password") }}</div>
-                                    @endif
+                                    <div class="invalid-feedback password-error"></div>
                                 </div>
 
                                 <div class="form-group">

@@ -14,7 +14,6 @@ class RegistrationForm {
     handleFormSubmission(event) {
         let self = this;
         event.preventDefault();
-        this.clearErrors();
 
         let formData = this.grabFormData();
 
@@ -23,6 +22,7 @@ class RegistrationForm {
             url: "/register",
             data: formData,
             dataType: "json",
+            beforeSend: self.clearErrors,
             encode: true
         })
             .done(function (data) {
@@ -51,16 +51,16 @@ class RegistrationForm {
         let errorNames = Object.keys(errors);
 
         errorNames.forEach( (errorName) => {
-            $(`input[name=${errorName}]`).addClass("is-invalid").after( () => {
-                if ( !$(`input[name=${errorName}]+div.invalid-feedback`).length ) {
-                    return `<div class="invalid-feedback">${errors[errorName]}</div>`;
-                }
-            });
+            $(`input[name=${errorName}]`).addClass("is-invalid");
+            console.log("something");
+            $(`.${errorName}-error`).fadeIn(1000, function () {
+                $(`.${errorName}-error`).text(`${errors[errorName]}`);
+            })
         });
     }
 
     clearErrors() {
-        $(".invalid-feedback").remove();
+        $(".invalid-feedback").fadeOut();
         $(".register-form input").removeClass("is-invalid");
     }
 }

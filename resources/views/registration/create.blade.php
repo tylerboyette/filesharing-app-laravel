@@ -10,9 +10,7 @@
             <label for="username">Username:</label>
             <input type="text" class="form-control @if ($errors->has("username")){{ "is-invalid" }}@endif"
                    id="username" name="username" value="{{ old("username") }}">
-            @if ($errors->has("username"))
-                <div class="invalid-feedback">{{ $errors->first("username") }}</div>
-            @endif
+            <div class="invalid-feedback"></div>
         </div>
 
         <div class="form-group">

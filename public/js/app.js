@@ -35943,7 +35943,6 @@ var RegistrationForm = function () {
         value: function handleFormSubmission(event) {
             var self = this;
             event.preventDefault();
-            this.clearErrors();
 
             var formData = this.grabFormData();
 
@@ -35952,6 +35951,7 @@ var RegistrationForm = function () {
                 url: "/register",
                 data: formData,
                 dataType: "json",
+                beforeSend: self.clearErrors,
                 encode: true
             }).done(function (data) {
                 __WEBPACK_IMPORTED_MODULE_0_jquery___default.a.ajax({
@@ -35980,17 +35980,17 @@ var RegistrationForm = function () {
             var errorNames = Object.keys(errors);
 
             errorNames.forEach(function (errorName) {
-                __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=" + errorName + "]").addClass("is-invalid").after(function () {
-                    if (!__WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=" + errorName + "]+div.invalid-feedback").length) {
-                        return "<div class=\"invalid-feedback\">" + errors[errorName] + "</div>";
-                    }
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=" + errorName + "]").addClass("is-invalid");
+                console.log("something");
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()("." + errorName + "-error").fadeIn(1000, function () {
+                    __WEBPACK_IMPORTED_MODULE_0_jquery___default()("." + errorName + "-error").text("" + errors[errorName]);
                 });
             });
         }
     }, {
         key: "clearErrors",
         value: function clearErrors() {
-            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".invalid-feedback").remove();
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".invalid-feedback").fadeOut();
             __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input").removeClass("is-invalid");
         }
     }]);
