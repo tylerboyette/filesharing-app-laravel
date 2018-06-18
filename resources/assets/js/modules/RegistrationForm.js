@@ -23,15 +23,11 @@ class RegistrationForm {
             data: formData,
             dataType: "json",
             beforeSend: self.clearErrors,
-            encode: true
+            encode: true,
+            success: function(response) {
+                window.location.href = "/";
+            }
         })
-            .done(function (data) {
-                    $.ajax({
-                       url: "/",
-                       data: data,
-                       dataType: "json"
-                    })
-            })
             .fail(function(data) {
                 self.handleValidationErrors(data.responseJSON.errors);
             });
@@ -52,7 +48,6 @@ class RegistrationForm {
 
         errorNames.forEach( (errorName) => {
             $(`input[name=${errorName}]`).addClass("is-invalid");
-            console.log("something");
             $(`.${errorName}-error`).fadeIn(1000, function () {
                 $(`.${errorName}-error`).text(`${errors[errorName]}`);
             })

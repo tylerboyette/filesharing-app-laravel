@@ -35952,13 +35952,10 @@ var RegistrationForm = function () {
                 data: formData,
                 dataType: "json",
                 beforeSend: self.clearErrors,
-                encode: true
-            }).done(function (data) {
-                __WEBPACK_IMPORTED_MODULE_0_jquery___default.a.ajax({
-                    url: "/",
-                    data: data,
-                    dataType: "json"
-                });
+                encode: true,
+                success: function success(response) {
+                    window.location.href = "/";
+                }
             }).fail(function (data) {
                 self.handleValidationErrors(data.responseJSON.errors);
             });
@@ -35981,7 +35978,6 @@ var RegistrationForm = function () {
 
             errorNames.forEach(function (errorName) {
                 __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=" + errorName + "]").addClass("is-invalid");
-                console.log("something");
                 __WEBPACK_IMPORTED_MODULE_0_jquery___default()("." + errorName + "-error").fadeIn(1000, function () {
                     __WEBPACK_IMPORTED_MODULE_0_jquery___default()("." + errorName + "-error").text("" + errors[errorName]);
                 });
