@@ -2,7 +2,6 @@ import $ from "jquery";
 
 class RegistrationForm {
     constructor() {
-        console.log("Здарова!");
         this.registrationForm = $(".register-form");
         this.events();
     }
@@ -35,11 +34,11 @@ class RegistrationForm {
 
     grabFormData() {
         return {
-            "username": $("input[name=username]").val(),
-            "email": $("input[name=email]").val(),
-            "password": $("input[name=password]").val(),
-            "password_confirmation": $("input[name=password_confirmation]").val(),
-            "_token": $("input[name=_token]").val()
+            "username": $(".register-form input[name=username]").val(),
+            "email": $(".register-form input[name=email]").val(),
+            "password": $(".register-form input[name=password]").val(),
+            "password_confirmation": $(".register-form input[name=password_confirmation]").val(),
+            "_token": $(".register-form input[name=_token]").val()
         }
     }
 
@@ -47,15 +46,15 @@ class RegistrationForm {
         let errorNames = Object.keys(errors);
 
         errorNames.forEach( (errorName) => {
-            $(`input[name=${errorName}]`).addClass("is-invalid");
-            $(`.${errorName}-error`).fadeIn(1000, function () {
-                $(`.${errorName}-error`).text(`${errors[errorName]}`);
+            $(`.register-form input[name=${errorName}]`).addClass("is-invalid");
+            $(`.register-form .${errorName}-error`).fadeIn(1000, function () {
+                $(`.register-form .${errorName}-error`).text(`${errors[errorName]}`);
             })
         });
     }
 
     clearErrors() {
-        $(".invalid-feedback").fadeOut();
+        $(".register-form .invalid-feedback").fadeOut();
         $(".register-form input").removeClass("is-invalid");
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\LoginRequest;
 use Illuminate\Support\Facades\Auth;
 
 class SessionsController extends Controller
@@ -12,22 +12,15 @@ class SessionsController extends Controller
         $this->middleware("guest", ["except" => "destroy"]);
     }
 
-    public function create()
-    {
-        return view("sessions.create");
-    }
-
-    public function store(Request $request)
+    public function store(LoginRequest $request)
     {
         $credentials = $request->only("email", "password");
 
         if (!Auth::attempt($credentials)) {
-            return back()->withErrors([
-                "message" => "Invalid credentials."
-            ]);
+            return response()->json(["errors" => "Invalid credentials."]);
         }
 
-        return redirect()->home();
+        return response()->json(["success" => "Logged in."]);
     }
 
     public function destroy()

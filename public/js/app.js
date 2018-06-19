@@ -13686,6 +13686,7 @@ module.exports = __webpack_require__(11);
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__modules_RegistrationForm__ = __webpack_require__(36);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__modules_LoginForm__ = __webpack_require__(37);
 
 /**
  * First, we will load all of this project's Javascript utilities and other
@@ -13696,7 +13697,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 __webpack_require__(12);
 
 
-var form = new __WEBPACK_IMPORTED_MODULE_0__modules_RegistrationForm__["a" /* default */]();
+
+var registrationForm = new __WEBPACK_IMPORTED_MODULE_0__modules_RegistrationForm__["a" /* default */]();
+var loginForm = new __WEBPACK_IMPORTED_MODULE_1__modules_LoginForm__["a" /* default */]();
 
 /***/ }),
 /* 12 */
@@ -35928,7 +35931,6 @@ var RegistrationForm = function () {
     function RegistrationForm() {
         _classCallCheck(this, RegistrationForm);
 
-        console.log("Здарова!");
         this.registrationForm = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form");
         this.events();
     }
@@ -35964,11 +35966,11 @@ var RegistrationForm = function () {
         key: "grabFormData",
         value: function grabFormData() {
             return {
-                "username": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=username]").val(),
-                "email": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=email]").val(),
-                "password": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=password]").val(),
-                "password_confirmation": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=password_confirmation]").val(),
-                "_token": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=_token]").val()
+                "username": __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input[name=username]").val(),
+                "email": __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input[name=email]").val(),
+                "password": __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input[name=password]").val(),
+                "password_confirmation": __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input[name=password_confirmation]").val(),
+                "_token": __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input[name=_token]").val()
             };
         }
     }, {
@@ -35977,16 +35979,16 @@ var RegistrationForm = function () {
             var errorNames = Object.keys(errors);
 
             errorNames.forEach(function (errorName) {
-                __WEBPACK_IMPORTED_MODULE_0_jquery___default()("input[name=" + errorName + "]").addClass("is-invalid");
-                __WEBPACK_IMPORTED_MODULE_0_jquery___default()("." + errorName + "-error").fadeIn(1000, function () {
-                    __WEBPACK_IMPORTED_MODULE_0_jquery___default()("." + errorName + "-error").text("" + errors[errorName]);
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input[name=" + errorName + "]").addClass("is-invalid");
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form ." + errorName + "-error").fadeIn(1000, function () {
+                    __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form ." + errorName + "-error").text("" + errors[errorName]);
                 });
             });
         }
     }, {
         key: "clearErrors",
         value: function clearErrors() {
-            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".invalid-feedback").fadeOut();
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form .invalid-feedback").fadeOut();
             __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input").removeClass("is-invalid");
         }
     }]);
@@ -35995,6 +35997,89 @@ var RegistrationForm = function () {
 }();
 
 /* harmony default export */ __webpack_exports__["a"] = (RegistrationForm);
+
+/***/ }),
+/* 37 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_jquery__);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+
+
+var LoginForm = function () {
+    function LoginForm() {
+        _classCallCheck(this, LoginForm);
+
+        this.loginForm = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form");
+        this.events();
+    }
+
+    _createClass(LoginForm, [{
+        key: "events",
+        value: function events() {
+            this.loginForm.submit(this.handleFormSubmission.bind(this));
+        }
+    }, {
+        key: "handleFormSubmission",
+        value: function handleFormSubmission(event) {
+            event.preventDefault();
+
+            var self = this;
+            var formData = this.grabFormData();
+
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default.a.ajax({
+                type: "POST",
+                url: "/login",
+                data: formData,
+                dataType: "json",
+                beforeSend: self.clearErrors,
+                encode: true
+            }).done(function (response) {
+                if (response.errors) {
+                    console.log("hi");
+                }
+            }).fail(function (data) {
+                self.handleValidationErrors(data.responseJSON.errors);
+            });
+        }
+    }, {
+        key: "handleValidationErrors",
+        value: function handleValidationErrors(errors) {
+            var errorNames = Object.keys(errors);
+
+            errorNames.forEach(function (errorName) {
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form input[name=" + errorName + "]").addClass("is-invalid");
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form ." + errorName + "-error").fadeIn(1000, function () {
+                    __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form ." + errorName + "-error").text("" + errors[errorName]);
+                });
+            });
+        }
+    }, {
+        key: "grabFormData",
+        value: function grabFormData() {
+            return {
+                "email": __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form input[name=email]").val(),
+                "password": __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form input[name=password]").val(),
+                "_token": __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form input[name=_token]").val()
+            };
+        }
+    }, {
+        key: "clearErrors",
+        value: function clearErrors() {
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form .invalid-feedback").fadeOut();
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form input").removeClass("is-invalid");
+        }
+    }]);
+
+    return LoginForm;
+}();
+
+/* harmony default export */ __webpack_exports__["a"] = (LoginForm);
 
 /***/ })
 /******/ ]);

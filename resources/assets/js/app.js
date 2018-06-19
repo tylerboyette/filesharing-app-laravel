@@ -7,5 +7,7 @@
 
 require('./bootstrap');
 import RegistrationForm from "./modules/RegistrationForm";
+import LoginForm from "./modules/LoginForm";
 
-let form = new RegistrationForm();
+let registrationForm = new RegistrationForm();
+let loginForm = new LoginForm();

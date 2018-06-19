@@ -3,7 +3,6 @@
 <head>
     <title>File Sharing</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
-    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
     @include("layouts.nav")
@@ -80,11 +79,13 @@
                             <div class="form-group">
                                 <label for="loginEmail">Email:</label>
                                 <input type="email" name="email" class="form-control" id="loginEmail">
+                                <div class="invalid-feedback email-error"></div>
                             </div>
 
                             <div class="form-group">
                                 <label for="loginPassword">Password:</label>
                                 <input type="password" name="password" class="form-control" id="loginPassword">
+                                <div class="invalid-feedback password-error"></div>
                             </div>
 
                         </div>
