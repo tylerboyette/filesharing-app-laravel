@@ -34,10 +34,10 @@ class RegistrationForm {
 
     grabFormData() {
         return {
-            "username": $(".register-form input[name=username]").val(),
-            "email": $(".register-form input[name=email]").val(),
-            "password": $(".register-form input[name=password]").val(),
-            "password_confirmation": $(".register-form input[name=password_confirmation]").val(),
+            "username": $("#username").val(),
+            "email": $("#email").val(),
+            "password": $("#password").val(),
+            "password_confirmation": $("#password_confirmation").val(),
             "_token": $(".register-form input[name=_token]").val()
         }
     }
@@ -46,7 +46,7 @@ class RegistrationForm {
         let errorNames = Object.keys(errors);
 
         errorNames.forEach( (errorName) => {
-            $(`.register-form input[name=${errorName}]`).addClass("is-invalid");
+            $(`#${errorName}`).addClass("is-invalid");
             $(`.register-form .${errorName}-error`).fadeIn(1000, function () {
                 $(`.register-form .${errorName}-error`).text(`${errors[errorName]}`);
             })

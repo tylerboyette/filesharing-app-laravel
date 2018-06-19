@@ -35966,10 +35966,10 @@ var RegistrationForm = function () {
         key: "grabFormData",
         value: function grabFormData() {
             return {
-                "username": __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input[name=username]").val(),
-                "email": __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input[name=email]").val(),
-                "password": __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input[name=password]").val(),
-                "password_confirmation": __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input[name=password_confirmation]").val(),
+                "username": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#username").val(),
+                "email": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#email").val(),
+                "password": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#password").val(),
+                "password_confirmation": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#password_confirmation").val(),
                 "_token": __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input[name=_token]").val()
             };
         }
@@ -35979,7 +35979,7 @@ var RegistrationForm = function () {
             var errorNames = Object.keys(errors);
 
             errorNames.forEach(function (errorName) {
-                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input[name=" + errorName + "]").addClass("is-invalid");
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#" + errorName).addClass("is-invalid");
                 __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form ." + errorName + "-error").fadeIn(1000, function () {
                     __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form ." + errorName + "-error").text("" + errors[errorName]);
                 });
@@ -36072,8 +36072,8 @@ var LoginForm = function () {
         key: "grabFormData",
         value: function grabFormData() {
             return {
-                "email": __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form input[name=email]").val(),
-                "password": __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form input[name=password]").val(),
+                "email": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#loginEmail").val(),
+                "password": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#loginPassword").val(),
                 "_token": __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form input[name=_token]").val()
             };
         }

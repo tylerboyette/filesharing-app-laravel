@@ -55,8 +55,8 @@ class LoginForm {
 
     grabFormData() {
         return {
-            "email": $(".login-form input[name=email]").val(),
-            "password": $(".login-form input[name=password]").val(),
+            "email": $("#loginEmail").val(),
+            "password": $("#loginPassword").val(),
             "_token": $(".login-form input[name=_token]").val()
         }
     }
