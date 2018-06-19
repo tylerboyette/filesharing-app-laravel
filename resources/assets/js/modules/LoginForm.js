@@ -27,6 +27,8 @@ class LoginForm {
             .done(function(response) {
                 if (response.error) {
                     self.handleAuthenticationError(response.error);
+                } else {
+                    window.location.href = "/";
                 }
             })
             .fail(function(data) {
