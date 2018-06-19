@@ -25,13 +25,19 @@ class LoginForm {
             encode: true
         })
             .done(function(response) {
-                if (response.errors) {
-                    console.log("hi");
+                if (response.error) {
+                    self.handleAuthenticationError(response.error);
                 }
             })
             .fail(function(data) {
                 self.handleValidationErrors(data.responseJSON.errors);
             });
+    }
+
+    handleAuthenticationError(error) {
+        $(".login-form .auth-error").fadeIn(1000, () => {
+            $(".login-form .auth-error").text(`${error}`);
+        });
     }
 
     handleValidationErrors(errors) {

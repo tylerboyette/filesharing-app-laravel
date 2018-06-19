@@ -17,7 +17,7 @@ class SessionsController extends Controller
         $credentials = $request->only("email", "password");
 
         if (!Auth::attempt($credentials)) {
-            return response()->json(["errors" => "Invalid credentials."]);
+            return response()->json(["error" => "Invalid credentials."]);
         }
 
         return response()->json(["success" => "Logged in."]);

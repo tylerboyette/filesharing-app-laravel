@@ -36040,11 +36040,18 @@ var LoginForm = function () {
                 beforeSend: self.clearErrors,
                 encode: true
             }).done(function (response) {
-                if (response.errors) {
-                    console.log("hi");
+                if (response.error) {
+                    self.handleAuthenticationError(response.error);
                 }
             }).fail(function (data) {
                 self.handleValidationErrors(data.responseJSON.errors);
+            });
+        }
+    }, {
+        key: "handleAuthenticationError",
+        value: function handleAuthenticationError(error) {
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form .auth-error").fadeIn(1000, function () {
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form .auth-error").text("" + error);
             });
         }
     }, {

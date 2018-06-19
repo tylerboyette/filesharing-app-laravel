@@ -90,8 +90,11 @@
 
                         </div>
                         <div class="modal-footer">
+                            <div class="form-group mr-auto">
+                                <div class="invalid-feedback auth-error"></div>
+                            </div>
                             <div class="form-group">
-                                <button type="submit" class="btn btn-primary">Log in</button>
+                                <button type="submit" class="btn btn-primary align-middle">Log in</button>
                             </div>
                         </div>
                     </form>
