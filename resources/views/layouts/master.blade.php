@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <title>File Sharing</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
 </head>
 <body>
@@ -21,9 +22,6 @@
                             </button>
                         </div>
                         <div class="modal-body">
-
-                                {{ csrf_field() }}
-
                                 <div class="form-group">
                                     <label for="username">Username:</label>
                                     <input type="text" class="form-control"
@@ -73,9 +71,6 @@
                             </button>
                         </div>
                         <div class="modal-body">
-
-                            {{ csrf_field() }}
-
                             <div class="form-group">
                                 <label for="loginEmail">Email:</label>
                                 <input type="email" name="email" class="form-control" id="loginEmail">

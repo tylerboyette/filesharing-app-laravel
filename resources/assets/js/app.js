@@ -6,8 +6,14 @@
  */
 
 require('./bootstrap');
+import $ from "jquery";
 import RegistrationForm from "./modules/RegistrationForm";
 import LoginForm from "./modules/LoginForm";
 
+$.ajaxSetup({
+    headers: {
+        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr('content')
+    }
+});
 let registrationForm = new RegistrationForm();
 let loginForm = new LoginForm();

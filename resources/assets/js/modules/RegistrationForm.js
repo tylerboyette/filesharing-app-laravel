@@ -3,11 +3,13 @@ import $ from "jquery";
 class RegistrationForm {
     constructor() {
         this.registrationForm = $(".register-form");
+        this.closeButton = $(".register-form .close");
         this.events();
     }
 
     events() {
         this.registrationForm.submit(this.handleFormSubmission.bind(this));
+        this.closeButton.click(this.clearErrors.bind(this));
     }
 
     handleFormSubmission(event) {
@@ -38,7 +40,6 @@ class RegistrationForm {
             "email": $("#email").val(),
             "password": $("#password").val(),
             "password_confirmation": $("#password_confirmation").val(),
-            "_token": $(".register-form input[name=_token]").val()
         }
     }
 

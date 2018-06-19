@@ -13685,8 +13685,10 @@ module.exports = __webpack_require__(11);
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__modules_RegistrationForm__ = __webpack_require__(36);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__modules_LoginForm__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_jquery__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__modules_RegistrationForm__ = __webpack_require__(36);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__modules_LoginForm__ = __webpack_require__(37);
 
 /**
  * First, we will load all of this project's Javascript utilities and other
@@ -13698,8 +13700,14 @@ __webpack_require__(12);
 
 
 
-var registrationForm = new __WEBPACK_IMPORTED_MODULE_0__modules_RegistrationForm__["a" /* default */]();
-var loginForm = new __WEBPACK_IMPORTED_MODULE_1__modules_LoginForm__["a" /* default */]();
+
+__WEBPACK_IMPORTED_MODULE_0_jquery___default.a.ajaxSetup({
+    headers: {
+        "X-CSRF-TOKEN": __WEBPACK_IMPORTED_MODULE_0_jquery___default()('meta[name="csrf-token"]').attr('content')
+    }
+});
+var registrationForm = new __WEBPACK_IMPORTED_MODULE_1__modules_RegistrationForm__["a" /* default */]();
+var loginForm = new __WEBPACK_IMPORTED_MODULE_2__modules_LoginForm__["a" /* default */]();
 
 /***/ }),
 /* 12 */
@@ -35932,6 +35940,7 @@ var RegistrationForm = function () {
         _classCallCheck(this, RegistrationForm);
 
         this.registrationForm = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form");
+        this.closeButton = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form .close");
         this.events();
     }
 
@@ -35939,6 +35948,7 @@ var RegistrationForm = function () {
         key: "events",
         value: function events() {
             this.registrationForm.submit(this.handleFormSubmission.bind(this));
+            this.closeButton.click(this.clearErrors.bind(this));
         }
     }, {
         key: "handleFormSubmission",
@@ -35969,8 +35979,7 @@ var RegistrationForm = function () {
                 "username": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#username").val(),
                 "email": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#email").val(),
                 "password": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#password").val(),
-                "password_confirmation": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#password_confirmation").val(),
-                "_token": __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input[name=_token]").val()
+                "password_confirmation": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#password_confirmation").val()
             };
         }
     }, {
@@ -36016,6 +36025,7 @@ var LoginForm = function () {
         _classCallCheck(this, LoginForm);
 
         this.loginForm = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form");
+        this.closeButton = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form .close");
         this.events();
     }
 
@@ -36023,6 +36033,7 @@ var LoginForm = function () {
         key: "events",
         value: function events() {
             this.loginForm.submit(this.handleFormSubmission.bind(this));
+            this.closeButton.click(this.clearErrors.bind(this));
         }
     }, {
         key: "handleFormSubmission",
@@ -36073,8 +36084,7 @@ var LoginForm = function () {
         value: function grabFormData() {
             return {
                 "email": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#loginEmail").val(),
-                "password": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#loginPassword").val(),
-                "_token": __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form input[name=_token]").val()
+                "password": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#loginPassword").val()
             };
         }
     }, {
