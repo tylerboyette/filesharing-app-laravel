@@ -23,3 +23,5 @@ Route::post("/login", "SessionsController@store");
 Route::get("/users/{id}", "UsersController@show");
 Route::post("/users/{id}", "UsersController@updateAvatar");
 
+Route::post("/upload", "FilesController@store");
+
