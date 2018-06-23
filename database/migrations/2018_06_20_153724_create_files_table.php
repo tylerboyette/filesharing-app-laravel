@@ -15,12 +15,12 @@ class CreateFilesTable extends Migration
     {
         Schema::create('files', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer("user_id")->unsigned();
+            $table->integer("user_id")->unsigned()->nullable();
             $table->string('original_name');
             $table->string('storage_name');
             $table->string("extension");
             $table->json("meta_data");
-            $table->foreign("user_id")->references("id")->on("users")->nullable();
+            $table->foreign("user_id")->references("id")->on("users");
             $table->timestamps();
         });
     }

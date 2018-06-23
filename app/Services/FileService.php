@@ -38,14 +38,27 @@ class FileService
     {
         $metaDataForDB = [];
 
-        // Getting the MIME-type of the file
-        $mimeType = $fileInfo["mime_type"];
+        if (array_key_exists("mime_type", $fileInfo)) {
+            // Getting the MIME-type of the file
+            $mimeType = $fileInfo["mime_type"];
 
-        // Exploding the MIME-type by "/" and getting the first part of the MIME-type
-        $fileType = explode("/", $mimeType)[0];
-        
-        $metaDataForDB["filetype"] = $fileType;
+            // Exploding the MIME-type by "/" and getting the first part of the MIME-type
+            $fileType = explode("/", $mimeType)[0];
+
+            // Getting additional meta data for media files
+            $metaDataForDB = $this->grabMetaDataByFileType($fileType, $fileInfo);
+        }
+
         $metaDataForDB["filesize"] = $fileInfo["filesize"];
+
+        return $metaDataForDB;
+    }
+
+    public function grabMetaDataByFileType(string $fileType, array $fileInfo): array
+    {
+        $metaData = [
+            "filetype" => $fileType
+        ];
 
         switch ($fileType) {
             case "audio":
@@ -56,8 +69,8 @@ class FileService
                     "codec" => $fileInfo["audio"]["codec"]
                 ];
 
-                $metaDataForDB["playtime_string"] = $fileInfo["playtime_string"];
-                $metaDataForDB["audio"] = $audioParameters;
+                $metaData["playtime_string"] = $fileInfo["playtime_string"];
+                $metaData["audio"] = $audioParameters;
                 break;
             case "video":
                 $audioParameters = [
@@ -70,9 +83,9 @@ class FileService
                     "resolution_y" => $fileInfo["video"]["resolution_y"]
                 ];
 
-                $metaDataForDB["playtime_string"] = $fileInfo["playtime_string"];
-                $metaDataForDB["audio"] = $audioParameters;
-                $metaDataForDB["video"] = $videoParameters;
+                $metaData["playtime_string"] = $fileInfo["playtime_string"];
+                $metaData["audio"] = $audioParameters;
+                $metaData["video"] = $videoParameters;
                 break;
             case "image":
                 $videoParameters = [
@@ -80,12 +93,12 @@ class FileService
                     "resolution_y" => $fileInfo["video"]["resolution_y"]
                 ];
 
-                $metaDataForDB["fileformat"] = $fileInfo["fileformat"];
-                $metaDataForDB["video"] = $videoParameters;
+                $metaData["fileformat"] = $fileInfo["fileformat"];
+                $metaData["video"] = $videoParameters;
                 break;
         }
 
-        return $metaDataForDB;
+        return $metaData;
     }
 
     public function makeFileName($file): string
