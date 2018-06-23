@@ -15,11 +15,13 @@ class FileService
 
     public function handleUploadedFile($file)
     {
+        $currentYearMonth = date("Y/m");
+
         $originalName = $file->getClientOriginalName();
         $extension = $file->getClientOriginalExtension();
 
         // Storing file
-        $pathToFile = $file->storeAs("files", $this->makeFileName($file));
+        $pathToFile = $file->storeAs("files/{$currentYearMonth}", $this->makeFileName($file));
 
         // Analyzing the file and getting the info
         $fileInfo = $this->getId3->analyze(storage_path("app/".$pathToFile));
