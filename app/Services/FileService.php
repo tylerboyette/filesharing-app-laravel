@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\File;
+use Illuminate\Support\Facades\Auth;
 
 class FileService
 {
@@ -17,9 +18,6 @@ class FileService
     {
         $currentYearMonth = date("Y/m");
 
-        $originalName = $file->getClientOriginalName();
-        $extension = $file->getClientOriginalExtension();
-
         // Storing file
         $pathToFile = $file->storeAs("files/{$currentYearMonth}", $this->makeFileName($file));
 
@@ -29,10 +27,11 @@ class FileService
         $metaDataForDB = $this->makeUpMetaDataForDB($fileInfo);
 
         File::create([
-           "original_name" => $originalName,
+           "original_name" => $file->getClientOriginalName(),
            "storage_name" => $pathToFile,
-           "extension" => $extension,
-           "meta_data" => $metaDataForDB
+           "extension" => $file->getClientOriginalExtension(),
+           "meta_data" => $metaDataForDB,
+           "user_id" => $this->getUploaderId()
         ]);
     }
 
@@ -101,6 +100,18 @@ class FileService
         }
 
         return $metaData;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getUploaderId()
+    {
+        if (Auth::check()) {
+            return Auth::user()->id;
+        }
+
+        return null;
     }
 
     public function makeFileName($file): string

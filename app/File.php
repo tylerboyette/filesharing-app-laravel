@@ -11,6 +11,6 @@ class File extends Model
     ];
 
     protected $fillable = [
-      "original_name", "storage_name", "extension", "meta_data"
+      "original_name", "storage_name", "extension", "meta_data", "user_id"
     ];
 }
