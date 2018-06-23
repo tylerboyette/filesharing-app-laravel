@@ -4,9 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\FileUploadRequest;
 use App\Services\FileService;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\Request;
-
 
 class FilesController extends Controller
 {
@@ -23,11 +20,6 @@ class FilesController extends Controller
     {
         $this->fileService->handleUploadedFile($request->file("file"));
 
-        /*
-        $ext = $request->file("file")->getClientOriginalExtension();
-        $request->file("file")->storeAs("files","1" . "." . $ext);
-
-        dd($this->getId3->analyze(storage_path("app/files/1.{$ext}")));
-        */
+        return redirect()->home();
     }
 }

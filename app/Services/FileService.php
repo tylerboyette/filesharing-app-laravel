@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\File;
+
 class FileService
 {
     protected $getId3;
@@ -13,33 +15,45 @@ class FileService
 
     public function handleUploadedFile($file)
     {
-        // Data to be inserted in DB
-        $metaDataForDB = [];
-
         $originalName = $file->getClientOriginalName();
-        $originalExtension = $file->getClientOriginalExtension();
+        $extension = $file->getClientOriginalExtension();
 
         // Storing file
         $pathToFile = $file->storeAs("files", $this->makeFileName($file));
 
-        // Analyzing the file
+        // Analyzing the file and getting the info
         $fileInfo = $this->getId3->analyze(storage_path("app/".$pathToFile));
+
+        $metaDataForDB = $this->makeUpMetaDataForDB($fileInfo);
+
+        File::create([
+           "original_name" => $originalName,
+           "storage_name" => $pathToFile,
+           "extension" => $extension,
+           "meta_data" => $metaDataForDB
+        ]);
+    }
+
+    public function makeUpMetaDataForDB(array $fileInfo): array
+    {
+        $metaDataForDB = [];
 
         // Getting the MIME-type of the file
         $mimeType = $fileInfo["mime_type"];
 
-        $metaDataForDB["filesize"] = $fileInfo["filesize"];
-        $metaDataForDB["extension"] = $originalExtension;
-
         // Exploding the MIME-type by "/" and getting the first part of the MIME-type
         $fileType = explode("/", $mimeType)[0];
+        
+        $metaDataForDB["filetype"] = $fileType;
+        $metaDataForDB["filesize"] = $fileInfo["filesize"];
+
         switch ($fileType) {
             case "audio":
                 $audioParameters = [
-                  "bitrate" => $fileInfo["audio"]["bitrate"],
-                  "sample_rate" => $fileInfo["audio"]["sample_rate"],
-                  "channels_count" => $fileInfo["audio"]["channels"],
-                  "codec" => $fileInfo["audio"]["codec"]
+                    "bitrate" => $fileInfo["audio"]["bitrate"],
+                    "sample_rate" => $fileInfo["audio"]["sample_rate"],
+                    "channels_count" => $fileInfo["audio"]["channels"],
+                    "codec" => $fileInfo["audio"]["codec"]
                 ];
 
                 $metaDataForDB["playtime_string"] = $fileInfo["playtime_string"];
@@ -47,13 +61,13 @@ class FileService
                 break;
             case "video":
                 $audioParameters = [
-                  "sample_rate" => $fileInfo["audio"]["sample_rate"],
-                  "channels_count" => $fileInfo["audio"]["channels"],
-                  "codec" => $fileInfo["audio"]["codec"]
+                    "sample_rate" => $fileInfo["audio"]["sample_rate"],
+                    "channels_count" => $fileInfo["audio"]["channels"],
+                    "codec" => $fileInfo["audio"]["codec"]
                 ];
                 $videoParameters = [
-                  "resolution_x" => $fileInfo["video"]["resolution_x"],
-                  "resolution_y" => $fileInfo["video"]["resolution_y"]
+                    "resolution_x" => $fileInfo["video"]["resolution_x"],
+                    "resolution_y" => $fileInfo["video"]["resolution_y"]
                 ];
 
                 $metaDataForDB["playtime_string"] = $fileInfo["playtime_string"];
@@ -62,17 +76,19 @@ class FileService
                 break;
             case "image":
                 $videoParameters = [
-                  "resolution_x" => $fileInfo["video"]["resolution_x"],
-                  "resolution_y" => $fileInfo["video"]["resolution_y"]
+                    "resolution_x" => $fileInfo["video"]["resolution_x"],
+                    "resolution_y" => $fileInfo["video"]["resolution_y"]
                 ];
 
                 $metaDataForDB["fileformat"] = $fileInfo["fileformat"];
                 $metaDataForDB["video"] = $videoParameters;
                 break;
         }
+
+        return $metaDataForDB;
     }
 
-    public function makeFileName($file)
+    public function makeFileName($file): string
     {
         return time() . "." . $file->getClientOriginalExtension();
     }
