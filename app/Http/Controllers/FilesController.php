@@ -18,8 +18,9 @@ class FilesController extends Controller
 
     public function store(FileUploadRequest $request)
     {
-        $this->fileService->handleUploadedFile($request->file("file"));
+        //$this->fileService->handleUploadedFile($request->file("file"));
 
-        return redirect()->home();
+        //return redirect()->home();
+        return response()->json(["success" => "success"]);
     }
 }

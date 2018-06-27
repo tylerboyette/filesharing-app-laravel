@@ -10,8 +10,13 @@ window.Popper = require('popper.js').default;
 try {
     window.$ = window.jQuery = require('jquery');
 
+    require("jquery-ui");
+    require('blueimp-file-upload/js/jquery.iframe-transport.js');
+    require('blueimp-file-upload/js/jquery.fileupload.js');
     require('bootstrap');
-} catch (e) {}
+} catch (e) {
+
+}
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
