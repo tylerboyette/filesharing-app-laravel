@@ -13003,7 +13003,13 @@ var loginForm = new __WEBPACK_IMPORTED_MODULE_2__modules_LoginForm__["a" /* defa
 
 __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#file-input").fileinput({
     theme: "fas",
-    uploadUrl: "/upload"
+    uploadUrl: "/upload",
+    showUploadedThumbs: false,
+    showPreview: false,
+    elErrorContainer: ".file-upload-errors",
+    maxFileCount: 1
+}).on("fileuploaded", function (event, data) {
+    console.log(data);
 });
 
 /***/ }),
@@ -13024,7 +13030,7 @@ try {
 
   __webpack_require__(6);
   __webpack_require__(7);
-  __webpack_require__(34);
+  __webpack_require__(8);
 } catch (e) {}
 
 /**
@@ -21440,7 +21446,59 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 }));
 
 /***/ }),
-/* 8 */,
+/* 8 */
+/***/ (function(module, exports) {
+
+/*!
+ * bootstrap-fileinput v4.4.8
+ * http://plugins.krajee.com/file-input
+ *
+ * Font Awesome 5 icon theme configuration for bootstrap-fileinput. Requires font awesome 5 assets to be loaded.
+ *
+ * Author: Kartik Visweswaran
+ * Copyright: 2014 - 2018, Kartik Visweswaran, Krajee.com
+ *
+ * Licensed under the BSD 3-Clause
+ * https://github.com/kartik-v/bootstrap-fileinput/blob/master/LICENSE.md
+ */
+(function ($) {
+    "use strict";
+
+    $.fn.fileinputThemes.fas = {
+        fileActionSettings: {
+            removeIcon: '<i class="fas fa-trash-alt"></i>',
+            uploadIcon: '<i class="fas fa-upload"></i>',
+            uploadRetryIcon: '<i class="fas fa-redo-alt"></i>',
+            downloadIcon: '<i class="fas fa-download"></i>',
+            zoomIcon: '<i class="fas fa-search-plus"></i>',
+            dragIcon: '<i class="fas fa-arrows-alt"></i>',
+            indicatorNew: '<i class="fas fa-plus-circle text-warning"></i>',
+            indicatorSuccess: '<i class="fas fa-check-circle text-success"></i>',
+            indicatorError: '<i class="fas fa-exclamation-circle text-danger"></i>',
+            indicatorLoading: '<i class="fas fa-hourglass text-muted"></i>'
+        },
+        layoutTemplates: {
+            fileIcon: '<i class="fas fa-file kv-caption-icon"></i> '
+        },
+        previewZoomButtonIcons: {
+            prev: '<i class="fas fa-caret-left fa-lg"></i>',
+            next: '<i class="fas fa-caret-right fa-lg"></i>',
+            toggleheader: '<i class="fas fa-fw fa-arrows-v"></i>',
+            fullscreen: '<i class="fas fa-fw fa-arrows-alt"></i>',
+            borderless: '<i class="fas fa-fw fa-external-link"></i>',
+            close: '<i class="fas fa-fw fa-times"></i>'
+        },
+        previewFileIcon: '<i class="fas fa-file"></i>',
+        browseIcon: '<i class="fas fa-folder-open"></i>',
+        removeIcon: '<i class="fas fa-trash-alt"></i>',
+        cancelIcon: '<i class="fas fa-ban"></i>',
+        uploadIcon: '<i class="fas fa-upload"></i>',
+        msgValidationErrorIcon: '<i class="fas fa-exclamation-circle"></i> '
+    };
+})(window.jQuery);
+
+
+/***/ }),
 /* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -21623,81 +21681,6 @@ var LoginForm = function () {
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 12 */,
-/* 13 */,
-/* 14 */,
-/* 15 */,
-/* 16 */,
-/* 17 */,
-/* 18 */,
-/* 19 */,
-/* 20 */,
-/* 21 */,
-/* 22 */,
-/* 23 */,
-/* 24 */,
-/* 25 */,
-/* 26 */,
-/* 27 */,
-/* 28 */,
-/* 29 */,
-/* 30 */,
-/* 31 */,
-/* 32 */,
-/* 33 */,
-/* 34 */
-/***/ (function(module, exports) {
-
-/*!
- * bootstrap-fileinput v4.4.8
- * http://plugins.krajee.com/file-input
- *
- * Font Awesome 5 icon theme configuration for bootstrap-fileinput. Requires font awesome 5 assets to be loaded.
- *
- * Author: Kartik Visweswaran
- * Copyright: 2014 - 2018, Kartik Visweswaran, Krajee.com
- *
- * Licensed under the BSD 3-Clause
- * https://github.com/kartik-v/bootstrap-fileinput/blob/master/LICENSE.md
- */
-(function ($) {
-    "use strict";
-
-    $.fn.fileinputThemes.fas = {
-        fileActionSettings: {
-            removeIcon: '<i class="fas fa-trash-alt"></i>',
-            uploadIcon: '<i class="fas fa-upload"></i>',
-            uploadRetryIcon: '<i class="fas fa-redo-alt"></i>',
-            downloadIcon: '<i class="fas fa-download"></i>',
-            zoomIcon: '<i class="fas fa-search-plus"></i>',
-            dragIcon: '<i class="fas fa-arrows-alt"></i>',
-            indicatorNew: '<i class="fas fa-plus-circle text-warning"></i>',
-            indicatorSuccess: '<i class="fas fa-check-circle text-success"></i>',
-            indicatorError: '<i class="fas fa-exclamation-circle text-danger"></i>',
-            indicatorLoading: '<i class="fas fa-hourglass text-muted"></i>'
-        },
-        layoutTemplates: {
-            fileIcon: '<i class="fas fa-file kv-caption-icon"></i> '
-        },
-        previewZoomButtonIcons: {
-            prev: '<i class="fas fa-caret-left fa-lg"></i>',
-            next: '<i class="fas fa-caret-right fa-lg"></i>',
-            toggleheader: '<i class="fas fa-fw fa-arrows-v"></i>',
-            fullscreen: '<i class="fas fa-fw fa-arrows-alt"></i>',
-            borderless: '<i class="fas fa-fw fa-external-link"></i>',
-            close: '<i class="fas fa-fw fa-times"></i>'
-        },
-        previewFileIcon: '<i class="fas fa-file"></i>',
-        browseIcon: '<i class="fas fa-folder-open"></i>',
-        removeIcon: '<i class="fas fa-trash-alt"></i>',
-        cancelIcon: '<i class="fas fa-ban"></i>',
-        uploadIcon: '<i class="fas fa-upload"></i>',
-        msgValidationErrorIcon: '<i class="fas fa-exclamation-circle"></i> '
-    };
-})(window.jQuery);
-
 
 /***/ })
 /******/ ]);

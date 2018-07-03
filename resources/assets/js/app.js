@@ -20,5 +20,12 @@ let loginForm = new LoginForm();
 
 $("#file-input").fileinput({
     theme: "fas",
-    uploadUrl: "/upload"
+    uploadUrl: "/upload",
+    showUploadedThumbs: false,
+    showPreview: false,
+    elErrorContainer: ".file-upload-errors",
+    maxFileCount: 1
+}).on("fileuploaded", (event, data) => {
+    console.log(data);
 });
+

@@ -30,7 +30,7 @@ class RegistrationForm {
             }
         })
             .fail(function(data) {
-                self.handleValidationErrors(data.responseJSON.errors);
+               self.handleValidationErrors(data.responseJSON.errors);
             });
     }
 
