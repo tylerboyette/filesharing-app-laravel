@@ -10,10 +10,9 @@ window.Popper = require('popper.js').default;
 try {
     window.$ = window.jQuery = require('jquery');
 
-    require("jquery-ui");
-    require('blueimp-file-upload/js/jquery.iframe-transport.js');
-    require('blueimp-file-upload/js/jquery.fileupload.js');
     require('bootstrap');
+    require("bootstrap-fileinput/js/fileinput");
+    require("bootstrap-fileinput/themes/fa/theme");
 } catch (e) {
 
 }

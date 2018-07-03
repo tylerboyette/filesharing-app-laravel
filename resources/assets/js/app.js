@@ -18,14 +18,3 @@ $.ajaxSetup({
 let registrationForm = new RegistrationForm();
 let loginForm = new LoginForm();
 
-$("#file-upload-form").fileupload({
-    dataType: 'json',
-    add: function (e, data) {
-        $(".upload-button").click( () => {
-            data.submit();
-        })
-    },
-    done: function (e, data) {
-        console.log("success");
-    }
-});
