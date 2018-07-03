@@ -18,3 +18,7 @@ $.ajaxSetup({
 let registrationForm = new RegistrationForm();
 let loginForm = new LoginForm();
 
+$("#file-input").fileinput({
+    theme: "fas",
+    uploadUrl: "/upload"
+});

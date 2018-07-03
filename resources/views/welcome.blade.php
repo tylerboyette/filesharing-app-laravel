@@ -5,7 +5,7 @@
                 {{ csrf_field() }}
 
                 <div class="form-group">
-                    <input id="input-b1" name="input-b1" type="file" class="file">
+                    <input id="file-input" name="file" type="file" class="file" data-show-preview="false">
                 </div>
             </form>
 @endsection

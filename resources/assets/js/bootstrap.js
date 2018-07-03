@@ -12,7 +12,7 @@ try {
 
     require('bootstrap');
     require("bootstrap-fileinput/js/fileinput");
-    require("bootstrap-fileinput/themes/fa/theme");
+    require("bootstrap-fileinput/themes/fas/theme");
 } catch (e) {
 
 }
