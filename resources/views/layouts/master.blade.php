@@ -7,7 +7,6 @@
 </head>
 <body>
     @include("layouts.nav")
-
     <main class="container">
         @yield("content")
 

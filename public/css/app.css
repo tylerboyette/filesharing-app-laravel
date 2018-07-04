@@ -15782,3 +15782,21 @@ input.file-loading[type=file] {
           align-items: center;
 }
 
+.dropbox {
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.7);
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 10000;
+  border: 4px dashed white;
+}
+
+.dropbox__info {
+  color: white;
+  text-align: center;
+}
+

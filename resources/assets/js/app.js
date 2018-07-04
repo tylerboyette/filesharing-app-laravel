@@ -18,6 +18,14 @@ $.ajaxSetup({
 let registrationForm = new RegistrationForm();
 let loginForm = new LoginForm();
 
+let isAdvancedUpload = function() {
+    let div = document.createElement("div");
+    return (('draggable' in div) ||
+            ('ondragstart' in div && 'ondrop' in div))
+            && 'FormData' in window
+            && 'FileReader' in window;
+}();
+
 $("#file-input").fileinput({
     theme: "fas",
     uploadUrl: "/upload",
@@ -25,7 +33,5 @@ $("#file-input").fileinput({
     showPreview: false,
     elErrorContainer: ".file-upload-errors",
     maxFileCount: 1
-}).on("fileuploaded", (event, data) => {
-    console.log(data);
 });
 

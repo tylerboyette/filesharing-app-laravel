@@ -13001,6 +13001,11 @@ __WEBPACK_IMPORTED_MODULE_0_jquery___default.a.ajaxSetup({
 var registrationForm = new __WEBPACK_IMPORTED_MODULE_1__modules_RegistrationForm__["a" /* default */]();
 var loginForm = new __WEBPACK_IMPORTED_MODULE_2__modules_LoginForm__["a" /* default */]();
 
+var isAdvancedUpload = function () {
+    var div = document.createElement("div");
+    return ('draggable' in div || 'ondragstart' in div && 'ondrop' in div) && 'FormData' in window && 'FileReader' in window;
+}();
+
 __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#file-input").fileinput({
     theme: "fas",
     uploadUrl: "/upload",
@@ -13008,8 +13013,6 @@ __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#file-input").fileinput({
     showPreview: false,
     elErrorContainer: ".file-upload-errors",
     maxFileCount: 1
-}).on("fileuploaded", function (event, data) {
-    console.log(data);
 });
 
 /***/ }),
