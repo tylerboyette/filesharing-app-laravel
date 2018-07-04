@@ -1,10 +1,12 @@
 @extends ("layouts.master")
 
 @section ("content")
-    <div class="dropbox d-flex justify-content-center align-items-center">
-        <div class="dropbox__info d-flex flex-column">
-            <span class="dropbox__text">Please drag and drop a file here.</span>
-            <span class="dropbox__hint">The maximum file size is 100 MB.</span>
+    <div class="dropbox">
+        <div class="vertical-center justify-content-center">
+            <div class="dropbox__info d-flex flex-column">
+                <span class="dropbox__text">Please drop the file here.</span>
+                <span class="dropbox__hint">The maximum file size is 100 MB.</span>
+            </div>
         </div>
     </div>
     <div class="vertical-center">
