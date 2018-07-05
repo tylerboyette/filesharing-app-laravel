@@ -12968,7 +12968,7 @@ Popper.Defaults = Defaults;
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(3);
-module.exports = __webpack_require__(11);
+module.exports = __webpack_require__(12);
 
 
 /***/ }),
@@ -12981,6 +12981,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_jquery__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__modules_RegistrationForm__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__modules_LoginForm__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__modules_DropBoxOverlay__ = __webpack_require__(11);
 
 /**
  * First, we will load all of this project's Javascript utilities and other
@@ -12989,6 +12990,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
  */
 
 __webpack_require__(4);
+
 
 
 
@@ -13005,6 +13007,11 @@ var isAdvancedUpload = function () {
     var div = document.createElement("div");
     return ('draggable' in div || 'ondragstart' in div && 'ondrop' in div) && 'FormData' in window && 'FileReader' in window;
 }();
+
+if (__WEBPACK_IMPORTED_MODULE_0_jquery___default()(".dropbox-overlay").length && isAdvancedUpload) {
+    var dropBoxOverlay = new __WEBPACK_IMPORTED_MODULE_3__modules_DropBoxOverlay__["a" /* default */]();
+    console.log("hi");
+}
 
 __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#file-input").fileinput({
     theme: "fas",
@@ -21681,6 +21688,62 @@ var LoginForm = function () {
 
 /***/ }),
 /* 11 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_jquery__);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+
+
+var DropBoxOverlay = function () {
+    function DropBoxOverlay() {
+        _classCallCheck(this, DropBoxOverlay);
+
+        this.dropZone = __WEBPACK_IMPORTED_MODULE_0_jquery___default()("body").addClass("dropzone");
+        this.dropBoxOverlay = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".dropbox-overlay");
+        this.events();
+    }
+
+    _createClass(DropBoxOverlay, [{
+        key: "events",
+        value: function events() {
+            this.dropZone.on("dragenter dragover dragleave drop", this.preventDefaults.bind(this));
+            this.dropZone.on("dragenter dragleave", this.toggleDropBoxOverlayVisibility.bind(this));
+        }
+    }, {
+        key: "showDropBoxOverlay",
+        value: function showDropBoxOverlay() {
+            this.dropBoxOverlay.show();
+        }
+    }, {
+        key: "hideDropBoxOverlay",
+        value: function hideDropBoxOverlay() {
+            this.dropBoxOverlay.hide();
+        }
+    }, {
+        key: "toggleDropBoxOverlayVisibility",
+        value: function toggleDropBoxOverlayVisibility() {
+            this.dropBoxOverlay.toggleClass("dropbox-overlay--visible");
+        }
+    }, {
+        key: "preventDefaults",
+        value: function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }]);
+
+    return DropBoxOverlay;
+}();
+
+/* harmony default export */ __webpack_exports__["a"] = (DropBoxOverlay);
+
+/***/ }),
+/* 12 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin

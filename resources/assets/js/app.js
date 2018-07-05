@@ -9,6 +9,7 @@ require('./bootstrap');
 import $ from "jquery";
 import RegistrationForm from "./modules/RegistrationForm";
 import LoginForm from "./modules/LoginForm";
+import DropBoxOverlay from "./modules/DropBoxOverlay";
 
 $.ajaxSetup({
     headers: {
@@ -25,6 +26,11 @@ let isAdvancedUpload = function() {
             && 'FormData' in window
             && 'FileReader' in window;
 }();
+
+if ($(".dropbox-overlay").length && isAdvancedUpload) {
+    let dropBoxOverlay = new DropBoxOverlay();
+    console.log("hi");
+}
 
 $("#file-input").fileinput({
     theme: "fas",

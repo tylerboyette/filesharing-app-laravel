@@ -15782,7 +15782,7 @@ input.file-loading[type=file] {
           align-items: center;
 }
 
-.dropbox {
+.dropbox-overlay {
   display: none;
   position: fixed;
   background-color: rgba(0, 0, 0, 0.7);
@@ -15796,8 +15796,12 @@ input.file-loading[type=file] {
   border: 4px dashed white;
 }
 
-.dropbox__info {
+.dropbox-overlay__info {
   color: white;
   text-align: center;
+}
+
+.dropbox-overlay--visible {
+  display: block;
 }
 

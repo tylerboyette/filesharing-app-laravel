@@ -16,7 +16,7 @@
   align-items: center;
 }
 
-.dropbox {
+.dropbox-overlay {
   display: none;
   position: fixed;
   background-color: rgba(0,0,0,0.7);
@@ -28,11 +28,14 @@
   right: 0;
   z-index: 10000;
   border: 4px dashed white;
-  //background-color: #B7CECE;
 
   &__info {
     color: white;
     text-align: center;
+  }
+
+  &--visible {
+    display: block;
   }
 }
 
