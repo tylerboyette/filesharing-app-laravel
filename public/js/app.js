@@ -21705,6 +21705,7 @@ var DropBoxOverlay = function () {
 
         this.dropZone = __WEBPACK_IMPORTED_MODULE_0_jquery___default()("body").addClass("dropzone");
         this.dropBoxOverlay = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".dropbox-overlay");
+        this.fileInput = __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#file-input");
         this.events();
     }
 
@@ -21712,22 +21713,20 @@ var DropBoxOverlay = function () {
         key: "events",
         value: function events() {
             this.dropZone.on("dragenter dragover dragleave drop", this.preventDefaults.bind(this));
-            this.dropZone.on("dragenter dragleave", this.toggleDropBoxOverlayVisibility.bind(this));
-        }
-    }, {
-        key: "showDropBoxOverlay",
-        value: function showDropBoxOverlay() {
-            this.dropBoxOverlay.show();
-        }
-    }, {
-        key: "hideDropBoxOverlay",
-        value: function hideDropBoxOverlay() {
-            this.dropBoxOverlay.hide();
+            this.dropZone.on("dragenter dragleave drop", this.toggleDropBoxOverlayVisibility.bind(this));
+            this.dropZone.on("drop", this.handleFileDrop.bind(this));
         }
     }, {
         key: "toggleDropBoxOverlayVisibility",
         value: function toggleDropBoxOverlayVisibility() {
             this.dropBoxOverlay.toggleClass("dropbox-overlay--visible");
+        }
+    }, {
+        key: "handleFileDrop",
+        value: function handleFileDrop(e) {
+            var file = e.originalEvent.dataTransfer.files[0];
+
+            this.fileInput.fileinput("readFiles", [file]);
         }
     }, {
         key: "preventDefaults",
