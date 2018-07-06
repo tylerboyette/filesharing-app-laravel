@@ -25,3 +25,5 @@ Route::post("/users/{id}", "UsersController@updateAvatar");
 
 Route::post("/upload", "FilesController@store");
 
+Route::get("/files/{id}", "FilesController@show");
+

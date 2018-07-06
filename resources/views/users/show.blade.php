@@ -2,7 +2,9 @@
 
 @section("content")
     <img src="/uploads/avatars/{{ $user->avatar_name }}" class="avatar" alt="Avatar">
-    <h2>{{ $user->username }}'s profile @if (Auth::check() && Auth::user()->id === $user->id) {{ "(this is you)" }} @endif</h2>
+    <h2>
+        {{ $user->username }}'s profile @if (Auth::check() && Auth::user()->id === $user->id) {{ "(this is you)" }} @endif
+    </h2>
 
     @if (Auth::check() && Auth::user()->id === $user->id)
         <form action="{{ url()->current() }}" method="post" enctype="multipart/form-data">
