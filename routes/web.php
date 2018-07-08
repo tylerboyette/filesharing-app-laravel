@@ -27,3 +27,5 @@ Route::post("/upload", "FilesController@store");
 
 Route::get("/files/{id}", "FilesController@show");
 
+Route::get("/download/{id}/{originalName}", "FilesController@downloadFile");
+

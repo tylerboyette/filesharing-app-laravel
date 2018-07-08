@@ -28,7 +28,7 @@ class FileService
 
         File::create([
            "original_name" => $file->getClientOriginalName(),
-           "storage_name" => $pathToFile,
+           "storage_name" => str_replace("files/", "", $pathToFile),
            "extension" => $file->getClientOriginalExtension(),
            "meta_data" => $metaDataForDB,
            "user_id" => $this->getUploaderId()
