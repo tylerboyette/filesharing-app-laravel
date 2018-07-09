@@ -48,6 +48,9 @@ class FileService
 
             // Getting additional meta data for media files
             $metaDataForDB = $this->grabMetaDataByFileType($fileType, $fileInfo);
+
+            // Storing MIME-type in meta data
+            $metaDataForDB["mime_type"] = $mimeType;
         }
 
         $metaDataForDB["filesize"] = $fileInfo["filesize"];
@@ -57,9 +60,7 @@ class FileService
 
     public function grabMetaDataByFileType(string $fileType, array $fileInfo): array
     {
-        $metaData = [
-            "filetype" => $fileType
-        ];
+        $metaData = [];
 
         switch ($fileType) {
             case "audio":
