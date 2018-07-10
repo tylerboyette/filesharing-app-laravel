@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AvatarUpdateRequest;
 use App\Services\AvatarService;
-use App\User;
+use App\Models\Entities\User;
 use Illuminate\Support\Facades\Auth;
 
 

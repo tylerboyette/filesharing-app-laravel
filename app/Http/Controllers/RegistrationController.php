@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\RegistrationRequest;
 use Illuminate\Support\Facades\Hash;
-use App\User;
+use App\Models\Entities\User;
 
 class RegistrationController extends Controller
 {

@@ -3,9 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\FileUploadRequest;
-use Illuminate\Support\Facades\Storage;
 use App\Services\FileService;
-use App\File;
+use App\Models\Entities\File;
 
 
 class FilesController extends Controller
