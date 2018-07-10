@@ -1,11 +1,8 @@
 <?php
 
-namespace App\Services;
+namespace App\Models\Helpers;
 
-use App\File;
-use Illuminate\Support\Facades\Auth;
-
-class FileService
+class FileMediaInfo
 {
     protected $getId3;
 
@@ -14,30 +11,11 @@ class FileService
         $this->getId3 = new \getID3();
     }
 
-    public function handleUploadedFile($file)
+    public function bundleFileMetaData(string $pathToFile): array
     {
-        $currentYearMonth = date("Y/m");
+        $fileInfo = $this->getId3->analyze($pathToFile);
 
-        // Storing file
-        $pathToFile = $file->storeAs("files/{$currentYearMonth}", $this->makeFileName($file));
-
-        // Analyzing the file and getting the info
-        $fileInfo = $this->getId3->analyze(storage_path("app/".$pathToFile));
-
-        $metaDataForDB = $this->makeUpMetaDataForDB($fileInfo);
-
-        File::create([
-           "original_name" => $file->getClientOriginalName(),
-           "storage_name" => str_replace("files/", "", $pathToFile),
-           "extension" => $file->getClientOriginalExtension(),
-           "meta_data" => $metaDataForDB,
-           "user_id" => $this->getUploaderId()
-        ]);
-    }
-
-    public function makeUpMetaDataForDB(array $fileInfo): array
-    {
-        $metaDataForDB = [];
+        $fileMetaData = [];
 
         if (array_key_exists("mime_type", $fileInfo)) {
             // Getting the MIME-type of the file
@@ -47,18 +25,18 @@ class FileService
             $fileType = explode("/", $mimeType)[0];
 
             // Getting additional meta data for media files
-            $metaDataForDB = $this->grabMetaDataByFileType($fileType, $fileInfo);
+            $fileMetaData = $this->grabMetaDataByFileType($fileType, $fileInfo);
 
             // Storing MIME-type in meta data
-            $metaDataForDB["mime_type"] = $mimeType;
+            $fileMetaData["mime_type"] = $mimeType;
         }
 
-        $metaDataForDB["filesize"] = $fileInfo["filesize"];
+        $fileMetaData["filesize"] = $fileInfo["filesize"];
 
-        return $metaDataForDB;
+        return $fileMetaData;
     }
 
-    public function grabMetaDataByFileType(string $fileType, array $fileInfo): array
+    protected function grabMetaDataByFileType(string $fileType, array $fileInfo): array
     {
         $metaData = [];
 
@@ -101,22 +79,5 @@ class FileService
         }
 
         return $metaData;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getUploaderId()
-    {
-        if (Auth::check()) {
-            return Auth::user()->id;
-        }
-
-        return null;
-    }
-
-    public function makeFileName($file): string
-    {
-        return time() . "." . $file->getClientOriginalExtension();
     }
 }

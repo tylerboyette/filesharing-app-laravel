@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Models\Services;
 
 use Intervention\Image\ImageManagerStatic as Image;
 use Illuminate\Support\Facades\File;

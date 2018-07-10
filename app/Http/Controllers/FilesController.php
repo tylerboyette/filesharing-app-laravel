@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\FileUploadRequest;
-use App\Services\FileService;
+use App\Models\Services\FileService;
 use App\Models\Entities\File;
 
 
