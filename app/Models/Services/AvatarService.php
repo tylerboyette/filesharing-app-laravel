@@ -11,11 +11,9 @@ class AvatarService
     {
         $filename = $this->makeAvatarName($avatar);
 
-        Image::make($avatar)->resize(
-            300, 300, function ($constraint) {
-            $constraint->aspectRatio();
-            $constraint->upsize();
-        })->save(
+        Image::make($avatar)->fit(
+            300, 300
+        )->save(
             storage_path("app/public/avatars/" . $filename)
         );
     }

@@ -15766,9 +15766,9 @@ input.file-loading[type=file] {
 }
 
 .avatar {
-  border-radius: 50%;
   width: 300px;
   height: 300px;
+  border: 1px solid black;
 }
 
 .vertical-center {
