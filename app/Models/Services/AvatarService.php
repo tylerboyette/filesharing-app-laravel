@@ -16,7 +16,7 @@ class AvatarService
             $constraint->aspectRatio();
             $constraint->upsize();
         })->save(
-            public_path("/uploads/avatars/" . $filename)
+            storage_path("app/public/avatars/" . $filename)
         );
     }
 
@@ -28,7 +28,7 @@ class AvatarService
     public function deleteAvatarFromStorage($avatarName)
     {
         if ($avatarName !== "default.png") {
-            File::delete(public_path("/uploads/avatars/" . $avatarName));
+            File::delete(storage_path("app/public/avatars/" . $avatarName));
         }
     }
 }

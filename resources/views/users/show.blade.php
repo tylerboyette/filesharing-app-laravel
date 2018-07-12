@@ -1,7 +1,7 @@
 @extends("layouts.master")
 
 @section("content")
-    <img src="/uploads/avatars/{{ $user->avatar_name }}" class="avatar" alt="Avatar">
+    <img src="{{ asset("storage/avatars/$user->avatar_name") }}" class="avatar" alt="Avatar">
     <h2>
         {{ $user->username }}'s profile @if (Auth::check() && Auth::user()->id === $user->id) {{ "(this is you)" }} @endif
     </h2>
