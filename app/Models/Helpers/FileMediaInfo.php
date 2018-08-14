@@ -13,6 +13,7 @@ class FileMediaInfo
 
     public function bundleFileMetaData(string $pathToFile): array
     {
+        // Getting the file info using library getId3
         $fileInfo = $this->getId3->analyze($pathToFile);
 
         $fileMetaData = [];

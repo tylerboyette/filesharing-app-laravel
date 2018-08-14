@@ -5,6 +5,7 @@ namespace App\Models\Services;
 use App\Models\Entities\File;
 use App\Models\Helpers\FileMediaInfo;
 use Illuminate\Support\Facades\Auth;
+use Intervention\Image\ImageManagerStatic as Image;
 
 class FileService
 {
@@ -27,6 +28,12 @@ class FileService
         // Getting file meta data
         $fileMetaData = $this->fileMediaInfo->bundleFileMetaData(storage_path("app/".$pathToFile));
 
+        /*
+        if (explode("/",$fileMetaData["mime_type"] === "image")) {
+            $this->createImagePreview($file);
+        }
+        */
+
         File::create([
            "original_name" => $file->getClientOriginalName(),
            "storage_name" => str_replace("files/", "", $pathToFile),
@@ -34,6 +41,14 @@ class FileService
            "meta_data" => $fileMetaData,
            "user_id" => $this->getUploaderId()
         ]);
+    }
+
+    public function createImagePreview($image) {
+        Image::make($image)->fit(
+            300, 300
+        )->save(
+            storage_path("app/public/avatars/" . $filename)
+        );
     }
 
     /**

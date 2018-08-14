@@ -32,6 +32,13 @@ class FilesController extends Controller
         return view("files.show", ["file" => $file]);
     }
 
+    public function showFilesList()
+    {
+        $lastFiles = File::orderBy("id", "desc")->take(100)->get();
+
+        return view("files.showFilesList", ["files" => $lastFiles]);
+    }
+
     public function downloadFile($id)
     {
         $file = File::where("id", $id)->firstOrFail();
