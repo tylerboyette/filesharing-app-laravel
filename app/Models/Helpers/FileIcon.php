@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models\Services;
+namespace App\Models\Helpers;
 
-class FileIconService
+class FileIcon
 {
     protected $supportedFileExtensions;
 
