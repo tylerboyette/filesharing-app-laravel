@@ -43,12 +43,13 @@ class FileService
         ]);
     }
 
+    /**
+     * TODO
+     *
+     * @param $image
+     */
     public function createImagePreview($image) {
-        Image::make($image)->fit(
-            300, 300
-        )->save(
-            storage_path("app/public/avatars/" . $filename)
-        );
+
     }
 
     /**

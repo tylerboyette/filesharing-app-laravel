@@ -15765,6 +15765,1494 @@ input.file-loading[type=file] {
   background-color: #d9edf7;
 }
 
+/*!
+ * File Icon Vectors 1.0 (https://github.com/dmhendricks/file-icon-vectors)
+ * Copyright 2018 Daniel M. Hendricks (https://www.danhendricks.com)
+ * Licensed under MIT (https://github.com/dmhendricks/file-icon-vectors/blob/master/LICENSE)
+ */
+
+.fiv-background,
+.fiv-viv {
+  background-size: contain;
+  background-position: 50%;
+  background-repeat: no-repeat;
+}
+
+.fiv-size-md {
+  font-size: 2.25em;
+}
+
+.fiv-size-lg {
+  font-size: 3.5em;
+}
+
+.fiv-size-xl {
+  font-size: 4.75em;
+}
+
+.fiv-viv {
+  position: relative;
+  display: inline-block;
+  line-height: 1em;
+  width: 0.75em;
+}
+
+.fiv-viv:before {
+  content: '\A0';
+}
+
+.fiv-viv.fiv-icon-3g2 {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/3g2.svg?26191cb1f6556926b8a6f8b8d9d776da);
+}
+
+.fiv-viv.fiv-icon-3ga {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/3ga.svg?4c09203883b1e6d66f54bead48bc15e2);
+}
+
+.fiv-viv.fiv-icon-3gp {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/3gp.svg?18487c303a4cbf018315f2815e744c69);
+}
+
+.fiv-viv.fiv-icon-7z {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/7z.svg?a4d04433ae9d02308643a6a2a6deb9b5);
+}
+
+.fiv-viv.fiv-icon-aa {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/aa.svg?803cc3921310266fc06636cf0bc32316);
+}
+
+.fiv-viv.fiv-icon-aac {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/aac.svg?26eb2fc39e859475e4123cd7ddf26d6b);
+}
+
+.fiv-viv.fiv-icon-ac {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ac.svg?856a89cbfa8a7bc6e95a9249e8f47cd0);
+}
+
+.fiv-viv.fiv-icon-accdb {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/accdb.svg?3fc687acdef2dfa583d53e2a10d4eb55);
+}
+
+.fiv-viv.fiv-icon-accdt {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/accdt.svg?ca0cf72d6cba6ecadcdea8abbdaf3375);
+}
+
+.fiv-viv.fiv-icon-adn {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/adn.svg?a0f3fe633098aac57b1cfbebf803778a);
+}
+
+.fiv-viv.fiv-icon-ai {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ai.svg?bff806a441325113ee06e68b184f16d3);
+}
+
+.fiv-viv.fiv-icon-aif {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/aif.svg?190b63fb09ee0129f808cae7cb7ac389);
+}
+
+.fiv-viv.fiv-icon-aifc {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/aifc.svg?9229b5a8bd6ce93bc4fe7b75cf844108);
+}
+
+.fiv-viv.fiv-icon-aiff {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/aiff.svg?539c36b21479d39155c501215b8e8c5d);
+}
+
+.fiv-viv.fiv-icon-ait {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ait.svg?2e8648125d95641d0f86508f0c8d252c);
+}
+
+.fiv-viv.fiv-icon-amr {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/amr.svg?33f7de3d1c786abc6a0a37c3bedddd6b);
+}
+
+.fiv-viv.fiv-icon-ani {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ani.svg?6cb65a865844bf4e5484fae5e1149e90);
+}
+
+.fiv-viv.fiv-icon-apk {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/apk.svg?412e773b8765f9c53485bd51bb09057c);
+}
+
+.fiv-viv.fiv-icon-app {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/app.svg?3cb9f286c00e28aa069b0e48480744bc);
+}
+
+.fiv-viv.fiv-icon-applescript {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/applescript.svg?bae7b30cec2d81c660affa3b5b8661fe);
+}
+
+.fiv-viv.fiv-icon-asax {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/asax.svg?3c7d4a84ff2273ab8d9fcadd5381ce51);
+}
+
+.fiv-viv.fiv-icon-asc {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/asc.svg?9fb7d32aebebbc444c0350f2a47a4243);
+}
+
+.fiv-viv.fiv-icon-ascx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ascx.svg?5d5c93c2bf7de639bd89ab51c4e41cda);
+}
+
+.fiv-viv.fiv-icon-asf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/asf.svg?939037e6ccfd19d1bbffa00d04bab1ef);
+}
+
+.fiv-viv.fiv-icon-ash {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ash.svg?f2e1ccc188f6fafd0b68ddc0250e6715);
+}
+
+.fiv-viv.fiv-icon-ashx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ashx.svg?753a2d3144db455b553a1e85e35c78c5);
+}
+
+.fiv-viv.fiv-icon-asmx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/asmx.svg?5fc1a099cd3ea483fdec894ebae540e7);
+}
+
+.fiv-viv.fiv-icon-asp {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/asp.svg?0a94df20084b3e3405c5e64c864f628b);
+}
+
+.fiv-viv.fiv-icon-aspx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/aspx.svg?da3f727810e633b6e6735b91e07928c7);
+}
+
+.fiv-viv.fiv-icon-asx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/asx.svg?82e78ba73968209693806f0510e826da);
+}
+
+.fiv-viv.fiv-icon-au {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/au.svg?fca714c4572a2600b9a14dc0b3abda76);
+}
+
+.fiv-viv.fiv-icon-aup {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/aup.svg?f0719ec9256c5ae05a0819fd72ae9fed);
+}
+
+.fiv-viv.fiv-icon-avi {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/avi.svg?64aaec20f4449493fad1d84aba7ff9a4);
+}
+
+.fiv-viv.fiv-icon-axd {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/axd.svg?c4aad91e137e4afeeed484d79e0db189);
+}
+
+.fiv-viv.fiv-icon-aze {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/aze.svg?1fce21eb5c89b5e0fd998efc37455b92);
+}
+
+.fiv-viv.fiv-icon-bak {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/bak.svg?7d51b2482a35ae0015138880dcd1c877);
+}
+
+.fiv-viv.fiv-icon-bash {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/bash.svg?8d1376088640d48ce7a9ef9429409dd8);
+}
+
+.fiv-viv.fiv-icon-bat {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/bat.svg?5862ffc91ce5907d2d4bc157e7d857c4);
+}
+
+.fiv-viv.fiv-icon-bin {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/bin.svg?b5c711b8fc8adc5c4648707dfb7e1a84);
+}
+
+.fiv-viv.fiv-icon-blank {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/blank.svg?8ce87ebed9b9345b1040c17313b3ab6b);
+}
+
+.fiv-viv.fiv-icon-bmp {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/bmp.svg?e3d42f7c9f7ef8a4d9ac83cff156cc27);
+}
+
+.fiv-viv.fiv-icon-bowerrc {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/bowerrc.svg?c0985beb5f639845c9bd539c8ab893c7);
+}
+
+.fiv-viv.fiv-icon-bpg {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/bpg.svg?3ae12a6c07037cb57a3f27388ccda11a);
+}
+
+.fiv-viv.fiv-icon-browser {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/browser.svg?9b8114d9feca1b2634eabf25ea167c63);
+}
+
+.fiv-viv.fiv-icon-bz2 {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/bz2.svg?405a3b836588df8386a95e1304b34fb2);
+}
+
+.fiv-viv.fiv-icon-c {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/c.svg?da47bcd3bd400675ac3167e6b4b8421d);
+}
+
+.fiv-viv.fiv-icon-cab {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/cab.svg?7cda7a3d0276685b783aa4fb6a368e65);
+}
+
+.fiv-viv.fiv-icon-cad {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/cad.svg?d99b56f888713161ece5a2c6dceb943f);
+}
+
+.fiv-viv.fiv-icon-caf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/caf.svg?94a99b58af6e48e4e9ce57ec47cac20b);
+}
+
+.fiv-viv.fiv-icon-cal {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/cal.svg?311cadbd25e59add755db1f9679db617);
+}
+
+.fiv-viv.fiv-icon-cd {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/cd.svg?6cf1e032e2c9f4c0b4cc5e174c5db9b2);
+}
+
+.fiv-viv.fiv-icon-cer {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/cer.svg?9937ccb0957cdcce825c7c11e4e8ecae);
+}
+
+.fiv-viv.fiv-icon-cfg {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/cfg.svg?285ae0e4994f7bc4e70bc0ebe447cefb);
+}
+
+.fiv-viv.fiv-icon-cfm {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/cfm.svg?08a83de8f633f7eb05e457f5e32f7ead);
+}
+
+.fiv-viv.fiv-icon-cfml {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/cfml.svg?a24dbf2036f776d67edcfec79467ee39);
+}
+
+.fiv-viv.fiv-icon-cgi {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/cgi.svg?0467f4efd5ca96c22d1f5ad4e8c8841d);
+}
+
+.fiv-viv.fiv-icon-class {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/class.svg?ce9c47055bb164a657f338f31e870493);
+}
+
+.fiv-viv.fiv-icon-cmd {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/cmd.svg?5ead49bee7cf8bbc8c13025e173d2beb);
+}
+
+.fiv-viv.fiv-icon-codekit {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/codekit.svg?0981341397e26c5bb1f3cd16c5774862);
+}
+
+.fiv-viv.fiv-icon-coffee {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/coffee.svg?945fbb6b980e5def0291e207d4d609a3);
+}
+
+.fiv-viv.fiv-icon-coffeelintignore {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/coffeelintignore.svg?ec5520b91baed0448e5711911fc8a9b5);
+}
+
+.fiv-viv.fiv-icon-com {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/com.svg?2f55e9d903c1ed05546016b869c6c221);
+}
+
+.fiv-viv.fiv-icon-compile {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/compile.svg?75838085b390ed3288811348fcc2767a);
+}
+
+.fiv-viv.fiv-icon-conf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/conf.svg?4b565636e35850fbb45afe5378e8236c);
+}
+
+.fiv-viv.fiv-icon-config {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/config.svg?3aa6fbd3f53fb8f3fa28164d357a613b);
+}
+
+.fiv-viv.fiv-icon-cpp {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/cpp.svg?a7fa3cd80135110c1095a4abe65950b2);
+}
+
+.fiv-viv.fiv-icon-cptx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/cptx.svg?f057b509112f171d2e308b526ecb168c);
+}
+
+.fiv-viv.fiv-icon-cr2 {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/cr2.svg?7804a39abab31fa8402ef245c6d5966e);
+}
+
+.fiv-viv.fiv-icon-crdownload {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/crdownload.svg?2de1c0fdf3572ebefb147e5538810a83);
+}
+
+.fiv-viv.fiv-icon-crt {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/crt.svg?036e69f4a55098ac84f12ae8eb5038e3);
+}
+
+.fiv-viv.fiv-icon-crypt {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/crypt.svg?a5b64aa4784f8b1ee00cb14aa423634c);
+}
+
+.fiv-viv.fiv-icon-cs {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/cs.svg?c118d8cbab7144f4313f32ea81e3d5f4);
+}
+
+.fiv-viv.fiv-icon-csh {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/csh.svg?f675a3f0622fcf4f8574924b0572a3b7);
+}
+
+.fiv-viv.fiv-icon-cson {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/cson.svg?5c670997c47736729c66a14418dbca71);
+}
+
+.fiv-viv.fiv-icon-csproj {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/csproj.svg?7920efd8672604b8e563ee1987153a3c);
+}
+
+.fiv-viv.fiv-icon-css {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/css.svg?f9a0586d783f1b46698269d2b4fa0b4b);
+}
+
+.fiv-viv.fiv-icon-csv {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/csv.svg?d270680c23c7573260822d866b9b8176);
+}
+
+.fiv-viv.fiv-icon-cue {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/cue.svg?97fc104d4232a289f18161398424d408);
+}
+
+.fiv-viv.fiv-icon-dat {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/dat.svg?a9ba0eba2e4bf378c9b47e44ac67c907);
+}
+
+.fiv-viv.fiv-icon-db {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/db.svg?7001bc04ea14795f057f414c8b04ee57);
+}
+
+.fiv-viv.fiv-icon-dbf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/dbf.svg?275d65bafcf777da0411c4eb12d422d0);
+}
+
+.fiv-viv.fiv-icon-deb {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/deb.svg?33899524011c451b1e82e3f435dcfb80);
+}
+
+.fiv-viv.fiv-icon-dgn {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/dgn.svg?206c0fb728bc23dc205da125c206c05a);
+}
+
+.fiv-viv.fiv-icon-dist {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/dist.svg?f4bad128060d8c400623e8914fe559e0);
+}
+
+.fiv-viv.fiv-icon-diz {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/diz.svg?1589d9b9cbe7eae8311c583449dba77a);
+}
+
+.fiv-viv.fiv-icon-dll {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/dll.svg?950a8002d2ac2c09ca19be80e71afd0d);
+}
+
+.fiv-viv.fiv-icon-dmg {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/dmg.svg?7c8dd82d9993d676190fd904339ea8f6);
+}
+
+.fiv-viv.fiv-icon-dng {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/dng.svg?78d6eb0bc9beaab6a43934c356e257fd);
+}
+
+.fiv-viv.fiv-icon-doc {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/doc.svg?b1de3702835454d6c2e45691fa66aef6);
+}
+
+.fiv-viv.fiv-icon-docb {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/docb.svg?54f154ddefdfc88ed6203d16039cb52d);
+}
+
+.fiv-viv.fiv-icon-docm {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/docm.svg?6dbb2c6628df56c69a244f755e273ff9);
+}
+
+.fiv-viv.fiv-icon-docx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/docx.svg?e636b5e09d9e77c3a12396856c5edd59);
+}
+
+.fiv-viv.fiv-icon-dot {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/dot.svg?509550cecf8915672c317050c7d8a2be);
+}
+
+.fiv-viv.fiv-icon-dotm {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/dotm.svg?f429aaef5f2ad4289a06bf86a0515627);
+}
+
+.fiv-viv.fiv-icon-dotx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/dotx.svg?cd20a8e739d13220a76c4840f8e1055c);
+}
+
+.fiv-viv.fiv-icon-download {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/download.svg?4fa54a3a04435850e7e98c8e0c40ca6b);
+}
+
+.fiv-viv.fiv-icon-dpj {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/dpj.svg?25086eda66b650d915bcc710de4f0494);
+}
+
+.fiv-viv.fiv-icon-ds_store {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ds_store.svg?816493c0281509951f2fe14b2ec90ffb);
+}
+
+.fiv-viv.fiv-icon-dtd {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/dtd.svg?ac0cebaf11953ef0a33e8246f9e1d08a);
+}
+
+.fiv-viv.fiv-icon-dwg {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/dwg.svg?4eb2d526d522bf7c40da9192603c1149);
+}
+
+.fiv-viv.fiv-icon-dxf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/dxf.svg?b93caf44c9044e6309dbff5a6aae87de);
+}
+
+.fiv-viv.fiv-icon-editorconfig {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/editorconfig.svg?d87831281aed543f1a906fcf194eb9bf);
+}
+
+.fiv-viv.fiv-icon-el {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/el.svg?db236c082235605274bd017be7f91e5e);
+}
+
+.fiv-viv.fiv-icon-enc {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/enc.svg?0b6e53d1b1c867028fa1e6e7985d0170);
+}
+
+.fiv-viv.fiv-icon-eot {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/eot.svg?1883a31fad9c68fde28d9fa803b9a968);
+}
+
+.fiv-viv.fiv-icon-eps {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/eps.svg?5c2d032d0d7065ade985be814fba64bb);
+}
+
+.fiv-viv.fiv-icon-epub {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/epub.svg?762fc0c983f207fe6b61a959ffbf6a0b);
+}
+
+.fiv-viv.fiv-icon-eslintignore {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/eslintignore.svg?ec5520b91baed0448e5711911fc8a9b5);
+}
+
+.fiv-viv.fiv-icon-exe {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/exe.svg?b618e6b11afbdde3b2879f5cb9655180);
+}
+
+.fiv-viv.fiv-icon-f4v {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/f4v.svg?195370b1d5a84c722f8cf4f5c88f96d8);
+}
+
+.fiv-viv.fiv-icon-fax {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/fax.svg?f252fb5e22cadfad59748dfb1e4a75f4);
+}
+
+.fiv-viv.fiv-icon-fb2 {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/fb2.svg?1448b78a46c653870cf1d9402010b406);
+}
+
+.fiv-viv.fiv-icon-fla {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/fla.svg?23d9970df8cddb18e111eeb165626d5e);
+}
+
+.fiv-viv.fiv-icon-flac {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/flac.svg?5d09722ab599b3435db48aabc0f890d8);
+}
+
+.fiv-viv.fiv-icon-flv {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/flv.svg?14a7b2c5788e5272a47ddabd48a1f050);
+}
+
+.fiv-viv.fiv-icon-folder {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/folder.svg?b5f0dca34777d2494c0af58ce842ae85);
+}
+
+.fiv-viv.fiv-icon-gadget {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/gadget.svg?4728546d0a390e1375405b62b68af215);
+}
+
+.fiv-viv.fiv-icon-gdp {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/gdp.svg?f57d519ca3b7a65e55f18e36283cd034);
+}
+
+.fiv-viv.fiv-icon-gem {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/gem.svg?a9838cf45c4f2fc57e75a5f26275ea65);
+}
+
+.fiv-viv.fiv-icon-gif {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/gif.svg?e795e27ef023528adc4d469f362bffe1);
+}
+
+.fiv-viv.fiv-icon-gitattributes {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/gitattributes.svg?5c4195da92b4b11f5691ae877982599c);
+}
+
+.fiv-viv.fiv-icon-gitignore {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/gitignore.svg?ec5520b91baed0448e5711911fc8a9b5);
+}
+
+.fiv-viv.fiv-icon-go {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/go.svg?ea1013a611bbe177962d200491d3589c);
+}
+
+.fiv-viv.fiv-icon-gpg {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/gpg.svg?15c53c9864a410bb48b036a29bffee4f);
+}
+
+.fiv-viv.fiv-icon-gz {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/gz.svg?4927ace0eb8d78ac152657fdeeae4ac9);
+}
+
+.fiv-viv.fiv-icon-h {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/h.svg?757cd89c1a6785f5beef9ffa06b20b3c);
+}
+
+.fiv-viv.fiv-icon-handlebars {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/handlebars.svg?57f6763a1ace4bd6e3165b7f755e6420);
+}
+
+.fiv-viv.fiv-icon-hbs {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/hbs.svg?c25efe797f847f84f8782e264e6d3850);
+}
+
+.fiv-viv.fiv-icon-heic {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/heic.svg?f8d308cfb2955bc07ccdc9fea50f46cb);
+}
+
+.fiv-viv.fiv-icon-hs {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/hs.svg?99ee0ae7f60d983d3228b9197ee94bd5);
+}
+
+.fiv-viv.fiv-icon-hsl {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/hsl.svg?b49a1d6953f3198dfd177aa93973ffd5);
+}
+
+.fiv-viv.fiv-icon-htm {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/htm.svg?07c83089f09191b7f59940a8c595ef84);
+}
+
+.fiv-viv.fiv-icon-html {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/html.svg?45f1bd96bc88da2e908be55a3e1e4b38);
+}
+
+.fiv-viv.fiv-icon-ibooks {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ibooks.svg?5a1759a7488a476e8d94c8bf32d9bbda);
+}
+
+.fiv-viv.fiv-icon-icns {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/icns.svg?35ce7ad0bc50d3a5f2e674e9e7ab3625);
+}
+
+.fiv-viv.fiv-icon-ico {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ico.svg?6e6edbde55a767699dffaf74ddf7e9f8);
+}
+
+.fiv-viv.fiv-icon-ics {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ics.svg?f47c11fc33ca4800de520ad2823ad236);
+}
+
+.fiv-viv.fiv-icon-idx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/idx.svg?f8fcb008d0a909d8347ae1ccefb6606d);
+}
+
+.fiv-viv.fiv-icon-iff {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/iff.svg?24bf0b69f91e95c100eba3ea2f6c3945);
+}
+
+.fiv-viv.fiv-icon-ifo {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ifo.svg?63e54f251928a1dbb30ce86149152028);
+}
+
+.fiv-viv.fiv-icon-image {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/image.svg?e32612d01a5bda7ba851f17ebca08f44);
+}
+
+.fiv-viv.fiv-icon-img {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/img.svg?5c4d0cd5459b57ec51ec41f37905bce2);
+}
+
+.fiv-viv.fiv-icon-in {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/in.svg?8351601d9b53671b05d818935f8efde6);
+}
+
+.fiv-viv.fiv-icon-indd {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/indd.svg?a729a8689c135de9eb91494cd1d44e35);
+}
+
+.fiv-viv.fiv-icon-inf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/inf.svg?14a578a4e1be2599cb841dec5de9555b);
+}
+
+.fiv-viv.fiv-icon-ini {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ini.svg?3ee007e783c889f532f138e3d8829fef);
+}
+
+.fiv-viv.fiv-icon-iso {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/iso.svg?cb2df53f73b0d41e61f46c8f233bfd8d);
+}
+
+.fiv-viv.fiv-icon-j2 {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/j2.svg?1324d9c33eb5e42e82b6f04c4a716959);
+}
+
+.fiv-viv.fiv-icon-jar {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/jar.svg?7395da53f41ac93e07e772ba22c736e3);
+}
+
+.fiv-viv.fiv-icon-java {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/java.svg?cee608cbd3493fd713dc6c6d216600fc);
+}
+
+.fiv-viv.fiv-icon-jpe {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/jpe.svg?b65d55d02e9ca2b4f8f2b5e53e8a74e7);
+}
+
+.fiv-viv.fiv-icon-jpeg {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/jpeg.svg?7e197c01591919c6b2a391a5e9c3c5df);
+}
+
+.fiv-viv.fiv-icon-jpg {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/jpg.svg?84ca2b391f138ba3646106da8dd10dca);
+}
+
+.fiv-viv.fiv-icon-js {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/js.svg?553e6108dab33b10bce7ffa17840e3ff);
+}
+
+.fiv-viv.fiv-icon-json {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/json.svg?84a84d632aa1a8c50dc7bb0035ed87cb);
+}
+
+.fiv-viv.fiv-icon-jsp {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/jsp.svg?806cd0b1132c54b4e57b52918acc1733);
+}
+
+.fiv-viv.fiv-icon-jsx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/jsx.svg?f503329f9585487f6b6128e7c6a6d9c0);
+}
+
+.fiv-viv.fiv-icon-key {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/key.svg?1ab7f9711590ba42c90461d874fa13a2);
+}
+
+.fiv-viv.fiv-icon-kf8 {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/kf8.svg?90dc970d28245e3eab2ab82544c44c44);
+}
+
+.fiv-viv.fiv-icon-kmk {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/kmk.svg?e3816e7a14b53c9e98b14b57b08211c1);
+}
+
+.fiv-viv.fiv-icon-ksh {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ksh.svg?8397b640ce410ad7f8b4f1a35a78b6d8);
+}
+
+.fiv-viv.fiv-icon-kup {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/kup.svg?af89c8eb5e884fc0cbcbb76940ff6931);
+}
+
+.fiv-viv.fiv-icon-less {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/less.svg?690a81bba9c656362854dac1d4ef5b52);
+}
+
+.fiv-viv.fiv-icon-lex {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/lex.svg?334376d610268a6b3295bab665050a9f);
+}
+
+.fiv-viv.fiv-icon-licx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/licx.svg?dd2c348035c6960beb04d3caac4421fd);
+}
+
+.fiv-viv.fiv-icon-lisp {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/lisp.svg?9fda507fa51ea0654d9c4e9251b35bcc);
+}
+
+.fiv-viv.fiv-icon-lit {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/lit.svg?ec55897978440446a8503b36f7be3a08);
+}
+
+.fiv-viv.fiv-icon-lnk {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/lnk.svg?b9bbbe5ac43232d28dfeefc7d50179da);
+}
+
+.fiv-viv.fiv-icon-lock {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/lock.svg?827602ccc27591462e57a5a86a1e9c10);
+}
+
+.fiv-viv.fiv-icon-log {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/log.svg?1c6f748ef9ff0028adb533cd2c73188c);
+}
+
+.fiv-viv.fiv-icon-lua {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/lua.svg?f5197399303bd380d2c900f1da06c39f);
+}
+
+.fiv-viv.fiv-icon-m {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/m.svg?d67e1eb512424702e07ecbe293d9cb44);
+}
+
+.fiv-viv.fiv-icon-m2v {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/m2v.svg?47f850972e23e618dce539e658cc3630);
+}
+
+.fiv-viv.fiv-icon-m3u {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/m3u.svg?388d0b7d95f6fbb759f8d1edd2e3a206);
+}
+
+.fiv-viv.fiv-icon-m3u8 {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/m3u8.svg?640cb88bded2c4398a886d65f410ec8e);
+}
+
+.fiv-viv.fiv-icon-m4 {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/m4.svg?fa0aed3e3e1b5b38272da8f464e171f9);
+}
+
+.fiv-viv.fiv-icon-m4a {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/m4a.svg?da07468fa6a9477dc4e524d130184da6);
+}
+
+.fiv-viv.fiv-icon-m4r {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/m4r.svg?4a61e48babd28d9a399445b532e2d6ef);
+}
+
+.fiv-viv.fiv-icon-m4v {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/m4v.svg?0dec7aeb78f25b851aaf28c3954ab49d);
+}
+
+.fiv-viv.fiv-icon-map {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/map.svg?ef5ca8aa918fd4a6128fb835f1f663c6);
+}
+
+.fiv-viv.fiv-icon-master {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/master.svg?ad5a7cff9f46adfe34fbc2f4a02e55bd);
+}
+
+.fiv-viv.fiv-icon-mc {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mc.svg?fb82440d43aeadacad6502b4a819b546);
+}
+
+.fiv-viv.fiv-icon-md {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/md.svg?cec88e2d684749b7c546b5917758d3ff);
+}
+
+.fiv-viv.fiv-icon-mdb {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mdb.svg?9478650ef745b5eb66beefd0f849a26b);
+}
+
+.fiv-viv.fiv-icon-mdf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mdf.svg?571240b1e7ba38c1a0222cc393149522);
+}
+
+.fiv-viv.fiv-icon-me {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/me.svg?bf538cfc40156e0096d7246abc6366ce);
+}
+
+.fiv-viv.fiv-icon-mi {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mi.svg?02abaa185aa0f398bd93242c124ea70e);
+}
+
+.fiv-viv.fiv-icon-mid {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mid.svg?49c069846a3e4ff87fdaee2b53e2647d);
+}
+
+.fiv-viv.fiv-icon-midi {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/midi.svg?3ad588f627edeb2b4cb1824239e13eb6);
+}
+
+.fiv-viv.fiv-icon-mk {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mk.svg?166f731b9e1573e6b2aa45d5059241be);
+}
+
+.fiv-viv.fiv-icon-mkv {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mkv.svg?25ae45fcf2c9de6054413e5cb78f5256);
+}
+
+.fiv-viv.fiv-icon-mm {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mm.svg?b6f3fbb280daf4285dd937b3c7edf978);
+}
+
+.fiv-viv.fiv-icon-mo {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mo.svg?a363a937f8f37ce2de164b1175133a20);
+}
+
+.fiv-viv.fiv-icon-mobi {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mobi.svg?71a331e264fbdba7282656e291d1280b);
+}
+
+.fiv-viv.fiv-icon-mod {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mod.svg?c6b4eb84b88b0f729df3216e9b50d35c);
+}
+
+.fiv-viv.fiv-icon-mov {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mov.svg?e75e156e4917e2818bc3489759abb2d4);
+}
+
+.fiv-viv.fiv-icon-mp2 {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mp2.svg?85c048678ffdbd38ebc003f0dbc5f4d5);
+}
+
+.fiv-viv.fiv-icon-mp3 {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mp3.svg?cf051659dc6e5d9f413753c8a21a5367);
+}
+
+.fiv-viv.fiv-icon-mp4 {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mp4.svg?1102b19d3a7aa7464f0aaf9e2f8770c3);
+}
+
+.fiv-viv.fiv-icon-mpa {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mpa.svg?b930e5288f401cbe6e491d125262d084);
+}
+
+.fiv-viv.fiv-icon-mpd {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mpd.svg?d7829c9936db2b2f08361ce8cacc653f);
+}
+
+.fiv-viv.fiv-icon-mpe {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mpe.svg?90234580680c1cdccd8f49010b6ee814);
+}
+
+.fiv-viv.fiv-icon-mpeg {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mpeg.svg?c5b7da340111e25ed88a1bca9dd130b8);
+}
+
+.fiv-viv.fiv-icon-mpg {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mpg.svg?cd140e0be7334288d860393f7d430eed);
+}
+
+.fiv-viv.fiv-icon-mpga {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mpga.svg?aa7a2cc7d4b3600942c647227aa93ca2);
+}
+
+.fiv-viv.fiv-icon-mpp {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mpp.svg?658c4c41a64c0e9effb7a62365c3686a);
+}
+
+.fiv-viv.fiv-icon-mpt {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/mpt.svg?7216659febac6e71c5700938465b6ad8);
+}
+
+.fiv-viv.fiv-icon-msi {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/msi.svg?3ae41ad4e326994cb6b845a196787be7);
+}
+
+.fiv-viv.fiv-icon-msu {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/msu.svg?c05dcfe6dea09e855fda750b02ee59ac);
+}
+
+.fiv-viv.fiv-icon-nef {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/nef.svg?b56e4e3569e83e319419ea3cf0c65e80);
+}
+
+.fiv-viv.fiv-icon-nes {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/nes.svg?7d1d721108001323a066aa65d27fe66a);
+}
+
+.fiv-viv.fiv-icon-nfo {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/nfo.svg?af62b93e98d0af2ddb37cc3817dcb26f);
+}
+
+.fiv-viv.fiv-icon-nix {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/nix.svg?8dc3dead75180d7720af976d041aa2d3);
+}
+
+.fiv-viv.fiv-icon-npmignore {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/npmignore.svg?ec5520b91baed0448e5711911fc8a9b5);
+}
+
+.fiv-viv.fiv-icon-odb {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/odb.svg?46079a66ddda5d91b54069246ee957a8);
+}
+
+.fiv-viv.fiv-icon-ods {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ods.svg?5b4add03a3e4a7f8bcf487db92733ebd);
+}
+
+.fiv-viv.fiv-icon-odt {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/odt.svg?722459b602aa211b63049036d436dcc1);
+}
+
+.fiv-viv.fiv-icon-ogg {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ogg.svg?4eaad1f6560763811ce983879c919123);
+}
+
+.fiv-viv.fiv-icon-ogv {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ogv.svg?566dc698c46d25799be5b4079d7edaca);
+}
+
+.fiv-viv.fiv-icon-ost {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ost.svg?1f8375f858ba4d7de437f9c93479a079);
+}
+
+.fiv-viv.fiv-icon-otf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/otf.svg?d8cb191a5036a34d1e837c63f554f4b0);
+}
+
+.fiv-viv.fiv-icon-ott {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ott.svg?40f45690ad3bb6e4983ec0842503247f);
+}
+
+.fiv-viv.fiv-icon-ova {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ova.svg?e1a3d8d389cc3d28baa8ec92b15d4617);
+}
+
+.fiv-viv.fiv-icon-ovf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ovf.svg?0cfc75d85f8ed0720caa3a5bd37fb8cf);
+}
+
+.fiv-viv.fiv-icon-p12 {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/p12.svg?b621882d95ad1e84363b82fe57f60874);
+}
+
+.fiv-viv.fiv-icon-p7b {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/p7b.svg?1888894f3e763f0438146ef3dfd8b715);
+}
+
+.fiv-viv.fiv-icon-pages {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/pages.svg?e69bc5af9fb43f84245ee6ff9e2c4a26);
+}
+
+.fiv-viv.fiv-icon-part {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/part.svg?34d817e8e6c4a17c3b6e5bb93c408333);
+}
+
+.fiv-viv.fiv-icon-pcd {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/pcd.svg?9fabfffcf9594d97350de0c8333abf16);
+}
+
+.fiv-viv.fiv-icon-pdb {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/pdb.svg?50e6079bb8c928b7bb09445995de5892);
+}
+
+.fiv-viv.fiv-icon-pdf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/pdf.svg?5761e0644b9a823ccdf87bd0c04a5529);
+}
+
+.fiv-viv.fiv-icon-pem {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/pem.svg?c1217638b5129375335956f0b8bc29a7);
+}
+
+.fiv-viv.fiv-icon-pfx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/pfx.svg?c081072ddf48394b1269ad11551068a6);
+}
+
+.fiv-viv.fiv-icon-pgp {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/pgp.svg?e21f65d3e2c1fb1567dd59f581164b93);
+}
+
+.fiv-viv.fiv-icon-ph {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ph.svg?66165e016ca0449360ddf43c681fb679);
+}
+
+.fiv-viv.fiv-icon-phar {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/phar.svg?9e9da74124798b655f9d6f3e2ca7b861);
+}
+
+.fiv-viv.fiv-icon-php {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/php.svg?0d2f36bc3c14335916ad747e568afc1d);
+}
+
+.fiv-viv.fiv-icon-pkg {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/pkg.svg?4c577a71562189b6e273c3ae0ce5c53f);
+}
+
+.fiv-viv.fiv-icon-pl {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/pl.svg?1b4f9bcaab67fff386e4ec6f5ade6acd);
+}
+
+.fiv-viv.fiv-icon-plist {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/plist.svg?17b75bd128ac1f38c5c26c42942aa1cc);
+}
+
+.fiv-viv.fiv-icon-pm {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/pm.svg?00b41be0a164ff05f757cb808ca449c5);
+}
+
+.fiv-viv.fiv-icon-png {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/png.svg?7283d155b924025fefa713887b4c379f);
+}
+
+.fiv-viv.fiv-icon-po {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/po.svg?8e1819c9d5b9c306aeab8c13901a54ae);
+}
+
+.fiv-viv.fiv-icon-pom {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/pom.svg?d6b845066b917e775ed2e709cb254051);
+}
+
+.fiv-viv.fiv-icon-pot {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/pot.svg?e29ade2dcfdc1a3f204f1f1f783b6a59);
+}
+
+.fiv-viv.fiv-icon-potx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/potx.svg?d101fed05608e8564f5cb6c110030ca1);
+}
+
+.fiv-viv.fiv-icon-pps {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/pps.svg?a66e17d477235490611526989490c410);
+}
+
+.fiv-viv.fiv-icon-ppsx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ppsx.svg?72439197fe0d883b7f4bce76c0633491);
+}
+
+.fiv-viv.fiv-icon-ppt {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ppt.svg?714f2cfcc6afa652b4b42408ca1f10a1);
+}
+
+.fiv-viv.fiv-icon-pptm {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/pptm.svg?e392050233e9f33db255887e5c9b7a32);
+}
+
+.fiv-viv.fiv-icon-pptx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/pptx.svg?e9ed2552b1f5c8824bf16c97aecb3804);
+}
+
+.fiv-viv.fiv-icon-prop {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/prop.svg?78873987d7a32b882b804d7156a25b45);
+}
+
+.fiv-viv.fiv-icon-ps {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ps.svg?f5e7c6c4c084fbf9f8c643351408f303);
+}
+
+.fiv-viv.fiv-icon-ps1 {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ps1.svg?637dc269f349cd8a5c95592e7cd1f0e4);
+}
+
+.fiv-viv.fiv-icon-psd {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/psd.svg?75a90b789f07e8bf411ed35cdc8fcab8);
+}
+
+.fiv-viv.fiv-icon-psp {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/psp.svg?0ecde83e5c451ba6b79c3f95bd78c024);
+}
+
+.fiv-viv.fiv-icon-pst {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/pst.svg?e9ff3d76a137e3efe9fd398b1ab71aef);
+}
+
+.fiv-viv.fiv-icon-pub {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/pub.svg?41c01352b8d7f59555c2163d27e5340f);
+}
+
+.fiv-viv.fiv-icon-py {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/py.svg?7504e0e4c51d9cd52ef9b5551dd8e057);
+}
+
+.fiv-viv.fiv-icon-pyc {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/pyc.svg?b4cb4e61daf474594e973c13772ed496);
+}
+
+.fiv-viv.fiv-icon-qt {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/qt.svg?30050b8596b0e545626ac9cc6e1a6416);
+}
+
+.fiv-viv.fiv-icon-ra {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ra.svg?23e81cc40701ee9939080ede5add047d);
+}
+
+.fiv-viv.fiv-icon-ram {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ram.svg?c8a5869b5a142b6388aeb6961ca18361);
+}
+
+.fiv-viv.fiv-icon-rar {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/rar.svg?ac6e04c5cb3fcb5e239b47b3c9cab864);
+}
+
+.fiv-viv.fiv-icon-raw {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/raw.svg?ca51ddef94f9e37217d79d381517e9b9);
+}
+
+.fiv-viv.fiv-icon-rb {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/rb.svg?8705652c51d097179974aaaff921f9ca);
+}
+
+.fiv-viv.fiv-icon-rdf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/rdf.svg?9f6a64b53a2629f4f116362d0c9aac22);
+}
+
+.fiv-viv.fiv-icon-resx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/resx.svg?94ea084f34e9681923246383a5d8dd21);
+}
+
+.fiv-viv.fiv-icon-retry {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/retry.svg?2eb869965a980750dec96e4b8109ce5b);
+}
+
+.fiv-viv.fiv-icon-rm {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/rm.svg?c3bc5777fba5382233d52b104474a776);
+}
+
+.fiv-viv.fiv-icon-rom {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/rom.svg?07f81db2c9e715fe786f509525610cae);
+}
+
+.fiv-viv.fiv-icon-rpm {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/rpm.svg?4efed666523070068d198fe99f10d979);
+}
+
+.fiv-viv.fiv-icon-rsa {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/rsa.svg?267719057ef5061623d4b9a50b25e7d1);
+}
+
+.fiv-viv.fiv-icon-rss {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/rss.svg?807775f618538350761a1b76189264ab);
+}
+
+.fiv-viv.fiv-icon-rtf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/rtf.svg?523df10eda1e38d9013bbee76483452d);
+}
+
+.fiv-viv.fiv-icon-ru {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ru.svg?f167b968e3ee206a940630756a4faba6);
+}
+
+.fiv-viv.fiv-icon-rub {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/rub.svg?02e1f1ce033c3d92972d0d9a14bb2cec);
+}
+
+.fiv-viv.fiv-icon-sass {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/sass.svg?59768889010a7d719e423987ae5e9e1f);
+}
+
+.fiv-viv.fiv-icon-scss {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/scss.svg?e6db0d1f637412b98fa54407487396f1);
+}
+
+.fiv-viv.fiv-icon-sdf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/sdf.svg?d2608287cb6157b60371a319c4354ba6);
+}
+
+.fiv-viv.fiv-icon-sed {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/sed.svg?8c42cbb983139aa1ccd3e6826cad8d85);
+}
+
+.fiv-viv.fiv-icon-sh {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/sh.svg?8dce2d72b72dc7446da508cd5079e33e);
+}
+
+.fiv-viv.fiv-icon-sitemap {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/sitemap.svg?d9106d98d67957918b8d6b5c763583ba);
+}
+
+.fiv-viv.fiv-icon-skin {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/skin.svg?be62fc78e6eaf86d4c6fb6caed52c203);
+}
+
+.fiv-viv.fiv-icon-sldm {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/sldm.svg?0983b6b3c089ad3e3bbaf088aee5c67e);
+}
+
+.fiv-viv.fiv-icon-sldx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/sldx.svg?a9fb7a0680f080be89943a793a4af8db);
+}
+
+.fiv-viv.fiv-icon-sln {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/sln.svg?277a91868aa263a060ca159adfe6dc6e);
+}
+
+.fiv-viv.fiv-icon-sol {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/sol.svg?db833b1683fc8901faaa0952c15222e6);
+}
+
+.fiv-viv.fiv-icon-sql {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/sql.svg?42aaf7b74ee359cd171227edf253e28b);
+}
+
+.fiv-viv.fiv-icon-sqlite {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/sqlite.svg?c54898a8c131958710bc5c24cff42029);
+}
+
+.fiv-viv.fiv-icon-step {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/step.svg?ba8de9ef892e1e2bd349f0c81fdd2762);
+}
+
+.fiv-viv.fiv-icon-stl {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/stl.svg?0ac36aab9df3bb2d99b0669bfadc7840);
+}
+
+.fiv-viv.fiv-icon-svg {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/svg.svg?c4ab293bb655f28f680ca55223b39589);
+}
+
+.fiv-viv.fiv-icon-swd {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/swd.svg?6de79a7ea6f4dc63c580665bf5f11bff);
+}
+
+.fiv-viv.fiv-icon-swf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/swf.svg?3699d6f55aa39759cbb94d15a0943287);
+}
+
+.fiv-viv.fiv-icon-swift {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/swift.svg?7443b89796312f71387710a21ce803bb);
+}
+
+.fiv-viv.fiv-icon-sys {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/sys.svg?607667aa8e25608dc97d5288ee7612ca);
+}
+
+.fiv-viv.fiv-icon-tar {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/tar.svg?8fac597c3ce4594f3c5ad26d5dcb9e29);
+}
+
+.fiv-viv.fiv-icon-tcsh {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/tcsh.svg?10b0bf3c0da95285e20219ee09cac221);
+}
+
+.fiv-viv.fiv-icon-tex {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/tex.svg?c5f34e15891ab0d8dce3b2b4e5dc33e2);
+}
+
+.fiv-viv.fiv-icon-tfignore {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/tfignore.svg?ec5520b91baed0448e5711911fc8a9b5);
+}
+
+.fiv-viv.fiv-icon-tga {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/tga.svg?14cef5fee81bb74308fa610f384ca282);
+}
+
+.fiv-viv.fiv-icon-tgz {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/tgz.svg?9dd6c2c2d4f1b525ba0c0a89f24dfb5d);
+}
+
+.fiv-viv.fiv-icon-tif {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/tif.svg?211efb53ebb55a3990c9f7af5d6caf54);
+}
+
+.fiv-viv.fiv-icon-tiff {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/tiff.svg?c143114194cb22132ca99964f98b7d43);
+}
+
+.fiv-viv.fiv-icon-tmp {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/tmp.svg?a218abbcf86ee662b205a7fba2fe8806);
+}
+
+.fiv-viv.fiv-icon-torrent {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/torrent.svg?21961c6ee245852c11eee773195162de);
+}
+
+.fiv-viv.fiv-icon-ts {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ts.svg?677f0594bf30feb40e5a6dba8c47155e);
+}
+
+.fiv-viv.fiv-icon-tsv {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/tsv.svg?2346672bccf9d8457523faef38281f64);
+}
+
+.fiv-viv.fiv-icon-ttf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/ttf.svg?8b9c6412c482006125cfb497fd9d7c37);
+}
+
+.fiv-viv.fiv-icon-twig {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/twig.svg?6eb445baa693fb40358c9ca325537985);
+}
+
+.fiv-viv.fiv-icon-txt {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/txt.svg?782422108890a22c6cc3483063de6dee);
+}
+
+.fiv-viv.fiv-icon-udf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/udf.svg?ddf9e3b0bcf43d0bf361ac708475d048);
+}
+
+.fiv-viv.fiv-icon-vb {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/vb.svg?ee902dccf26e56a2e1aa352998d05169);
+}
+
+.fiv-viv.fiv-icon-vbproj {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/vbproj.svg?afcaa6c109587b396339be814a132525);
+}
+
+.fiv-viv.fiv-icon-vbs {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/vbs.svg?2c61f5b9447592f14f537ed122e23124);
+}
+
+.fiv-viv.fiv-icon-vcd {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/vcd.svg?334d4915628bae99d434112c37ea4f7f);
+}
+
+.fiv-viv.fiv-icon-vcs {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/vcs.svg?b481c3b6cca0bc6f21ba12a3295bb6dd);
+}
+
+.fiv-viv.fiv-icon-vdi {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/vdi.svg?db1a4004f61bf424ffb1d349af39d19f);
+}
+
+.fiv-viv.fiv-icon-vdx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/vdx.svg?ea78929d39ee339a9ac0f7def74c5fd3);
+}
+
+.fiv-viv.fiv-icon-vmdk {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/vmdk.svg?6c6690298f9c1e2288acf2c4f1819b92);
+}
+
+.fiv-viv.fiv-icon-vob {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/vob.svg?c8269a6397ac72d42acc205d5048e431);
+}
+
+.fiv-viv.fiv-icon-vscodeignore {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/vscodeignore.svg?ec5520b91baed0448e5711911fc8a9b5);
+}
+
+.fiv-viv.fiv-icon-vsd {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/vsd.svg?0308786c5e15b2d7a1a06f8242815cb2);
+}
+
+.fiv-viv.fiv-icon-vss {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/vss.svg?5090b46c7ff7e42018caaa75bb6d1b71);
+}
+
+.fiv-viv.fiv-icon-vst {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/vst.svg?1294e3af9174dd8e9855f9131ffead56);
+}
+
+.fiv-viv.fiv-icon-vsx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/vsx.svg?2c93646e3778de3fbeb9f22ce5276fb3);
+}
+
+.fiv-viv.fiv-icon-vtx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/vtx.svg?012116763bd357ae84f671c4f156a83c);
+}
+
+.fiv-viv.fiv-icon-war {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/war.svg?57f2015a4cde8d1ec80284719cd1f1fe);
+}
+
+.fiv-viv.fiv-icon-wav {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/wav.svg?507fc4d84fbbc3901ed061a456953fa4);
+}
+
+.fiv-viv.fiv-icon-wbk {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/wbk.svg?2104d3ecb6e95b1f1ca6d13f749b85b5);
+}
+
+.fiv-viv.fiv-icon-webinfo {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/webinfo.svg?41e08e7801a8cd7544261b59c439c767);
+}
+
+.fiv-viv.fiv-icon-webm {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/webm.svg?5ddee8795d17334082d9fa81bd4d0e6c);
+}
+
+.fiv-viv.fiv-icon-webp {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/webp.svg?21f76c57bf21e803c6c07165b1fd3a9c);
+}
+
+.fiv-viv.fiv-icon-wma {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/wma.svg?783e277a315a5a4b33de5c85844ca725);
+}
+
+.fiv-viv.fiv-icon-wmf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/wmf.svg?c3491ecc9e96466b9f7faef381569e5b);
+}
+
+.fiv-viv.fiv-icon-wmv {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/wmv.svg?aff3622b7396472579965e335bd4f33e);
+}
+
+.fiv-viv.fiv-icon-woff {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/woff.svg?564c6e53b9988e25536548052beb0372);
+}
+
+.fiv-viv.fiv-icon-woff2 {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/woff2.svg?2490696961b1c14bea675cf61e9077e5);
+}
+
+.fiv-viv.fiv-icon-wps {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/wps.svg?cb20638c8d1ae78f8610bfc94c341342);
+}
+
+.fiv-viv.fiv-icon-wsf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/wsf.svg?8730711118ea3510b01f214e245c4a7c);
+}
+
+.fiv-viv.fiv-icon-xaml {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/xaml.svg?1914e7822ab11ee42f3ade5dd234672f);
+}
+
+.fiv-viv.fiv-icon-xcf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/xcf.svg?a3a854dc5af00d77c007bed48b270315);
+}
+
+.fiv-viv.fiv-icon-xlm {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/xlm.svg?5f821426e897cfdb433af16ff224542f);
+}
+
+.fiv-viv.fiv-icon-xls {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/xls.svg?972a075557a1073b68108fc4bfab5c3d);
+}
+
+.fiv-viv.fiv-icon-xlsm {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/xlsm.svg?ad25ac6e673ffaeb8d4a1bb95518cbab);
+}
+
+.fiv-viv.fiv-icon-xlsx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/xlsx.svg?41bdf0449ddab128533f853dd8ff7ae7);
+}
+
+.fiv-viv.fiv-icon-xlt {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/xlt.svg?9626bedec1fc63b3e2f5f52aa040c33a);
+}
+
+.fiv-viv.fiv-icon-xltm {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/xltm.svg?b11b97ecf6636e1395e18b66fd309f88);
+}
+
+.fiv-viv.fiv-icon-xltx {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/xltx.svg?f7b693df60028235f457c360e87c1211);
+}
+
+.fiv-viv.fiv-icon-xml {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/xml.svg?3437c232207d59de6ce9d6255ec23815);
+}
+
+.fiv-viv.fiv-icon-xpi {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/xpi.svg?c3271ddf0154390c4dbbcbb756b152d3);
+}
+
+.fiv-viv.fiv-icon-xps {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/xps.svg?27b4806fadfe6d3e1fec082d7be1aa78);
+}
+
+.fiv-viv.fiv-icon-xrb {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/xrb.svg?a6ac79d658888c4219baacb4e799d27d);
+}
+
+.fiv-viv.fiv-icon-xsd {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/xsd.svg?ed894bf1899b3188259ed17bafed41d2);
+}
+
+.fiv-viv.fiv-icon-xsl {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/xsl.svg?34438d7e2417191644d32b2093fe3a52);
+}
+
+.fiv-viv.fiv-icon-xspf {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/xspf.svg?9f5aa119421b2286cf5891729f4c7c32);
+}
+
+.fiv-viv.fiv-icon-xz {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/xz.svg?f00959f1ccd0fe8f922a7f62a0397022);
+}
+
+.fiv-viv.fiv-icon-yaml {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/yaml.svg?c22cfc86db5b82daac0d3a67f17ed28c);
+}
+
+.fiv-viv.fiv-icon-yml {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/yml.svg?743038ee0f163d10131129cbdd64812c);
+}
+
+.fiv-viv.fiv-icon-z {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/z.svg?6bda90ea6e60e236bf63a9acc380451b);
+}
+
+.fiv-viv.fiv-icon-zip {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/zip.svg?2d7ed7420d653f4ccdb4d15eb4406413);
+}
+
+.fiv-viv.fiv-icon-zsh {
+  background-image: url(/images/vendor/file-icon-vectors/dist/icons/vivid/zsh.svg?8730711118ea3510b01f214e245c4a7c);
+}
+
 .avatar {
   width: 300px;
   height: 300px;

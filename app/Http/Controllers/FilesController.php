@@ -34,6 +34,8 @@ class FilesController extends Controller
 
     public function showFilesList()
     {
+        $file = file_get_contents(base_path("node_modules/file-icon-vectors/dist/icons/vivid/catalog.json"));
+        dd(json_decode($file));
         $lastFiles = File::orderBy("id", "desc")->take(100)->get();
 
         return view("files.showFilesList", ["files" => $lastFiles]);

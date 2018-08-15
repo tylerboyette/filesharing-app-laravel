@@ -29,7 +29,6 @@ let isAdvancedUpload = function() {
 
 if ($(".dropbox-overlay").length && isAdvancedUpload) {
     let dropBoxOverlay = new DropBoxOverlay();
-    console.log("hi");
 }
 
 $("#file-input").fileinput({

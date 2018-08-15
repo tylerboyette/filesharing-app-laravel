@@ -20,6 +20,7 @@ class CreateFilesTable extends Migration
             $table->string('storage_name');
             $table->string("extension");
             $table->json("meta_data");
+            $table->tinyInteger("has_related_icon");
             $table->foreign("user_id")->references("id")->on("users");
             $table->timestamps();
         });

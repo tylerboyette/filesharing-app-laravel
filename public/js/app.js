@@ -13010,7 +13010,6 @@ var isAdvancedUpload = function () {
 
 if (__WEBPACK_IMPORTED_MODULE_0_jquery___default()(".dropbox-overlay").length && isAdvancedUpload) {
     var dropBoxOverlay = new __WEBPACK_IMPORTED_MODULE_3__modules_DropBoxOverlay__["a" /* default */]();
-    console.log("hi");
 }
 
 __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#file-input").fileinput({
