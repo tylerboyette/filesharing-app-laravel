@@ -13,4 +13,9 @@ class File extends Model
     protected $fillable = [
       "original_name", "storage_name", "extension", "meta_data", "user_id"
     ];
+
+    public function user()
+    {
+        return $this->belongsTo("App\Models\Entities\User");
+    }
 }
