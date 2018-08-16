@@ -5,6 +5,7 @@ namespace App\Models\Services;
 use App\Models\Entities\File;
 use App\Models\Helpers\FileMediaInfo;
 use App\Models\Helpers\FileIcon;
+use App\Models\Helpers\ImagePreview;
 use Illuminate\Support\Facades\Auth;
 use Intervention\Image\ImageManagerStatic as Image;
 
@@ -13,12 +14,14 @@ class FileService
     protected $getId3;
     protected $fileMediaInfo;
     protected $fileIcon;
+    protected $imagePreview;
 
-    public function __construct(FileMediaInfo $fileMediaInfo, FileIcon $fileIcon)
+    public function __construct(FileMediaInfo $fileMediaInfo, FileIcon $fileIcon, ImagePreview $imagePreview)
     {
         $this->getId3 = new \getID3();
         $this->fileMediaInfo = $fileMediaInfo;
         $this->fileIcon = $fileIcon;
+        $this->imagePreview = $imagePreview;
     }
 
     public function handleUploadedFile($file)
@@ -36,11 +39,9 @@ class FileService
         $hasRelatedIcon = $this->fileIcon->hasRelatedIcon($fileExtension) ? 1 : 0;
 
 
-        /*
         if (explode("/",$fileMetaData["mime_type"] === "image")) {
-            $this->createImagePreview($file);
+            $this->imagePreview->create(storage_path("app/$pathToFile"));
         }
-        */
 
         File::create([
            "original_name" => $file->getClientOriginalName(),
