@@ -11,9 +11,13 @@
                                 <b>{{ $file->user_id ? $file->user->username : "Anonymous" }}</b>
                             </div>
                             <div class="file-info__file-name">
-                                {{ $file->original_name }} <span class="file-info__file-size">({{ $file->meta_data["filesize"]/1000 > 1000 ?
-                                                                                                round($file->meta_data['filesize']/1000000, 2) . " MB" :
-                                                                                                round($file->meta_data['filesize']/1000, 2) . " KB"}})</span>
+                                @if ($file->has_related_icon)
+                                    <span class="fiv-viv fiv-icon-{{ $file->extension }}"></span>
+                                @else
+                                    <span class="fiv-viv fiv-icon-blank"></span>
+                                @endif
+                                <span>{{ $file->original_name }}</span>
+                                <span class="file-info__file-size">({{ $file->meta_data["filesize"]/1000 > 1000 ? round($file->meta_data['filesize']/1000000, 2) . " MB" : round($file->meta_data['filesize']/1000, 2) . " KB" }})</span>
                             </div>
                         </div>
                     </div>
