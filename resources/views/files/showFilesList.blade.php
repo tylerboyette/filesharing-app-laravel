@@ -20,6 +20,11 @@
                                 <span class="file-info__file-size">({{ $file->meta_data["filesize"]/1000 > 1000 ? round($file->meta_data['filesize']/1000000, 2) . " MB" : round($file->meta_data['filesize']/1000, 2) . " KB" }})</span>
                             </div>
                         </div>
+                        @if (explode("/", $file->meta_data["mime_type"])[0] === "image")
+                            <div class="image-preview">
+                                <img src="{{ asset("storage/image_previews/$file->avatar_name") }}" alt="">
+                            </div>
+                        @endif    
                     </div>
                 </div>
             </li>
