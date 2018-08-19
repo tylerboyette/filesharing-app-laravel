@@ -40,7 +40,7 @@ class FileService
 
 
         if (array_key_exists("mime_type",$fileMetaData)
-            && explode("/",$fileMetaData["mime_type"] === "image")) {
+            && explode("/",$fileMetaData["mime_type"])[0] === "image") {
             $this->imagePreview->create(storage_path("app/$pathToFile"));
         }
 
