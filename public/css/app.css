@@ -17293,3 +17293,22 @@ input.file-loading[type=file] {
   display: block;
 }
 
+.image-preview {
+  max-height: 350px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.file-list {
+  width: 75%;
+  margin: 10px auto 10px auto;
+}
+
+.file-list__item {
+  padding: 15px;
+}
+
+.image-preview img {
+  width: 100%;
+}
+

@@ -1,9 +1,9 @@
 @extends("layouts.master")
 
 @section("content")
-    <ul class="list-group">
+    <ul class="list-group file-list">
         @foreach ($files as $file)
-            <li class="list-group-item">
+            <li class="list-group-item file-list__item">
                 <div class="media">
                     <div class="media-body">
                         <div class="file-info">
@@ -20,9 +20,9 @@
                                 <span class="file-info__file-size">({{ $file->meta_data["filesize"]/1000 > 1000 ? round($file->meta_data['filesize']/1000000, 2) . " MB" : round($file->meta_data['filesize']/1000, 2) . " KB" }})</span>
                             </div>
                         </div>
-                        @if (explode("/", $file->meta_data["mime_type"])[0] === "image")
+                        @if (array_key_exists("mime_type", $file->meta_data) && explode("/", $file->meta_data["mime_type"])[0] === "image")
                             <div class="image-preview">
-                                <img src="{{ asset("storage/image_previews/$file->avatar_name") }}" alt="">
+                                <img class="img-fluid" src="{{ asset("storage/image_previews/$file->storage_name") }}" alt="Thumbnail">
                             </div>
                         @endif    
                     </div>

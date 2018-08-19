@@ -39,7 +39,8 @@ class FileService
         $hasRelatedIcon = $this->fileIcon->hasRelatedIcon($fileExtension) ? 1 : 0;
 
 
-        if (explode("/",$fileMetaData["mime_type"] === "image")) {
+        if (array_key_exists("mime_type",$fileMetaData)
+            && explode("/",$fileMetaData["mime_type"] === "image")) {
             $this->imagePreview->create(storage_path("app/$pathToFile"));
         }
 
