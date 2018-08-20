@@ -64,5 +64,32 @@
 .uploader-avatar {
   width: 40px;
   height: 40px;
-  margin-top: 4px;
+  margin-top: 5px;
 }
+
+.file-info {
+  &--margin-bot {
+    margin-bottom: 10px;
+  }
+}
+
+.file-icon {
+  font-size: 40px;
+}
+
+.file-card {
+  font-size: 15px;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #d3d8dc;
+
+  &--flex {
+    display: flex;
+  }
+
+  &__info--flex {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
