@@ -25,8 +25,16 @@
                             <div class="image-preview mb-2">
                                 <img class="img-fluid" src="{{ asset("storage/image_previews/$file->storage_name") }}" alt="Thumbnail">
                             </div>
+                        @elseif (array_key_exists("mime_type", $file->meta_data) && explode("/", $file->meta_data["mime_type"])[0] === "audio")
+                            <div class="audio-preview mb-2">
+                                <audio width="100%" src="/download/{{ $file->id }}/{{ $file->original_name }}"></audio>
+                            </div>
+                            
+                        @elseif (array_key_exists("mime_type", $file->meta_data) && explode("/", $file->meta_data["mime_type"])[0] === "audio")
+                            <div class="video-preview mb-2">
+                                <video src="/download/{{ $file->id }}/{{ $file->original_name }}"></video>
+                            </div>
                         @endif
-
                         <div class="file-card file-card--flex bg-light">
                             <div class="file-card__icon mr-2">
                                 @if ($file->has_related_icon)
@@ -40,7 +48,7 @@
                                     <b>{{ $file->original_name }}</b>
                                     <i>({{ $file->meta_data["filesize"]/1000 > 1000 ? round($file->meta_data['filesize']/1000000, 2) . " MB" : round($file->meta_data['filesize']/1000, 2) . " KB" }})</i>
                                 </span>
-                                <span>{{ $file->created_at->diffForHumans() }}</span>
+                                <span>Uploaded {{ $file->created_at->diffForHumans() }}</span>
                             </div>
                         </div>
                     </div>

@@ -19,6 +19,7 @@
         "bootstrap-fileinput": "^4.4.8",
         "file-icon-vectors": "^1.0.0",
         "jquery": "^3.3.1",
+        "mediaelement": "^4.2.9",
         "popper.js": "^1.14.3"
     }
 }

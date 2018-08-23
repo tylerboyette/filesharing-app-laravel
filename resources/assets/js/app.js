@@ -6,7 +6,6 @@
  */
 
 require('./bootstrap');
-import $ from "jquery";
 import RegistrationForm from "./modules/RegistrationForm";
 import LoginForm from "./modules/LoginForm";
 import DropBoxOverlay from "./modules/DropBoxOverlay";
@@ -39,4 +38,13 @@ $("#file-input").fileinput({
     elErrorContainer: ".file-upload-errors",
     maxFileCount: 1
 });
+
+$("audio").mediaelementplayer({
+    alwaysShowControls: true,
+    audioVolume: 'horizontal',
+    audioHeight: 40
+});
+
+
+
 
