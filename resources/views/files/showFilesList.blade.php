@@ -27,12 +27,14 @@
                             </div>
                         @elseif (array_key_exists("mime_type", $file->meta_data) && explode("/", $file->meta_data["mime_type"])[0] === "audio")
                             <div class="audio-preview mb-2">
-                                <audio width="100%" src="/download/{{ $file->id }}/{{ $file->original_name }}"></audio>
+                                <audio src="/download/{{ $file->id }}/{{ $file->original_name }}"></audio>
                             </div>
                             
-                        @elseif (array_key_exists("mime_type", $file->meta_data) && explode("/", $file->meta_data["mime_type"])[0] === "audio")
+                        @elseif (array_key_exists("mime_type", $file->meta_data) && explode("/", $file->meta_data["mime_type"])[0] === "video")
                             <div class="video-preview mb-2">
-                                <video src="/download/{{ $file->id }}/{{ $file->original_name }}"></video>
+                                <video>
+                                    <source src="/download/{{ $file->id }}/{{ $file->original_name }}" type="{{ $file->meta_data["mime_type"] }}">
+                                </video>
                             </div>
                         @endif
                         <div class="file-card file-card--flex bg-light">

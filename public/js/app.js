@@ -63,9 +63,8 @@
 /******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
-/******/ ({
-
-/***/ 0:
+/******/ ([
+/* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -10436,8 +10435,7 @@ return jQuery;
 
 
 /***/ }),
-
-/***/ 1:
+/* 1 */
 /***/ (function(module, exports) {
 
 var g;
@@ -10464,707 +10462,7 @@ module.exports = g;
 
 
 /***/ }),
-
-/***/ 10:
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(global) {var scope = (typeof global !== "undefined" && global) ||
-            (typeof self !== "undefined" && self) ||
-            window;
-var apply = Function.prototype.apply;
-
-// DOM APIs, for completeness
-
-exports.setTimeout = function() {
-  return new Timeout(apply.call(setTimeout, scope, arguments), clearTimeout);
-};
-exports.setInterval = function() {
-  return new Timeout(apply.call(setInterval, scope, arguments), clearInterval);
-};
-exports.clearTimeout =
-exports.clearInterval = function(timeout) {
-  if (timeout) {
-    timeout.close();
-  }
-};
-
-function Timeout(id, clearFn) {
-  this._id = id;
-  this._clearFn = clearFn;
-}
-Timeout.prototype.unref = Timeout.prototype.ref = function() {};
-Timeout.prototype.close = function() {
-  this._clearFn.call(scope, this._id);
-};
-
-// Does not start the time, just sets up the members needed.
-exports.enroll = function(item, msecs) {
-  clearTimeout(item._idleTimeoutId);
-  item._idleTimeout = msecs;
-};
-
-exports.unenroll = function(item) {
-  clearTimeout(item._idleTimeoutId);
-  item._idleTimeout = -1;
-};
-
-exports._unrefActive = exports.active = function(item) {
-  clearTimeout(item._idleTimeoutId);
-
-  var msecs = item._idleTimeout;
-  if (msecs >= 0) {
-    item._idleTimeoutId = setTimeout(function onTimeout() {
-      if (item._onTimeout)
-        item._onTimeout();
-    }, msecs);
-  }
-};
-
-// setimmediate attaches itself to the global object
-__webpack_require__(11);
-// On some exotic environments, it's not clear which object `setimmediate` was
-// able to install onto.  Search each possibility in the same order as the
-// `setimmediate` library.
-exports.setImmediate = (typeof self !== "undefined" && self.setImmediate) ||
-                       (typeof global !== "undefined" && global.setImmediate) ||
-                       (this && this.setImmediate);
-exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
-                         (typeof global !== "undefined" && global.clearImmediate) ||
-                         (this && this.clearImmediate);
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
-
-/***/ }),
-
-/***/ 11:
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
-    "use strict";
-
-    if (global.setImmediate) {
-        return;
-    }
-
-    var nextHandle = 1; // Spec says greater than zero
-    var tasksByHandle = {};
-    var currentlyRunningATask = false;
-    var doc = global.document;
-    var registerImmediate;
-
-    function setImmediate(callback) {
-      // Callback can either be a function or a string
-      if (typeof callback !== "function") {
-        callback = new Function("" + callback);
-      }
-      // Copy function arguments
-      var args = new Array(arguments.length - 1);
-      for (var i = 0; i < args.length; i++) {
-          args[i] = arguments[i + 1];
-      }
-      // Store and register the task
-      var task = { callback: callback, args: args };
-      tasksByHandle[nextHandle] = task;
-      registerImmediate(nextHandle);
-      return nextHandle++;
-    }
-
-    function clearImmediate(handle) {
-        delete tasksByHandle[handle];
-    }
-
-    function run(task) {
-        var callback = task.callback;
-        var args = task.args;
-        switch (args.length) {
-        case 0:
-            callback();
-            break;
-        case 1:
-            callback(args[0]);
-            break;
-        case 2:
-            callback(args[0], args[1]);
-            break;
-        case 3:
-            callback(args[0], args[1], args[2]);
-            break;
-        default:
-            callback.apply(undefined, args);
-            break;
-        }
-    }
-
-    function runIfPresent(handle) {
-        // From the spec: "Wait until any invocations of this algorithm started before this one have completed."
-        // So if we're currently running a task, we'll need to delay this invocation.
-        if (currentlyRunningATask) {
-            // Delay by doing a setTimeout. setImmediate was tried instead, but in Firefox 7 it generated a
-            // "too much recursion" error.
-            setTimeout(runIfPresent, 0, handle);
-        } else {
-            var task = tasksByHandle[handle];
-            if (task) {
-                currentlyRunningATask = true;
-                try {
-                    run(task);
-                } finally {
-                    clearImmediate(handle);
-                    currentlyRunningATask = false;
-                }
-            }
-        }
-    }
-
-    function installNextTickImplementation() {
-        registerImmediate = function(handle) {
-            process.nextTick(function () { runIfPresent(handle); });
-        };
-    }
-
-    function canUsePostMessage() {
-        // The test against `importScripts` prevents this implementation from being installed inside a web worker,
-        // where `global.postMessage` means something completely different and can't be used for this purpose.
-        if (global.postMessage && !global.importScripts) {
-            var postMessageIsAsynchronous = true;
-            var oldOnMessage = global.onmessage;
-            global.onmessage = function() {
-                postMessageIsAsynchronous = false;
-            };
-            global.postMessage("", "*");
-            global.onmessage = oldOnMessage;
-            return postMessageIsAsynchronous;
-        }
-    }
-
-    function installPostMessageImplementation() {
-        // Installs an event handler on `global` for the `message` event: see
-        // * https://developer.mozilla.org/en/DOM/window.postMessage
-        // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
-
-        var messagePrefix = "setImmediate$" + Math.random() + "$";
-        var onGlobalMessage = function(event) {
-            if (event.source === global &&
-                typeof event.data === "string" &&
-                event.data.indexOf(messagePrefix) === 0) {
-                runIfPresent(+event.data.slice(messagePrefix.length));
-            }
-        };
-
-        if (global.addEventListener) {
-            global.addEventListener("message", onGlobalMessage, false);
-        } else {
-            global.attachEvent("onmessage", onGlobalMessage);
-        }
-
-        registerImmediate = function(handle) {
-            global.postMessage(messagePrefix + handle, "*");
-        };
-    }
-
-    function installMessageChannelImplementation() {
-        var channel = new MessageChannel();
-        channel.port1.onmessage = function(event) {
-            var handle = event.data;
-            runIfPresent(handle);
-        };
-
-        registerImmediate = function(handle) {
-            channel.port2.postMessage(handle);
-        };
-    }
-
-    function installReadyStateChangeImplementation() {
-        var html = doc.documentElement;
-        registerImmediate = function(handle) {
-            // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
-            // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
-            var script = doc.createElement("script");
-            script.onreadystatechange = function () {
-                runIfPresent(handle);
-                script.onreadystatechange = null;
-                html.removeChild(script);
-                script = null;
-            };
-            html.appendChild(script);
-        };
-    }
-
-    function installSetTimeoutImplementation() {
-        registerImmediate = function(handle) {
-            setTimeout(runIfPresent, 0, handle);
-        };
-    }
-
-    // If supported, we should attach to the prototype of global, since that is where setTimeout et al. live.
-    var attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
-    attachTo = attachTo && attachTo.setTimeout ? attachTo : global;
-
-    // Don't get fooled by e.g. browserify environments.
-    if ({}.toString.call(global.process) === "[object process]") {
-        // For Node.js before 0.9
-        installNextTickImplementation();
-
-    } else if (canUsePostMessage()) {
-        // For non-IE10 modern browsers
-        installPostMessageImplementation();
-
-    } else if (global.MessageChannel) {
-        // For web workers, where supported
-        installMessageChannelImplementation();
-
-    } else if (doc && "onreadystatechange" in doc.createElement("script")) {
-        // For IE 6–8
-        installReadyStateChangeImplementation();
-
-    } else {
-        // For older browsers
-        installSetTimeoutImplementation();
-    }
-
-    attachTo.setImmediate = setImmediate;
-    attachTo.clearImmediate = clearImmediate;
-}(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(12)))
-
-/***/ }),
-
-/***/ 12:
-/***/ (function(module, exports) {
-
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) { return [] }
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-
-/***/ }),
-
-/***/ 13:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_jquery__);
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-
-
-var RegistrationForm = function () {
-    function RegistrationForm() {
-        _classCallCheck(this, RegistrationForm);
-
-        this.registrationForm = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form");
-        this.closeButton = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form .close");
-        this.events();
-    }
-
-    _createClass(RegistrationForm, [{
-        key: "events",
-        value: function events() {
-            this.registrationForm.submit(this.handleFormSubmission.bind(this));
-            this.closeButton.click(this.clearErrors.bind(this));
-        }
-    }, {
-        key: "handleFormSubmission",
-        value: function handleFormSubmission(event) {
-            var self = this;
-            event.preventDefault();
-
-            var formData = this.grabFormData();
-
-            __WEBPACK_IMPORTED_MODULE_0_jquery___default.a.ajax({
-                type: "POST",
-                url: "/register",
-                data: formData,
-                dataType: "json",
-                beforeSend: self.clearErrors,
-                encode: true,
-                success: function success(response) {
-                    window.location.href = "/";
-                }
-            }).fail(function (data) {
-                self.handleValidationErrors(data.responseJSON.errors);
-            });
-        }
-    }, {
-        key: "grabFormData",
-        value: function grabFormData() {
-            return {
-                "username": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#username").val(),
-                "email": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#email").val(),
-                "password": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#password").val(),
-                "password_confirmation": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#password_confirmation").val()
-            };
-        }
-    }, {
-        key: "handleValidationErrors",
-        value: function handleValidationErrors(errors) {
-            var errorNames = Object.keys(errors);
-
-            errorNames.forEach(function (errorName) {
-                __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#" + errorName).addClass("is-invalid");
-                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form ." + errorName + "-error").fadeIn(1000, function () {
-                    __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form ." + errorName + "-error").text("" + errors[errorName]);
-                });
-            });
-        }
-    }, {
-        key: "clearErrors",
-        value: function clearErrors() {
-            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form .invalid-feedback").fadeOut();
-            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input").removeClass("is-invalid");
-        }
-    }]);
-
-    return RegistrationForm;
-}();
-
-/* harmony default export */ __webpack_exports__["a"] = (RegistrationForm);
-
-/***/ }),
-
-/***/ 14:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_jquery__);
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-
-
-var LoginForm = function () {
-    function LoginForm() {
-        _classCallCheck(this, LoginForm);
-
-        this.loginForm = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form");
-        this.closeButton = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form .close");
-        this.events();
-    }
-
-    _createClass(LoginForm, [{
-        key: "events",
-        value: function events() {
-            this.loginForm.submit(this.handleFormSubmission.bind(this));
-            this.closeButton.click(this.clearErrors.bind(this));
-        }
-    }, {
-        key: "handleFormSubmission",
-        value: function handleFormSubmission(event) {
-            event.preventDefault();
-
-            var self = this;
-            var formData = this.grabFormData();
-
-            __WEBPACK_IMPORTED_MODULE_0_jquery___default.a.ajax({
-                type: "POST",
-                url: "/login",
-                data: formData,
-                dataType: "json",
-                beforeSend: self.clearErrors,
-                encode: true
-            }).done(function (response) {
-                if (response.error) {
-                    self.handleAuthenticationError(response.error);
-                } else {
-                    window.location.href = "/";
-                }
-            }).fail(function (data) {
-                self.handleValidationErrors(data.responseJSON.errors);
-            });
-        }
-    }, {
-        key: "handleAuthenticationError",
-        value: function handleAuthenticationError(error) {
-            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form .auth-error").fadeIn(1000, function () {
-                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form .auth-error").text("" + error);
-            });
-        }
-    }, {
-        key: "handleValidationErrors",
-        value: function handleValidationErrors(errors) {
-            var errorNames = Object.keys(errors);
-
-            errorNames.forEach(function (errorName) {
-                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form input[name=" + errorName + "]").addClass("is-invalid");
-                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form ." + errorName + "-error").fadeIn(1000, function () {
-                    __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form ." + errorName + "-error").text("" + errors[errorName]);
-                });
-            });
-        }
-    }, {
-        key: "grabFormData",
-        value: function grabFormData() {
-            return {
-                "email": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#loginEmail").val(),
-                "password": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#loginPassword").val()
-            };
-        }
-    }, {
-        key: "clearErrors",
-        value: function clearErrors() {
-            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form .invalid-feedback").fadeOut();
-            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form input").removeClass("is-invalid");
-        }
-    }]);
-
-    return LoginForm;
-}();
-
-/* harmony default export */ __webpack_exports__["a"] = (LoginForm);
-
-/***/ }),
-
-/***/ 15:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_jquery__);
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-
-
-var DropBoxOverlay = function () {
-    function DropBoxOverlay() {
-        _classCallCheck(this, DropBoxOverlay);
-
-        this.dropZone = __WEBPACK_IMPORTED_MODULE_0_jquery___default()("body").addClass("dropzone");
-        this.dropBoxOverlay = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".dropbox-overlay");
-        this.fileInput = __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#file-input");
-        this.events();
-    }
-
-    _createClass(DropBoxOverlay, [{
-        key: "events",
-        value: function events() {
-            this.dropZone.on("dragenter dragover dragleave drop", this.preventDefaults.bind(this));
-            this.dropZone.on("dragenter dragleave drop", this.toggleDropBoxOverlayVisibility.bind(this));
-            this.dropZone.on("drop", this.handleFileDrop.bind(this));
-        }
-    }, {
-        key: "toggleDropBoxOverlayVisibility",
-        value: function toggleDropBoxOverlayVisibility() {
-            this.dropBoxOverlay.toggleClass("dropbox-overlay--visible");
-        }
-    }, {
-        key: "handleFileDrop",
-        value: function handleFileDrop(e) {
-            var file = e.originalEvent.dataTransfer.files[0];
-
-            this.fileInput.fileinput("readFiles", [file]);
-        }
-    }, {
-        key: "preventDefaults",
-        value: function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    }]);
-
-    return DropBoxOverlay;
-}();
-
-/* harmony default export */ __webpack_exports__["a"] = (DropBoxOverlay);
-
-/***/ }),
-
-/***/ 16:
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-
-/***/ 2:
+/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13693,8 +12991,7 @@ Popper.Defaults = Defaults;
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(1)))
 
 /***/ }),
-
-/***/ 3:
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(4);
@@ -13702,8 +12999,7 @@ module.exports = __webpack_require__(16);
 
 
 /***/ }),
-
-/***/ 4:
+/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13752,12 +13048,8475 @@ $("#file-input").fileinput({
 $("audio").mediaelementplayer({
     alwaysShowControls: true,
     audioVolume: 'horizontal',
-    audioHeight: 40
+    audioHeight: 40,
+    audioWidth: "100%"
+});
+
+$("video").mediaelementplayer({
+    stretching: "fill"
 });
 
 /***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
 
-/***/ 404:
+window.Popper = __webpack_require__(2).default;
+
+/**
+ * We'll load jQuery and the Bootstrap jQuery plugin which provides support
+ * for JavaScript based Bootstrap features such as modals and tabs. This
+ * code may be modified to fit the specific needs of your application.
+ */
+
+try {
+  window.$ = window.jQuery = __webpack_require__(0);
+
+  __webpack_require__(6);
+  __webpack_require__(7);
+  __webpack_require__(8);
+  __webpack_require__(9);
+} catch (e) {}
+
+/**
+ * Echo exposes an expressive API for subscribing to channels and listening
+ * for events that are broadcast by Laravel. Echo and event broadcasting
+ * allows your team to easily build robust real-time web applications.
+ */
+
+// import Echo from 'laravel-echo'
+
+// window.Pusher = require('pusher-js');
+
+// window.Echo = new Echo({
+//     broadcaster: 'pusher',
+//     key: process.env.MIX_PUSHER_APP_KEY,
+//     cluster: process.env.MIX_PUSHER_APP_CLUSTER,
+//     encrypted: true
+// });
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*!
+  * Bootstrap v4.1.1 (https://getbootstrap.com/)
+  * Copyright 2011-2018 The Bootstrap Authors (https://github.com/twbs/bootstrap/graphs/contributors)
+  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+  */
+(function (global, factory) {
+   true ? factory(exports, __webpack_require__(0), __webpack_require__(2)) :
+  typeof define === 'function' && define.amd ? define(['exports', 'jquery', 'popper.js'], factory) :
+  (factory((global.bootstrap = {}),global.jQuery,global.Popper));
+}(this, (function (exports,$,Popper) { 'use strict';
+
+  $ = $ && $.hasOwnProperty('default') ? $['default'] : $;
+  Popper = Popper && Popper.hasOwnProperty('default') ? Popper['default'] : Popper;
+
+  function _defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _defineProperty(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+
+  function _objectSpread(target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i] != null ? arguments[i] : {};
+      var ownKeys = Object.keys(source);
+
+      if (typeof Object.getOwnPropertySymbols === 'function') {
+        ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
+          return Object.getOwnPropertyDescriptor(source, sym).enumerable;
+        }));
+      }
+
+      ownKeys.forEach(function (key) {
+        _defineProperty(target, key, source[key]);
+      });
+    }
+
+    return target;
+  }
+
+  function _inheritsLoose(subClass, superClass) {
+    subClass.prototype = Object.create(superClass.prototype);
+    subClass.prototype.constructor = subClass;
+    subClass.__proto__ = superClass;
+  }
+
+  /**
+   * --------------------------------------------------------------------------
+   * Bootstrap (v4.1.1): util.js
+   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+   * --------------------------------------------------------------------------
+   */
+
+  var Util = function ($$$1) {
+    /**
+     * ------------------------------------------------------------------------
+     * Private TransitionEnd Helpers
+     * ------------------------------------------------------------------------
+     */
+    var TRANSITION_END = 'transitionend';
+    var MAX_UID = 1000000;
+    var MILLISECONDS_MULTIPLIER = 1000; // Shoutout AngusCroll (https://goo.gl/pxwQGp)
+
+    function toType(obj) {
+      return {}.toString.call(obj).match(/\s([a-z]+)/i)[1].toLowerCase();
+    }
+
+    function getSpecialTransitionEndEvent() {
+      return {
+        bindType: TRANSITION_END,
+        delegateType: TRANSITION_END,
+        handle: function handle(event) {
+          if ($$$1(event.target).is(this)) {
+            return event.handleObj.handler.apply(this, arguments); // eslint-disable-line prefer-rest-params
+          }
+
+          return undefined; // eslint-disable-line no-undefined
+        }
+      };
+    }
+
+    function transitionEndEmulator(duration) {
+      var _this = this;
+
+      var called = false;
+      $$$1(this).one(Util.TRANSITION_END, function () {
+        called = true;
+      });
+      setTimeout(function () {
+        if (!called) {
+          Util.triggerTransitionEnd(_this);
+        }
+      }, duration);
+      return this;
+    }
+
+    function setTransitionEndSupport() {
+      $$$1.fn.emulateTransitionEnd = transitionEndEmulator;
+      $$$1.event.special[Util.TRANSITION_END] = getSpecialTransitionEndEvent();
+    }
+    /**
+     * --------------------------------------------------------------------------
+     * Public Util Api
+     * --------------------------------------------------------------------------
+     */
+
+
+    var Util = {
+      TRANSITION_END: 'bsTransitionEnd',
+      getUID: function getUID(prefix) {
+        do {
+          // eslint-disable-next-line no-bitwise
+          prefix += ~~(Math.random() * MAX_UID); // "~~" acts like a faster Math.floor() here
+        } while (document.getElementById(prefix));
+
+        return prefix;
+      },
+      getSelectorFromElement: function getSelectorFromElement(element) {
+        var selector = element.getAttribute('data-target');
+
+        if (!selector || selector === '#') {
+          selector = element.getAttribute('href') || '';
+        }
+
+        try {
+          var $selector = $$$1(document).find(selector);
+          return $selector.length > 0 ? selector : null;
+        } catch (err) {
+          return null;
+        }
+      },
+      getTransitionDurationFromElement: function getTransitionDurationFromElement(element) {
+        if (!element) {
+          return 0;
+        } // Get transition-duration of the element
+
+
+        var transitionDuration = $$$1(element).css('transition-duration');
+        var floatTransitionDuration = parseFloat(transitionDuration); // Return 0 if element or transition duration is not found
+
+        if (!floatTransitionDuration) {
+          return 0;
+        } // If multiple durations are defined, take the first
+
+
+        transitionDuration = transitionDuration.split(',')[0];
+        return parseFloat(transitionDuration) * MILLISECONDS_MULTIPLIER;
+      },
+      reflow: function reflow(element) {
+        return element.offsetHeight;
+      },
+      triggerTransitionEnd: function triggerTransitionEnd(element) {
+        $$$1(element).trigger(TRANSITION_END);
+      },
+      // TODO: Remove in v5
+      supportsTransitionEnd: function supportsTransitionEnd() {
+        return Boolean(TRANSITION_END);
+      },
+      isElement: function isElement(obj) {
+        return (obj[0] || obj).nodeType;
+      },
+      typeCheckConfig: function typeCheckConfig(componentName, config, configTypes) {
+        for (var property in configTypes) {
+          if (Object.prototype.hasOwnProperty.call(configTypes, property)) {
+            var expectedTypes = configTypes[property];
+            var value = config[property];
+            var valueType = value && Util.isElement(value) ? 'element' : toType(value);
+
+            if (!new RegExp(expectedTypes).test(valueType)) {
+              throw new Error(componentName.toUpperCase() + ": " + ("Option \"" + property + "\" provided type \"" + valueType + "\" ") + ("but expected type \"" + expectedTypes + "\"."));
+            }
+          }
+        }
+      }
+    };
+    setTransitionEndSupport();
+    return Util;
+  }($);
+
+  /**
+   * --------------------------------------------------------------------------
+   * Bootstrap (v4.1.1): alert.js
+   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+   * --------------------------------------------------------------------------
+   */
+
+  var Alert = function ($$$1) {
+    /**
+     * ------------------------------------------------------------------------
+     * Constants
+     * ------------------------------------------------------------------------
+     */
+    var NAME = 'alert';
+    var VERSION = '4.1.1';
+    var DATA_KEY = 'bs.alert';
+    var EVENT_KEY = "." + DATA_KEY;
+    var DATA_API_KEY = '.data-api';
+    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
+    var Selector = {
+      DISMISS: '[data-dismiss="alert"]'
+    };
+    var Event = {
+      CLOSE: "close" + EVENT_KEY,
+      CLOSED: "closed" + EVENT_KEY,
+      CLICK_DATA_API: "click" + EVENT_KEY + DATA_API_KEY
+    };
+    var ClassName = {
+      ALERT: 'alert',
+      FADE: 'fade',
+      SHOW: 'show'
+      /**
+       * ------------------------------------------------------------------------
+       * Class Definition
+       * ------------------------------------------------------------------------
+       */
+
+    };
+
+    var Alert =
+    /*#__PURE__*/
+    function () {
+      function Alert(element) {
+        this._element = element;
+      } // Getters
+
+
+      var _proto = Alert.prototype;
+
+      // Public
+      _proto.close = function close(element) {
+        var rootElement = this._element;
+
+        if (element) {
+          rootElement = this._getRootElement(element);
+        }
+
+        var customEvent = this._triggerCloseEvent(rootElement);
+
+        if (customEvent.isDefaultPrevented()) {
+          return;
+        }
+
+        this._removeElement(rootElement);
+      };
+
+      _proto.dispose = function dispose() {
+        $$$1.removeData(this._element, DATA_KEY);
+        this._element = null;
+      }; // Private
+
+
+      _proto._getRootElement = function _getRootElement(element) {
+        var selector = Util.getSelectorFromElement(element);
+        var parent = false;
+
+        if (selector) {
+          parent = $$$1(selector)[0];
+        }
+
+        if (!parent) {
+          parent = $$$1(element).closest("." + ClassName.ALERT)[0];
+        }
+
+        return parent;
+      };
+
+      _proto._triggerCloseEvent = function _triggerCloseEvent(element) {
+        var closeEvent = $$$1.Event(Event.CLOSE);
+        $$$1(element).trigger(closeEvent);
+        return closeEvent;
+      };
+
+      _proto._removeElement = function _removeElement(element) {
+        var _this = this;
+
+        $$$1(element).removeClass(ClassName.SHOW);
+
+        if (!$$$1(element).hasClass(ClassName.FADE)) {
+          this._destroyElement(element);
+
+          return;
+        }
+
+        var transitionDuration = Util.getTransitionDurationFromElement(element);
+        $$$1(element).one(Util.TRANSITION_END, function (event) {
+          return _this._destroyElement(element, event);
+        }).emulateTransitionEnd(transitionDuration);
+      };
+
+      _proto._destroyElement = function _destroyElement(element) {
+        $$$1(element).detach().trigger(Event.CLOSED).remove();
+      }; // Static
+
+
+      Alert._jQueryInterface = function _jQueryInterface(config) {
+        return this.each(function () {
+          var $element = $$$1(this);
+          var data = $element.data(DATA_KEY);
+
+          if (!data) {
+            data = new Alert(this);
+            $element.data(DATA_KEY, data);
+          }
+
+          if (config === 'close') {
+            data[config](this);
+          }
+        });
+      };
+
+      Alert._handleDismiss = function _handleDismiss(alertInstance) {
+        return function (event) {
+          if (event) {
+            event.preventDefault();
+          }
+
+          alertInstance.close(this);
+        };
+      };
+
+      _createClass(Alert, null, [{
+        key: "VERSION",
+        get: function get() {
+          return VERSION;
+        }
+      }]);
+
+      return Alert;
+    }();
+    /**
+     * ------------------------------------------------------------------------
+     * Data Api implementation
+     * ------------------------------------------------------------------------
+     */
+
+
+    $$$1(document).on(Event.CLICK_DATA_API, Selector.DISMISS, Alert._handleDismiss(new Alert()));
+    /**
+     * ------------------------------------------------------------------------
+     * jQuery
+     * ------------------------------------------------------------------------
+     */
+
+    $$$1.fn[NAME] = Alert._jQueryInterface;
+    $$$1.fn[NAME].Constructor = Alert;
+
+    $$$1.fn[NAME].noConflict = function () {
+      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
+      return Alert._jQueryInterface;
+    };
+
+    return Alert;
+  }($);
+
+  /**
+   * --------------------------------------------------------------------------
+   * Bootstrap (v4.1.1): button.js
+   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+   * --------------------------------------------------------------------------
+   */
+
+  var Button = function ($$$1) {
+    /**
+     * ------------------------------------------------------------------------
+     * Constants
+     * ------------------------------------------------------------------------
+     */
+    var NAME = 'button';
+    var VERSION = '4.1.1';
+    var DATA_KEY = 'bs.button';
+    var EVENT_KEY = "." + DATA_KEY;
+    var DATA_API_KEY = '.data-api';
+    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
+    var ClassName = {
+      ACTIVE: 'active',
+      BUTTON: 'btn',
+      FOCUS: 'focus'
+    };
+    var Selector = {
+      DATA_TOGGLE_CARROT: '[data-toggle^="button"]',
+      DATA_TOGGLE: '[data-toggle="buttons"]',
+      INPUT: 'input',
+      ACTIVE: '.active',
+      BUTTON: '.btn'
+    };
+    var Event = {
+      CLICK_DATA_API: "click" + EVENT_KEY + DATA_API_KEY,
+      FOCUS_BLUR_DATA_API: "focus" + EVENT_KEY + DATA_API_KEY + " " + ("blur" + EVENT_KEY + DATA_API_KEY)
+      /**
+       * ------------------------------------------------------------------------
+       * Class Definition
+       * ------------------------------------------------------------------------
+       */
+
+    };
+
+    var Button =
+    /*#__PURE__*/
+    function () {
+      function Button(element) {
+        this._element = element;
+      } // Getters
+
+
+      var _proto = Button.prototype;
+
+      // Public
+      _proto.toggle = function toggle() {
+        var triggerChangeEvent = true;
+        var addAriaPressed = true;
+        var rootElement = $$$1(this._element).closest(Selector.DATA_TOGGLE)[0];
+
+        if (rootElement) {
+          var input = $$$1(this._element).find(Selector.INPUT)[0];
+
+          if (input) {
+            if (input.type === 'radio') {
+              if (input.checked && $$$1(this._element).hasClass(ClassName.ACTIVE)) {
+                triggerChangeEvent = false;
+              } else {
+                var activeElement = $$$1(rootElement).find(Selector.ACTIVE)[0];
+
+                if (activeElement) {
+                  $$$1(activeElement).removeClass(ClassName.ACTIVE);
+                }
+              }
+            }
+
+            if (triggerChangeEvent) {
+              if (input.hasAttribute('disabled') || rootElement.hasAttribute('disabled') || input.classList.contains('disabled') || rootElement.classList.contains('disabled')) {
+                return;
+              }
+
+              input.checked = !$$$1(this._element).hasClass(ClassName.ACTIVE);
+              $$$1(input).trigger('change');
+            }
+
+            input.focus();
+            addAriaPressed = false;
+          }
+        }
+
+        if (addAriaPressed) {
+          this._element.setAttribute('aria-pressed', !$$$1(this._element).hasClass(ClassName.ACTIVE));
+        }
+
+        if (triggerChangeEvent) {
+          $$$1(this._element).toggleClass(ClassName.ACTIVE);
+        }
+      };
+
+      _proto.dispose = function dispose() {
+        $$$1.removeData(this._element, DATA_KEY);
+        this._element = null;
+      }; // Static
+
+
+      Button._jQueryInterface = function _jQueryInterface(config) {
+        return this.each(function () {
+          var data = $$$1(this).data(DATA_KEY);
+
+          if (!data) {
+            data = new Button(this);
+            $$$1(this).data(DATA_KEY, data);
+          }
+
+          if (config === 'toggle') {
+            data[config]();
+          }
+        });
+      };
+
+      _createClass(Button, null, [{
+        key: "VERSION",
+        get: function get() {
+          return VERSION;
+        }
+      }]);
+
+      return Button;
+    }();
+    /**
+     * ------------------------------------------------------------------------
+     * Data Api implementation
+     * ------------------------------------------------------------------------
+     */
+
+
+    $$$1(document).on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE_CARROT, function (event) {
+      event.preventDefault();
+      var button = event.target;
+
+      if (!$$$1(button).hasClass(ClassName.BUTTON)) {
+        button = $$$1(button).closest(Selector.BUTTON);
+      }
+
+      Button._jQueryInterface.call($$$1(button), 'toggle');
+    }).on(Event.FOCUS_BLUR_DATA_API, Selector.DATA_TOGGLE_CARROT, function (event) {
+      var button = $$$1(event.target).closest(Selector.BUTTON)[0];
+      $$$1(button).toggleClass(ClassName.FOCUS, /^focus(in)?$/.test(event.type));
+    });
+    /**
+     * ------------------------------------------------------------------------
+     * jQuery
+     * ------------------------------------------------------------------------
+     */
+
+    $$$1.fn[NAME] = Button._jQueryInterface;
+    $$$1.fn[NAME].Constructor = Button;
+
+    $$$1.fn[NAME].noConflict = function () {
+      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
+      return Button._jQueryInterface;
+    };
+
+    return Button;
+  }($);
+
+  /**
+   * --------------------------------------------------------------------------
+   * Bootstrap (v4.1.1): carousel.js
+   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+   * --------------------------------------------------------------------------
+   */
+
+  var Carousel = function ($$$1) {
+    /**
+     * ------------------------------------------------------------------------
+     * Constants
+     * ------------------------------------------------------------------------
+     */
+    var NAME = 'carousel';
+    var VERSION = '4.1.1';
+    var DATA_KEY = 'bs.carousel';
+    var EVENT_KEY = "." + DATA_KEY;
+    var DATA_API_KEY = '.data-api';
+    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
+    var ARROW_LEFT_KEYCODE = 37; // KeyboardEvent.which value for left arrow key
+
+    var ARROW_RIGHT_KEYCODE = 39; // KeyboardEvent.which value for right arrow key
+
+    var TOUCHEVENT_COMPAT_WAIT = 500; // Time for mouse compat events to fire after touch
+
+    var Default = {
+      interval: 5000,
+      keyboard: true,
+      slide: false,
+      pause: 'hover',
+      wrap: true
+    };
+    var DefaultType = {
+      interval: '(number|boolean)',
+      keyboard: 'boolean',
+      slide: '(boolean|string)',
+      pause: '(string|boolean)',
+      wrap: 'boolean'
+    };
+    var Direction = {
+      NEXT: 'next',
+      PREV: 'prev',
+      LEFT: 'left',
+      RIGHT: 'right'
+    };
+    var Event = {
+      SLIDE: "slide" + EVENT_KEY,
+      SLID: "slid" + EVENT_KEY,
+      KEYDOWN: "keydown" + EVENT_KEY,
+      MOUSEENTER: "mouseenter" + EVENT_KEY,
+      MOUSELEAVE: "mouseleave" + EVENT_KEY,
+      TOUCHEND: "touchend" + EVENT_KEY,
+      LOAD_DATA_API: "load" + EVENT_KEY + DATA_API_KEY,
+      CLICK_DATA_API: "click" + EVENT_KEY + DATA_API_KEY
+    };
+    var ClassName = {
+      CAROUSEL: 'carousel',
+      ACTIVE: 'active',
+      SLIDE: 'slide',
+      RIGHT: 'carousel-item-right',
+      LEFT: 'carousel-item-left',
+      NEXT: 'carousel-item-next',
+      PREV: 'carousel-item-prev',
+      ITEM: 'carousel-item'
+    };
+    var Selector = {
+      ACTIVE: '.active',
+      ACTIVE_ITEM: '.active.carousel-item',
+      ITEM: '.carousel-item',
+      NEXT_PREV: '.carousel-item-next, .carousel-item-prev',
+      INDICATORS: '.carousel-indicators',
+      DATA_SLIDE: '[data-slide], [data-slide-to]',
+      DATA_RIDE: '[data-ride="carousel"]'
+      /**
+       * ------------------------------------------------------------------------
+       * Class Definition
+       * ------------------------------------------------------------------------
+       */
+
+    };
+
+    var Carousel =
+    /*#__PURE__*/
+    function () {
+      function Carousel(element, config) {
+        this._items = null;
+        this._interval = null;
+        this._activeElement = null;
+        this._isPaused = false;
+        this._isSliding = false;
+        this.touchTimeout = null;
+        this._config = this._getConfig(config);
+        this._element = $$$1(element)[0];
+        this._indicatorsElement = $$$1(this._element).find(Selector.INDICATORS)[0];
+
+        this._addEventListeners();
+      } // Getters
+
+
+      var _proto = Carousel.prototype;
+
+      // Public
+      _proto.next = function next() {
+        if (!this._isSliding) {
+          this._slide(Direction.NEXT);
+        }
+      };
+
+      _proto.nextWhenVisible = function nextWhenVisible() {
+        // Don't call next when the page isn't visible
+        // or the carousel or its parent isn't visible
+        if (!document.hidden && $$$1(this._element).is(':visible') && $$$1(this._element).css('visibility') !== 'hidden') {
+          this.next();
+        }
+      };
+
+      _proto.prev = function prev() {
+        if (!this._isSliding) {
+          this._slide(Direction.PREV);
+        }
+      };
+
+      _proto.pause = function pause(event) {
+        if (!event) {
+          this._isPaused = true;
+        }
+
+        if ($$$1(this._element).find(Selector.NEXT_PREV)[0]) {
+          Util.triggerTransitionEnd(this._element);
+          this.cycle(true);
+        }
+
+        clearInterval(this._interval);
+        this._interval = null;
+      };
+
+      _proto.cycle = function cycle(event) {
+        if (!event) {
+          this._isPaused = false;
+        }
+
+        if (this._interval) {
+          clearInterval(this._interval);
+          this._interval = null;
+        }
+
+        if (this._config.interval && !this._isPaused) {
+          this._interval = setInterval((document.visibilityState ? this.nextWhenVisible : this.next).bind(this), this._config.interval);
+        }
+      };
+
+      _proto.to = function to(index) {
+        var _this = this;
+
+        this._activeElement = $$$1(this._element).find(Selector.ACTIVE_ITEM)[0];
+
+        var activeIndex = this._getItemIndex(this._activeElement);
+
+        if (index > this._items.length - 1 || index < 0) {
+          return;
+        }
+
+        if (this._isSliding) {
+          $$$1(this._element).one(Event.SLID, function () {
+            return _this.to(index);
+          });
+          return;
+        }
+
+        if (activeIndex === index) {
+          this.pause();
+          this.cycle();
+          return;
+        }
+
+        var direction = index > activeIndex ? Direction.NEXT : Direction.PREV;
+
+        this._slide(direction, this._items[index]);
+      };
+
+      _proto.dispose = function dispose() {
+        $$$1(this._element).off(EVENT_KEY);
+        $$$1.removeData(this._element, DATA_KEY);
+        this._items = null;
+        this._config = null;
+        this._element = null;
+        this._interval = null;
+        this._isPaused = null;
+        this._isSliding = null;
+        this._activeElement = null;
+        this._indicatorsElement = null;
+      }; // Private
+
+
+      _proto._getConfig = function _getConfig(config) {
+        config = _objectSpread({}, Default, config);
+        Util.typeCheckConfig(NAME, config, DefaultType);
+        return config;
+      };
+
+      _proto._addEventListeners = function _addEventListeners() {
+        var _this2 = this;
+
+        if (this._config.keyboard) {
+          $$$1(this._element).on(Event.KEYDOWN, function (event) {
+            return _this2._keydown(event);
+          });
+        }
+
+        if (this._config.pause === 'hover') {
+          $$$1(this._element).on(Event.MOUSEENTER, function (event) {
+            return _this2.pause(event);
+          }).on(Event.MOUSELEAVE, function (event) {
+            return _this2.cycle(event);
+          });
+
+          if ('ontouchstart' in document.documentElement) {
+            // If it's a touch-enabled device, mouseenter/leave are fired as
+            // part of the mouse compatibility events on first tap - the carousel
+            // would stop cycling until user tapped out of it;
+            // here, we listen for touchend, explicitly pause the carousel
+            // (as if it's the second time we tap on it, mouseenter compat event
+            // is NOT fired) and after a timeout (to allow for mouse compatibility
+            // events to fire) we explicitly restart cycling
+            $$$1(this._element).on(Event.TOUCHEND, function () {
+              _this2.pause();
+
+              if (_this2.touchTimeout) {
+                clearTimeout(_this2.touchTimeout);
+              }
+
+              _this2.touchTimeout = setTimeout(function (event) {
+                return _this2.cycle(event);
+              }, TOUCHEVENT_COMPAT_WAIT + _this2._config.interval);
+            });
+          }
+        }
+      };
+
+      _proto._keydown = function _keydown(event) {
+        if (/input|textarea/i.test(event.target.tagName)) {
+          return;
+        }
+
+        switch (event.which) {
+          case ARROW_LEFT_KEYCODE:
+            event.preventDefault();
+            this.prev();
+            break;
+
+          case ARROW_RIGHT_KEYCODE:
+            event.preventDefault();
+            this.next();
+            break;
+
+          default:
+        }
+      };
+
+      _proto._getItemIndex = function _getItemIndex(element) {
+        this._items = $$$1.makeArray($$$1(element).parent().find(Selector.ITEM));
+        return this._items.indexOf(element);
+      };
+
+      _proto._getItemByDirection = function _getItemByDirection(direction, activeElement) {
+        var isNextDirection = direction === Direction.NEXT;
+        var isPrevDirection = direction === Direction.PREV;
+
+        var activeIndex = this._getItemIndex(activeElement);
+
+        var lastItemIndex = this._items.length - 1;
+        var isGoingToWrap = isPrevDirection && activeIndex === 0 || isNextDirection && activeIndex === lastItemIndex;
+
+        if (isGoingToWrap && !this._config.wrap) {
+          return activeElement;
+        }
+
+        var delta = direction === Direction.PREV ? -1 : 1;
+        var itemIndex = (activeIndex + delta) % this._items.length;
+        return itemIndex === -1 ? this._items[this._items.length - 1] : this._items[itemIndex];
+      };
+
+      _proto._triggerSlideEvent = function _triggerSlideEvent(relatedTarget, eventDirectionName) {
+        var targetIndex = this._getItemIndex(relatedTarget);
+
+        var fromIndex = this._getItemIndex($$$1(this._element).find(Selector.ACTIVE_ITEM)[0]);
+
+        var slideEvent = $$$1.Event(Event.SLIDE, {
+          relatedTarget: relatedTarget,
+          direction: eventDirectionName,
+          from: fromIndex,
+          to: targetIndex
+        });
+        $$$1(this._element).trigger(slideEvent);
+        return slideEvent;
+      };
+
+      _proto._setActiveIndicatorElement = function _setActiveIndicatorElement(element) {
+        if (this._indicatorsElement) {
+          $$$1(this._indicatorsElement).find(Selector.ACTIVE).removeClass(ClassName.ACTIVE);
+
+          var nextIndicator = this._indicatorsElement.children[this._getItemIndex(element)];
+
+          if (nextIndicator) {
+            $$$1(nextIndicator).addClass(ClassName.ACTIVE);
+          }
+        }
+      };
+
+      _proto._slide = function _slide(direction, element) {
+        var _this3 = this;
+
+        var activeElement = $$$1(this._element).find(Selector.ACTIVE_ITEM)[0];
+
+        var activeElementIndex = this._getItemIndex(activeElement);
+
+        var nextElement = element || activeElement && this._getItemByDirection(direction, activeElement);
+
+        var nextElementIndex = this._getItemIndex(nextElement);
+
+        var isCycling = Boolean(this._interval);
+        var directionalClassName;
+        var orderClassName;
+        var eventDirectionName;
+
+        if (direction === Direction.NEXT) {
+          directionalClassName = ClassName.LEFT;
+          orderClassName = ClassName.NEXT;
+          eventDirectionName = Direction.LEFT;
+        } else {
+          directionalClassName = ClassName.RIGHT;
+          orderClassName = ClassName.PREV;
+          eventDirectionName = Direction.RIGHT;
+        }
+
+        if (nextElement && $$$1(nextElement).hasClass(ClassName.ACTIVE)) {
+          this._isSliding = false;
+          return;
+        }
+
+        var slideEvent = this._triggerSlideEvent(nextElement, eventDirectionName);
+
+        if (slideEvent.isDefaultPrevented()) {
+          return;
+        }
+
+        if (!activeElement || !nextElement) {
+          // Some weirdness is happening, so we bail
+          return;
+        }
+
+        this._isSliding = true;
+
+        if (isCycling) {
+          this.pause();
+        }
+
+        this._setActiveIndicatorElement(nextElement);
+
+        var slidEvent = $$$1.Event(Event.SLID, {
+          relatedTarget: nextElement,
+          direction: eventDirectionName,
+          from: activeElementIndex,
+          to: nextElementIndex
+        });
+
+        if ($$$1(this._element).hasClass(ClassName.SLIDE)) {
+          $$$1(nextElement).addClass(orderClassName);
+          Util.reflow(nextElement);
+          $$$1(activeElement).addClass(directionalClassName);
+          $$$1(nextElement).addClass(directionalClassName);
+          var transitionDuration = Util.getTransitionDurationFromElement(activeElement);
+          $$$1(activeElement).one(Util.TRANSITION_END, function () {
+            $$$1(nextElement).removeClass(directionalClassName + " " + orderClassName).addClass(ClassName.ACTIVE);
+            $$$1(activeElement).removeClass(ClassName.ACTIVE + " " + orderClassName + " " + directionalClassName);
+            _this3._isSliding = false;
+            setTimeout(function () {
+              return $$$1(_this3._element).trigger(slidEvent);
+            }, 0);
+          }).emulateTransitionEnd(transitionDuration);
+        } else {
+          $$$1(activeElement).removeClass(ClassName.ACTIVE);
+          $$$1(nextElement).addClass(ClassName.ACTIVE);
+          this._isSliding = false;
+          $$$1(this._element).trigger(slidEvent);
+        }
+
+        if (isCycling) {
+          this.cycle();
+        }
+      }; // Static
+
+
+      Carousel._jQueryInterface = function _jQueryInterface(config) {
+        return this.each(function () {
+          var data = $$$1(this).data(DATA_KEY);
+
+          var _config = _objectSpread({}, Default, $$$1(this).data());
+
+          if (typeof config === 'object') {
+            _config = _objectSpread({}, _config, config);
+          }
+
+          var action = typeof config === 'string' ? config : _config.slide;
+
+          if (!data) {
+            data = new Carousel(this, _config);
+            $$$1(this).data(DATA_KEY, data);
+          }
+
+          if (typeof config === 'number') {
+            data.to(config);
+          } else if (typeof action === 'string') {
+            if (typeof data[action] === 'undefined') {
+              throw new TypeError("No method named \"" + action + "\"");
+            }
+
+            data[action]();
+          } else if (_config.interval) {
+            data.pause();
+            data.cycle();
+          }
+        });
+      };
+
+      Carousel._dataApiClickHandler = function _dataApiClickHandler(event) {
+        var selector = Util.getSelectorFromElement(this);
+
+        if (!selector) {
+          return;
+        }
+
+        var target = $$$1(selector)[0];
+
+        if (!target || !$$$1(target).hasClass(ClassName.CAROUSEL)) {
+          return;
+        }
+
+        var config = _objectSpread({}, $$$1(target).data(), $$$1(this).data());
+
+        var slideIndex = this.getAttribute('data-slide-to');
+
+        if (slideIndex) {
+          config.interval = false;
+        }
+
+        Carousel._jQueryInterface.call($$$1(target), config);
+
+        if (slideIndex) {
+          $$$1(target).data(DATA_KEY).to(slideIndex);
+        }
+
+        event.preventDefault();
+      };
+
+      _createClass(Carousel, null, [{
+        key: "VERSION",
+        get: function get() {
+          return VERSION;
+        }
+      }, {
+        key: "Default",
+        get: function get() {
+          return Default;
+        }
+      }]);
+
+      return Carousel;
+    }();
+    /**
+     * ------------------------------------------------------------------------
+     * Data Api implementation
+     * ------------------------------------------------------------------------
+     */
+
+
+    $$$1(document).on(Event.CLICK_DATA_API, Selector.DATA_SLIDE, Carousel._dataApiClickHandler);
+    $$$1(window).on(Event.LOAD_DATA_API, function () {
+      $$$1(Selector.DATA_RIDE).each(function () {
+        var $carousel = $$$1(this);
+
+        Carousel._jQueryInterface.call($carousel, $carousel.data());
+      });
+    });
+    /**
+     * ------------------------------------------------------------------------
+     * jQuery
+     * ------------------------------------------------------------------------
+     */
+
+    $$$1.fn[NAME] = Carousel._jQueryInterface;
+    $$$1.fn[NAME].Constructor = Carousel;
+
+    $$$1.fn[NAME].noConflict = function () {
+      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
+      return Carousel._jQueryInterface;
+    };
+
+    return Carousel;
+  }($);
+
+  /**
+   * --------------------------------------------------------------------------
+   * Bootstrap (v4.1.1): collapse.js
+   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+   * --------------------------------------------------------------------------
+   */
+
+  var Collapse = function ($$$1) {
+    /**
+     * ------------------------------------------------------------------------
+     * Constants
+     * ------------------------------------------------------------------------
+     */
+    var NAME = 'collapse';
+    var VERSION = '4.1.1';
+    var DATA_KEY = 'bs.collapse';
+    var EVENT_KEY = "." + DATA_KEY;
+    var DATA_API_KEY = '.data-api';
+    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
+    var Default = {
+      toggle: true,
+      parent: ''
+    };
+    var DefaultType = {
+      toggle: 'boolean',
+      parent: '(string|element)'
+    };
+    var Event = {
+      SHOW: "show" + EVENT_KEY,
+      SHOWN: "shown" + EVENT_KEY,
+      HIDE: "hide" + EVENT_KEY,
+      HIDDEN: "hidden" + EVENT_KEY,
+      CLICK_DATA_API: "click" + EVENT_KEY + DATA_API_KEY
+    };
+    var ClassName = {
+      SHOW: 'show',
+      COLLAPSE: 'collapse',
+      COLLAPSING: 'collapsing',
+      COLLAPSED: 'collapsed'
+    };
+    var Dimension = {
+      WIDTH: 'width',
+      HEIGHT: 'height'
+    };
+    var Selector = {
+      ACTIVES: '.show, .collapsing',
+      DATA_TOGGLE: '[data-toggle="collapse"]'
+      /**
+       * ------------------------------------------------------------------------
+       * Class Definition
+       * ------------------------------------------------------------------------
+       */
+
+    };
+
+    var Collapse =
+    /*#__PURE__*/
+    function () {
+      function Collapse(element, config) {
+        this._isTransitioning = false;
+        this._element = element;
+        this._config = this._getConfig(config);
+        this._triggerArray = $$$1.makeArray($$$1("[data-toggle=\"collapse\"][href=\"#" + element.id + "\"]," + ("[data-toggle=\"collapse\"][data-target=\"#" + element.id + "\"]")));
+        var tabToggles = $$$1(Selector.DATA_TOGGLE);
+
+        for (var i = 0; i < tabToggles.length; i++) {
+          var elem = tabToggles[i];
+          var selector = Util.getSelectorFromElement(elem);
+
+          if (selector !== null && $$$1(selector).filter(element).length > 0) {
+            this._selector = selector;
+
+            this._triggerArray.push(elem);
+          }
+        }
+
+        this._parent = this._config.parent ? this._getParent() : null;
+
+        if (!this._config.parent) {
+          this._addAriaAndCollapsedClass(this._element, this._triggerArray);
+        }
+
+        if (this._config.toggle) {
+          this.toggle();
+        }
+      } // Getters
+
+
+      var _proto = Collapse.prototype;
+
+      // Public
+      _proto.toggle = function toggle() {
+        if ($$$1(this._element).hasClass(ClassName.SHOW)) {
+          this.hide();
+        } else {
+          this.show();
+        }
+      };
+
+      _proto.show = function show() {
+        var _this = this;
+
+        if (this._isTransitioning || $$$1(this._element).hasClass(ClassName.SHOW)) {
+          return;
+        }
+
+        var actives;
+        var activesData;
+
+        if (this._parent) {
+          actives = $$$1.makeArray($$$1(this._parent).find(Selector.ACTIVES).filter("[data-parent=\"" + this._config.parent + "\"]"));
+
+          if (actives.length === 0) {
+            actives = null;
+          }
+        }
+
+        if (actives) {
+          activesData = $$$1(actives).not(this._selector).data(DATA_KEY);
+
+          if (activesData && activesData._isTransitioning) {
+            return;
+          }
+        }
+
+        var startEvent = $$$1.Event(Event.SHOW);
+        $$$1(this._element).trigger(startEvent);
+
+        if (startEvent.isDefaultPrevented()) {
+          return;
+        }
+
+        if (actives) {
+          Collapse._jQueryInterface.call($$$1(actives).not(this._selector), 'hide');
+
+          if (!activesData) {
+            $$$1(actives).data(DATA_KEY, null);
+          }
+        }
+
+        var dimension = this._getDimension();
+
+        $$$1(this._element).removeClass(ClassName.COLLAPSE).addClass(ClassName.COLLAPSING);
+        this._element.style[dimension] = 0;
+
+        if (this._triggerArray.length > 0) {
+          $$$1(this._triggerArray).removeClass(ClassName.COLLAPSED).attr('aria-expanded', true);
+        }
+
+        this.setTransitioning(true);
+
+        var complete = function complete() {
+          $$$1(_this._element).removeClass(ClassName.COLLAPSING).addClass(ClassName.COLLAPSE).addClass(ClassName.SHOW);
+          _this._element.style[dimension] = '';
+
+          _this.setTransitioning(false);
+
+          $$$1(_this._element).trigger(Event.SHOWN);
+        };
+
+        var capitalizedDimension = dimension[0].toUpperCase() + dimension.slice(1);
+        var scrollSize = "scroll" + capitalizedDimension;
+        var transitionDuration = Util.getTransitionDurationFromElement(this._element);
+        $$$1(this._element).one(Util.TRANSITION_END, complete).emulateTransitionEnd(transitionDuration);
+        this._element.style[dimension] = this._element[scrollSize] + "px";
+      };
+
+      _proto.hide = function hide() {
+        var _this2 = this;
+
+        if (this._isTransitioning || !$$$1(this._element).hasClass(ClassName.SHOW)) {
+          return;
+        }
+
+        var startEvent = $$$1.Event(Event.HIDE);
+        $$$1(this._element).trigger(startEvent);
+
+        if (startEvent.isDefaultPrevented()) {
+          return;
+        }
+
+        var dimension = this._getDimension();
+
+        this._element.style[dimension] = this._element.getBoundingClientRect()[dimension] + "px";
+        Util.reflow(this._element);
+        $$$1(this._element).addClass(ClassName.COLLAPSING).removeClass(ClassName.COLLAPSE).removeClass(ClassName.SHOW);
+
+        if (this._triggerArray.length > 0) {
+          for (var i = 0; i < this._triggerArray.length; i++) {
+            var trigger = this._triggerArray[i];
+            var selector = Util.getSelectorFromElement(trigger);
+
+            if (selector !== null) {
+              var $elem = $$$1(selector);
+
+              if (!$elem.hasClass(ClassName.SHOW)) {
+                $$$1(trigger).addClass(ClassName.COLLAPSED).attr('aria-expanded', false);
+              }
+            }
+          }
+        }
+
+        this.setTransitioning(true);
+
+        var complete = function complete() {
+          _this2.setTransitioning(false);
+
+          $$$1(_this2._element).removeClass(ClassName.COLLAPSING).addClass(ClassName.COLLAPSE).trigger(Event.HIDDEN);
+        };
+
+        this._element.style[dimension] = '';
+        var transitionDuration = Util.getTransitionDurationFromElement(this._element);
+        $$$1(this._element).one(Util.TRANSITION_END, complete).emulateTransitionEnd(transitionDuration);
+      };
+
+      _proto.setTransitioning = function setTransitioning(isTransitioning) {
+        this._isTransitioning = isTransitioning;
+      };
+
+      _proto.dispose = function dispose() {
+        $$$1.removeData(this._element, DATA_KEY);
+        this._config = null;
+        this._parent = null;
+        this._element = null;
+        this._triggerArray = null;
+        this._isTransitioning = null;
+      }; // Private
+
+
+      _proto._getConfig = function _getConfig(config) {
+        config = _objectSpread({}, Default, config);
+        config.toggle = Boolean(config.toggle); // Coerce string values
+
+        Util.typeCheckConfig(NAME, config, DefaultType);
+        return config;
+      };
+
+      _proto._getDimension = function _getDimension() {
+        var hasWidth = $$$1(this._element).hasClass(Dimension.WIDTH);
+        return hasWidth ? Dimension.WIDTH : Dimension.HEIGHT;
+      };
+
+      _proto._getParent = function _getParent() {
+        var _this3 = this;
+
+        var parent = null;
+
+        if (Util.isElement(this._config.parent)) {
+          parent = this._config.parent; // It's a jQuery object
+
+          if (typeof this._config.parent.jquery !== 'undefined') {
+            parent = this._config.parent[0];
+          }
+        } else {
+          parent = $$$1(this._config.parent)[0];
+        }
+
+        var selector = "[data-toggle=\"collapse\"][data-parent=\"" + this._config.parent + "\"]";
+        $$$1(parent).find(selector).each(function (i, element) {
+          _this3._addAriaAndCollapsedClass(Collapse._getTargetFromElement(element), [element]);
+        });
+        return parent;
+      };
+
+      _proto._addAriaAndCollapsedClass = function _addAriaAndCollapsedClass(element, triggerArray) {
+        if (element) {
+          var isOpen = $$$1(element).hasClass(ClassName.SHOW);
+
+          if (triggerArray.length > 0) {
+            $$$1(triggerArray).toggleClass(ClassName.COLLAPSED, !isOpen).attr('aria-expanded', isOpen);
+          }
+        }
+      }; // Static
+
+
+      Collapse._getTargetFromElement = function _getTargetFromElement(element) {
+        var selector = Util.getSelectorFromElement(element);
+        return selector ? $$$1(selector)[0] : null;
+      };
+
+      Collapse._jQueryInterface = function _jQueryInterface(config) {
+        return this.each(function () {
+          var $this = $$$1(this);
+          var data = $this.data(DATA_KEY);
+
+          var _config = _objectSpread({}, Default, $this.data(), typeof config === 'object' && config ? config : {});
+
+          if (!data && _config.toggle && /show|hide/.test(config)) {
+            _config.toggle = false;
+          }
+
+          if (!data) {
+            data = new Collapse(this, _config);
+            $this.data(DATA_KEY, data);
+          }
+
+          if (typeof config === 'string') {
+            if (typeof data[config] === 'undefined') {
+              throw new TypeError("No method named \"" + config + "\"");
+            }
+
+            data[config]();
+          }
+        });
+      };
+
+      _createClass(Collapse, null, [{
+        key: "VERSION",
+        get: function get() {
+          return VERSION;
+        }
+      }, {
+        key: "Default",
+        get: function get() {
+          return Default;
+        }
+      }]);
+
+      return Collapse;
+    }();
+    /**
+     * ------------------------------------------------------------------------
+     * Data Api implementation
+     * ------------------------------------------------------------------------
+     */
+
+
+    $$$1(document).on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE, function (event) {
+      // preventDefault only for <a> elements (which change the URL) not inside the collapsible element
+      if (event.currentTarget.tagName === 'A') {
+        event.preventDefault();
+      }
+
+      var $trigger = $$$1(this);
+      var selector = Util.getSelectorFromElement(this);
+      $$$1(selector).each(function () {
+        var $target = $$$1(this);
+        var data = $target.data(DATA_KEY);
+        var config = data ? 'toggle' : $trigger.data();
+
+        Collapse._jQueryInterface.call($target, config);
+      });
+    });
+    /**
+     * ------------------------------------------------------------------------
+     * jQuery
+     * ------------------------------------------------------------------------
+     */
+
+    $$$1.fn[NAME] = Collapse._jQueryInterface;
+    $$$1.fn[NAME].Constructor = Collapse;
+
+    $$$1.fn[NAME].noConflict = function () {
+      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
+      return Collapse._jQueryInterface;
+    };
+
+    return Collapse;
+  }($);
+
+  /**
+   * --------------------------------------------------------------------------
+   * Bootstrap (v4.1.1): dropdown.js
+   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+   * --------------------------------------------------------------------------
+   */
+
+  var Dropdown = function ($$$1) {
+    /**
+     * ------------------------------------------------------------------------
+     * Constants
+     * ------------------------------------------------------------------------
+     */
+    var NAME = 'dropdown';
+    var VERSION = '4.1.1';
+    var DATA_KEY = 'bs.dropdown';
+    var EVENT_KEY = "." + DATA_KEY;
+    var DATA_API_KEY = '.data-api';
+    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
+    var ESCAPE_KEYCODE = 27; // KeyboardEvent.which value for Escape (Esc) key
+
+    var SPACE_KEYCODE = 32; // KeyboardEvent.which value for space key
+
+    var TAB_KEYCODE = 9; // KeyboardEvent.which value for tab key
+
+    var ARROW_UP_KEYCODE = 38; // KeyboardEvent.which value for up arrow key
+
+    var ARROW_DOWN_KEYCODE = 40; // KeyboardEvent.which value for down arrow key
+
+    var RIGHT_MOUSE_BUTTON_WHICH = 3; // MouseEvent.which value for the right button (assuming a right-handed mouse)
+
+    var REGEXP_KEYDOWN = new RegExp(ARROW_UP_KEYCODE + "|" + ARROW_DOWN_KEYCODE + "|" + ESCAPE_KEYCODE);
+    var Event = {
+      HIDE: "hide" + EVENT_KEY,
+      HIDDEN: "hidden" + EVENT_KEY,
+      SHOW: "show" + EVENT_KEY,
+      SHOWN: "shown" + EVENT_KEY,
+      CLICK: "click" + EVENT_KEY,
+      CLICK_DATA_API: "click" + EVENT_KEY + DATA_API_KEY,
+      KEYDOWN_DATA_API: "keydown" + EVENT_KEY + DATA_API_KEY,
+      KEYUP_DATA_API: "keyup" + EVENT_KEY + DATA_API_KEY
+    };
+    var ClassName = {
+      DISABLED: 'disabled',
+      SHOW: 'show',
+      DROPUP: 'dropup',
+      DROPRIGHT: 'dropright',
+      DROPLEFT: 'dropleft',
+      MENURIGHT: 'dropdown-menu-right',
+      MENULEFT: 'dropdown-menu-left',
+      POSITION_STATIC: 'position-static'
+    };
+    var Selector = {
+      DATA_TOGGLE: '[data-toggle="dropdown"]',
+      FORM_CHILD: '.dropdown form',
+      MENU: '.dropdown-menu',
+      NAVBAR_NAV: '.navbar-nav',
+      VISIBLE_ITEMS: '.dropdown-menu .dropdown-item:not(.disabled):not(:disabled)'
+    };
+    var AttachmentMap = {
+      TOP: 'top-start',
+      TOPEND: 'top-end',
+      BOTTOM: 'bottom-start',
+      BOTTOMEND: 'bottom-end',
+      RIGHT: 'right-start',
+      RIGHTEND: 'right-end',
+      LEFT: 'left-start',
+      LEFTEND: 'left-end'
+    };
+    var Default = {
+      offset: 0,
+      flip: true,
+      boundary: 'scrollParent',
+      reference: 'toggle',
+      display: 'dynamic'
+    };
+    var DefaultType = {
+      offset: '(number|string|function)',
+      flip: 'boolean',
+      boundary: '(string|element)',
+      reference: '(string|element)',
+      display: 'string'
+      /**
+       * ------------------------------------------------------------------------
+       * Class Definition
+       * ------------------------------------------------------------------------
+       */
+
+    };
+
+    var Dropdown =
+    /*#__PURE__*/
+    function () {
+      function Dropdown(element, config) {
+        this._element = element;
+        this._popper = null;
+        this._config = this._getConfig(config);
+        this._menu = this._getMenuElement();
+        this._inNavbar = this._detectNavbar();
+
+        this._addEventListeners();
+      } // Getters
+
+
+      var _proto = Dropdown.prototype;
+
+      // Public
+      _proto.toggle = function toggle() {
+        if (this._element.disabled || $$$1(this._element).hasClass(ClassName.DISABLED)) {
+          return;
+        }
+
+        var parent = Dropdown._getParentFromElement(this._element);
+
+        var isActive = $$$1(this._menu).hasClass(ClassName.SHOW);
+
+        Dropdown._clearMenus();
+
+        if (isActive) {
+          return;
+        }
+
+        var relatedTarget = {
+          relatedTarget: this._element
+        };
+        var showEvent = $$$1.Event(Event.SHOW, relatedTarget);
+        $$$1(parent).trigger(showEvent);
+
+        if (showEvent.isDefaultPrevented()) {
+          return;
+        } // Disable totally Popper.js for Dropdown in Navbar
+
+
+        if (!this._inNavbar) {
+          /**
+           * Check for Popper dependency
+           * Popper - https://popper.js.org
+           */
+          if (typeof Popper === 'undefined') {
+            throw new TypeError('Bootstrap dropdown require Popper.js (https://popper.js.org)');
+          }
+
+          var referenceElement = this._element;
+
+          if (this._config.reference === 'parent') {
+            referenceElement = parent;
+          } else if (Util.isElement(this._config.reference)) {
+            referenceElement = this._config.reference; // Check if it's jQuery element
+
+            if (typeof this._config.reference.jquery !== 'undefined') {
+              referenceElement = this._config.reference[0];
+            }
+          } // If boundary is not `scrollParent`, then set position to `static`
+          // to allow the menu to "escape" the scroll parent's boundaries
+          // https://github.com/twbs/bootstrap/issues/24251
+
+
+          if (this._config.boundary !== 'scrollParent') {
+            $$$1(parent).addClass(ClassName.POSITION_STATIC);
+          }
+
+          this._popper = new Popper(referenceElement, this._menu, this._getPopperConfig());
+        } // If this is a touch-enabled device we add extra
+        // empty mouseover listeners to the body's immediate children;
+        // only needed because of broken event delegation on iOS
+        // https://www.quirksmode.org/blog/archives/2014/02/mouse_event_bub.html
+
+
+        if ('ontouchstart' in document.documentElement && $$$1(parent).closest(Selector.NAVBAR_NAV).length === 0) {
+          $$$1(document.body).children().on('mouseover', null, $$$1.noop);
+        }
+
+        this._element.focus();
+
+        this._element.setAttribute('aria-expanded', true);
+
+        $$$1(this._menu).toggleClass(ClassName.SHOW);
+        $$$1(parent).toggleClass(ClassName.SHOW).trigger($$$1.Event(Event.SHOWN, relatedTarget));
+      };
+
+      _proto.dispose = function dispose() {
+        $$$1.removeData(this._element, DATA_KEY);
+        $$$1(this._element).off(EVENT_KEY);
+        this._element = null;
+        this._menu = null;
+
+        if (this._popper !== null) {
+          this._popper.destroy();
+
+          this._popper = null;
+        }
+      };
+
+      _proto.update = function update() {
+        this._inNavbar = this._detectNavbar();
+
+        if (this._popper !== null) {
+          this._popper.scheduleUpdate();
+        }
+      }; // Private
+
+
+      _proto._addEventListeners = function _addEventListeners() {
+        var _this = this;
+
+        $$$1(this._element).on(Event.CLICK, function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+
+          _this.toggle();
+        });
+      };
+
+      _proto._getConfig = function _getConfig(config) {
+        config = _objectSpread({}, this.constructor.Default, $$$1(this._element).data(), config);
+        Util.typeCheckConfig(NAME, config, this.constructor.DefaultType);
+        return config;
+      };
+
+      _proto._getMenuElement = function _getMenuElement() {
+        if (!this._menu) {
+          var parent = Dropdown._getParentFromElement(this._element);
+
+          this._menu = $$$1(parent).find(Selector.MENU)[0];
+        }
+
+        return this._menu;
+      };
+
+      _proto._getPlacement = function _getPlacement() {
+        var $parentDropdown = $$$1(this._element).parent();
+        var placement = AttachmentMap.BOTTOM; // Handle dropup
+
+        if ($parentDropdown.hasClass(ClassName.DROPUP)) {
+          placement = AttachmentMap.TOP;
+
+          if ($$$1(this._menu).hasClass(ClassName.MENURIGHT)) {
+            placement = AttachmentMap.TOPEND;
+          }
+        } else if ($parentDropdown.hasClass(ClassName.DROPRIGHT)) {
+          placement = AttachmentMap.RIGHT;
+        } else if ($parentDropdown.hasClass(ClassName.DROPLEFT)) {
+          placement = AttachmentMap.LEFT;
+        } else if ($$$1(this._menu).hasClass(ClassName.MENURIGHT)) {
+          placement = AttachmentMap.BOTTOMEND;
+        }
+
+        return placement;
+      };
+
+      _proto._detectNavbar = function _detectNavbar() {
+        return $$$1(this._element).closest('.navbar').length > 0;
+      };
+
+      _proto._getPopperConfig = function _getPopperConfig() {
+        var _this2 = this;
+
+        var offsetConf = {};
+
+        if (typeof this._config.offset === 'function') {
+          offsetConf.fn = function (data) {
+            data.offsets = _objectSpread({}, data.offsets, _this2._config.offset(data.offsets) || {});
+            return data;
+          };
+        } else {
+          offsetConf.offset = this._config.offset;
+        }
+
+        var popperConfig = {
+          placement: this._getPlacement(),
+          modifiers: {
+            offset: offsetConf,
+            flip: {
+              enabled: this._config.flip
+            },
+            preventOverflow: {
+              boundariesElement: this._config.boundary
+            }
+          } // Disable Popper.js if we have a static display
+
+        };
+
+        if (this._config.display === 'static') {
+          popperConfig.modifiers.applyStyle = {
+            enabled: false
+          };
+        }
+
+        return popperConfig;
+      }; // Static
+
+
+      Dropdown._jQueryInterface = function _jQueryInterface(config) {
+        return this.each(function () {
+          var data = $$$1(this).data(DATA_KEY);
+
+          var _config = typeof config === 'object' ? config : null;
+
+          if (!data) {
+            data = new Dropdown(this, _config);
+            $$$1(this).data(DATA_KEY, data);
+          }
+
+          if (typeof config === 'string') {
+            if (typeof data[config] === 'undefined') {
+              throw new TypeError("No method named \"" + config + "\"");
+            }
+
+            data[config]();
+          }
+        });
+      };
+
+      Dropdown._clearMenus = function _clearMenus(event) {
+        if (event && (event.which === RIGHT_MOUSE_BUTTON_WHICH || event.type === 'keyup' && event.which !== TAB_KEYCODE)) {
+          return;
+        }
+
+        var toggles = $$$1.makeArray($$$1(Selector.DATA_TOGGLE));
+
+        for (var i = 0; i < toggles.length; i++) {
+          var parent = Dropdown._getParentFromElement(toggles[i]);
+
+          var context = $$$1(toggles[i]).data(DATA_KEY);
+          var relatedTarget = {
+            relatedTarget: toggles[i]
+          };
+
+          if (!context) {
+            continue;
+          }
+
+          var dropdownMenu = context._menu;
+
+          if (!$$$1(parent).hasClass(ClassName.SHOW)) {
+            continue;
+          }
+
+          if (event && (event.type === 'click' && /input|textarea/i.test(event.target.tagName) || event.type === 'keyup' && event.which === TAB_KEYCODE) && $$$1.contains(parent, event.target)) {
+            continue;
+          }
+
+          var hideEvent = $$$1.Event(Event.HIDE, relatedTarget);
+          $$$1(parent).trigger(hideEvent);
+
+          if (hideEvent.isDefaultPrevented()) {
+            continue;
+          } // If this is a touch-enabled device we remove the extra
+          // empty mouseover listeners we added for iOS support
+
+
+          if ('ontouchstart' in document.documentElement) {
+            $$$1(document.body).children().off('mouseover', null, $$$1.noop);
+          }
+
+          toggles[i].setAttribute('aria-expanded', 'false');
+          $$$1(dropdownMenu).removeClass(ClassName.SHOW);
+          $$$1(parent).removeClass(ClassName.SHOW).trigger($$$1.Event(Event.HIDDEN, relatedTarget));
+        }
+      };
+
+      Dropdown._getParentFromElement = function _getParentFromElement(element) {
+        var parent;
+        var selector = Util.getSelectorFromElement(element);
+
+        if (selector) {
+          parent = $$$1(selector)[0];
+        }
+
+        return parent || element.parentNode;
+      }; // eslint-disable-next-line complexity
+
+
+      Dropdown._dataApiKeydownHandler = function _dataApiKeydownHandler(event) {
+        // If not input/textarea:
+        //  - And not a key in REGEXP_KEYDOWN => not a dropdown command
+        // If input/textarea:
+        //  - If space key => not a dropdown command
+        //  - If key is other than escape
+        //    - If key is not up or down => not a dropdown command
+        //    - If trigger inside the menu => not a dropdown command
+        if (/input|textarea/i.test(event.target.tagName) ? event.which === SPACE_KEYCODE || event.which !== ESCAPE_KEYCODE && (event.which !== ARROW_DOWN_KEYCODE && event.which !== ARROW_UP_KEYCODE || $$$1(event.target).closest(Selector.MENU).length) : !REGEXP_KEYDOWN.test(event.which)) {
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (this.disabled || $$$1(this).hasClass(ClassName.DISABLED)) {
+          return;
+        }
+
+        var parent = Dropdown._getParentFromElement(this);
+
+        var isActive = $$$1(parent).hasClass(ClassName.SHOW);
+
+        if (!isActive && (event.which !== ESCAPE_KEYCODE || event.which !== SPACE_KEYCODE) || isActive && (event.which === ESCAPE_KEYCODE || event.which === SPACE_KEYCODE)) {
+          if (event.which === ESCAPE_KEYCODE) {
+            var toggle = $$$1(parent).find(Selector.DATA_TOGGLE)[0];
+            $$$1(toggle).trigger('focus');
+          }
+
+          $$$1(this).trigger('click');
+          return;
+        }
+
+        var items = $$$1(parent).find(Selector.VISIBLE_ITEMS).get();
+
+        if (items.length === 0) {
+          return;
+        }
+
+        var index = items.indexOf(event.target);
+
+        if (event.which === ARROW_UP_KEYCODE && index > 0) {
+          // Up
+          index--;
+        }
+
+        if (event.which === ARROW_DOWN_KEYCODE && index < items.length - 1) {
+          // Down
+          index++;
+        }
+
+        if (index < 0) {
+          index = 0;
+        }
+
+        items[index].focus();
+      };
+
+      _createClass(Dropdown, null, [{
+        key: "VERSION",
+        get: function get() {
+          return VERSION;
+        }
+      }, {
+        key: "Default",
+        get: function get() {
+          return Default;
+        }
+      }, {
+        key: "DefaultType",
+        get: function get() {
+          return DefaultType;
+        }
+      }]);
+
+      return Dropdown;
+    }();
+    /**
+     * ------------------------------------------------------------------------
+     * Data Api implementation
+     * ------------------------------------------------------------------------
+     */
+
+
+    $$$1(document).on(Event.KEYDOWN_DATA_API, Selector.DATA_TOGGLE, Dropdown._dataApiKeydownHandler).on(Event.KEYDOWN_DATA_API, Selector.MENU, Dropdown._dataApiKeydownHandler).on(Event.CLICK_DATA_API + " " + Event.KEYUP_DATA_API, Dropdown._clearMenus).on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE, function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      Dropdown._jQueryInterface.call($$$1(this), 'toggle');
+    }).on(Event.CLICK_DATA_API, Selector.FORM_CHILD, function (e) {
+      e.stopPropagation();
+    });
+    /**
+     * ------------------------------------------------------------------------
+     * jQuery
+     * ------------------------------------------------------------------------
+     */
+
+    $$$1.fn[NAME] = Dropdown._jQueryInterface;
+    $$$1.fn[NAME].Constructor = Dropdown;
+
+    $$$1.fn[NAME].noConflict = function () {
+      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
+      return Dropdown._jQueryInterface;
+    };
+
+    return Dropdown;
+  }($, Popper);
+
+  /**
+   * --------------------------------------------------------------------------
+   * Bootstrap (v4.1.1): modal.js
+   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+   * --------------------------------------------------------------------------
+   */
+
+  var Modal = function ($$$1) {
+    /**
+     * ------------------------------------------------------------------------
+     * Constants
+     * ------------------------------------------------------------------------
+     */
+    var NAME = 'modal';
+    var VERSION = '4.1.1';
+    var DATA_KEY = 'bs.modal';
+    var EVENT_KEY = "." + DATA_KEY;
+    var DATA_API_KEY = '.data-api';
+    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
+    var ESCAPE_KEYCODE = 27; // KeyboardEvent.which value for Escape (Esc) key
+
+    var Default = {
+      backdrop: true,
+      keyboard: true,
+      focus: true,
+      show: true
+    };
+    var DefaultType = {
+      backdrop: '(boolean|string)',
+      keyboard: 'boolean',
+      focus: 'boolean',
+      show: 'boolean'
+    };
+    var Event = {
+      HIDE: "hide" + EVENT_KEY,
+      HIDDEN: "hidden" + EVENT_KEY,
+      SHOW: "show" + EVENT_KEY,
+      SHOWN: "shown" + EVENT_KEY,
+      FOCUSIN: "focusin" + EVENT_KEY,
+      RESIZE: "resize" + EVENT_KEY,
+      CLICK_DISMISS: "click.dismiss" + EVENT_KEY,
+      KEYDOWN_DISMISS: "keydown.dismiss" + EVENT_KEY,
+      MOUSEUP_DISMISS: "mouseup.dismiss" + EVENT_KEY,
+      MOUSEDOWN_DISMISS: "mousedown.dismiss" + EVENT_KEY,
+      CLICK_DATA_API: "click" + EVENT_KEY + DATA_API_KEY
+    };
+    var ClassName = {
+      SCROLLBAR_MEASURER: 'modal-scrollbar-measure',
+      BACKDROP: 'modal-backdrop',
+      OPEN: 'modal-open',
+      FADE: 'fade',
+      SHOW: 'show'
+    };
+    var Selector = {
+      DIALOG: '.modal-dialog',
+      DATA_TOGGLE: '[data-toggle="modal"]',
+      DATA_DISMISS: '[data-dismiss="modal"]',
+      FIXED_CONTENT: '.fixed-top, .fixed-bottom, .is-fixed, .sticky-top',
+      STICKY_CONTENT: '.sticky-top',
+      NAVBAR_TOGGLER: '.navbar-toggler'
+      /**
+       * ------------------------------------------------------------------------
+       * Class Definition
+       * ------------------------------------------------------------------------
+       */
+
+    };
+
+    var Modal =
+    /*#__PURE__*/
+    function () {
+      function Modal(element, config) {
+        this._config = this._getConfig(config);
+        this._element = element;
+        this._dialog = $$$1(element).find(Selector.DIALOG)[0];
+        this._backdrop = null;
+        this._isShown = false;
+        this._isBodyOverflowing = false;
+        this._ignoreBackdropClick = false;
+        this._scrollbarWidth = 0;
+      } // Getters
+
+
+      var _proto = Modal.prototype;
+
+      // Public
+      _proto.toggle = function toggle(relatedTarget) {
+        return this._isShown ? this.hide() : this.show(relatedTarget);
+      };
+
+      _proto.show = function show(relatedTarget) {
+        var _this = this;
+
+        if (this._isTransitioning || this._isShown) {
+          return;
+        }
+
+        if ($$$1(this._element).hasClass(ClassName.FADE)) {
+          this._isTransitioning = true;
+        }
+
+        var showEvent = $$$1.Event(Event.SHOW, {
+          relatedTarget: relatedTarget
+        });
+        $$$1(this._element).trigger(showEvent);
+
+        if (this._isShown || showEvent.isDefaultPrevented()) {
+          return;
+        }
+
+        this._isShown = true;
+
+        this._checkScrollbar();
+
+        this._setScrollbar();
+
+        this._adjustDialog();
+
+        $$$1(document.body).addClass(ClassName.OPEN);
+
+        this._setEscapeEvent();
+
+        this._setResizeEvent();
+
+        $$$1(this._element).on(Event.CLICK_DISMISS, Selector.DATA_DISMISS, function (event) {
+          return _this.hide(event);
+        });
+        $$$1(this._dialog).on(Event.MOUSEDOWN_DISMISS, function () {
+          $$$1(_this._element).one(Event.MOUSEUP_DISMISS, function (event) {
+            if ($$$1(event.target).is(_this._element)) {
+              _this._ignoreBackdropClick = true;
+            }
+          });
+        });
+
+        this._showBackdrop(function () {
+          return _this._showElement(relatedTarget);
+        });
+      };
+
+      _proto.hide = function hide(event) {
+        var _this2 = this;
+
+        if (event) {
+          event.preventDefault();
+        }
+
+        if (this._isTransitioning || !this._isShown) {
+          return;
+        }
+
+        var hideEvent = $$$1.Event(Event.HIDE);
+        $$$1(this._element).trigger(hideEvent);
+
+        if (!this._isShown || hideEvent.isDefaultPrevented()) {
+          return;
+        }
+
+        this._isShown = false;
+        var transition = $$$1(this._element).hasClass(ClassName.FADE);
+
+        if (transition) {
+          this._isTransitioning = true;
+        }
+
+        this._setEscapeEvent();
+
+        this._setResizeEvent();
+
+        $$$1(document).off(Event.FOCUSIN);
+        $$$1(this._element).removeClass(ClassName.SHOW);
+        $$$1(this._element).off(Event.CLICK_DISMISS);
+        $$$1(this._dialog).off(Event.MOUSEDOWN_DISMISS);
+
+        if (transition) {
+          var transitionDuration = Util.getTransitionDurationFromElement(this._element);
+          $$$1(this._element).one(Util.TRANSITION_END, function (event) {
+            return _this2._hideModal(event);
+          }).emulateTransitionEnd(transitionDuration);
+        } else {
+          this._hideModal();
+        }
+      };
+
+      _proto.dispose = function dispose() {
+        $$$1.removeData(this._element, DATA_KEY);
+        $$$1(window, document, this._element, this._backdrop).off(EVENT_KEY);
+        this._config = null;
+        this._element = null;
+        this._dialog = null;
+        this._backdrop = null;
+        this._isShown = null;
+        this._isBodyOverflowing = null;
+        this._ignoreBackdropClick = null;
+        this._scrollbarWidth = null;
+      };
+
+      _proto.handleUpdate = function handleUpdate() {
+        this._adjustDialog();
+      }; // Private
+
+
+      _proto._getConfig = function _getConfig(config) {
+        config = _objectSpread({}, Default, config);
+        Util.typeCheckConfig(NAME, config, DefaultType);
+        return config;
+      };
+
+      _proto._showElement = function _showElement(relatedTarget) {
+        var _this3 = this;
+
+        var transition = $$$1(this._element).hasClass(ClassName.FADE);
+
+        if (!this._element.parentNode || this._element.parentNode.nodeType !== Node.ELEMENT_NODE) {
+          // Don't move modal's DOM position
+          document.body.appendChild(this._element);
+        }
+
+        this._element.style.display = 'block';
+
+        this._element.removeAttribute('aria-hidden');
+
+        this._element.scrollTop = 0;
+
+        if (transition) {
+          Util.reflow(this._element);
+        }
+
+        $$$1(this._element).addClass(ClassName.SHOW);
+
+        if (this._config.focus) {
+          this._enforceFocus();
+        }
+
+        var shownEvent = $$$1.Event(Event.SHOWN, {
+          relatedTarget: relatedTarget
+        });
+
+        var transitionComplete = function transitionComplete() {
+          if (_this3._config.focus) {
+            _this3._element.focus();
+          }
+
+          _this3._isTransitioning = false;
+          $$$1(_this3._element).trigger(shownEvent);
+        };
+
+        if (transition) {
+          var transitionDuration = Util.getTransitionDurationFromElement(this._element);
+          $$$1(this._dialog).one(Util.TRANSITION_END, transitionComplete).emulateTransitionEnd(transitionDuration);
+        } else {
+          transitionComplete();
+        }
+      };
+
+      _proto._enforceFocus = function _enforceFocus() {
+        var _this4 = this;
+
+        $$$1(document).off(Event.FOCUSIN) // Guard against infinite focus loop
+        .on(Event.FOCUSIN, function (event) {
+          if (document !== event.target && _this4._element !== event.target && $$$1(_this4._element).has(event.target).length === 0) {
+            _this4._element.focus();
+          }
+        });
+      };
+
+      _proto._setEscapeEvent = function _setEscapeEvent() {
+        var _this5 = this;
+
+        if (this._isShown && this._config.keyboard) {
+          $$$1(this._element).on(Event.KEYDOWN_DISMISS, function (event) {
+            if (event.which === ESCAPE_KEYCODE) {
+              event.preventDefault();
+
+              _this5.hide();
+            }
+          });
+        } else if (!this._isShown) {
+          $$$1(this._element).off(Event.KEYDOWN_DISMISS);
+        }
+      };
+
+      _proto._setResizeEvent = function _setResizeEvent() {
+        var _this6 = this;
+
+        if (this._isShown) {
+          $$$1(window).on(Event.RESIZE, function (event) {
+            return _this6.handleUpdate(event);
+          });
+        } else {
+          $$$1(window).off(Event.RESIZE);
+        }
+      };
+
+      _proto._hideModal = function _hideModal() {
+        var _this7 = this;
+
+        this._element.style.display = 'none';
+
+        this._element.setAttribute('aria-hidden', true);
+
+        this._isTransitioning = false;
+
+        this._showBackdrop(function () {
+          $$$1(document.body).removeClass(ClassName.OPEN);
+
+          _this7._resetAdjustments();
+
+          _this7._resetScrollbar();
+
+          $$$1(_this7._element).trigger(Event.HIDDEN);
+        });
+      };
+
+      _proto._removeBackdrop = function _removeBackdrop() {
+        if (this._backdrop) {
+          $$$1(this._backdrop).remove();
+          this._backdrop = null;
+        }
+      };
+
+      _proto._showBackdrop = function _showBackdrop(callback) {
+        var _this8 = this;
+
+        var animate = $$$1(this._element).hasClass(ClassName.FADE) ? ClassName.FADE : '';
+
+        if (this._isShown && this._config.backdrop) {
+          this._backdrop = document.createElement('div');
+          this._backdrop.className = ClassName.BACKDROP;
+
+          if (animate) {
+            $$$1(this._backdrop).addClass(animate);
+          }
+
+          $$$1(this._backdrop).appendTo(document.body);
+          $$$1(this._element).on(Event.CLICK_DISMISS, function (event) {
+            if (_this8._ignoreBackdropClick) {
+              _this8._ignoreBackdropClick = false;
+              return;
+            }
+
+            if (event.target !== event.currentTarget) {
+              return;
+            }
+
+            if (_this8._config.backdrop === 'static') {
+              _this8._element.focus();
+            } else {
+              _this8.hide();
+            }
+          });
+
+          if (animate) {
+            Util.reflow(this._backdrop);
+          }
+
+          $$$1(this._backdrop).addClass(ClassName.SHOW);
+
+          if (!callback) {
+            return;
+          }
+
+          if (!animate) {
+            callback();
+            return;
+          }
+
+          var backdropTransitionDuration = Util.getTransitionDurationFromElement(this._backdrop);
+          $$$1(this._backdrop).one(Util.TRANSITION_END, callback).emulateTransitionEnd(backdropTransitionDuration);
+        } else if (!this._isShown && this._backdrop) {
+          $$$1(this._backdrop).removeClass(ClassName.SHOW);
+
+          var callbackRemove = function callbackRemove() {
+            _this8._removeBackdrop();
+
+            if (callback) {
+              callback();
+            }
+          };
+
+          if ($$$1(this._element).hasClass(ClassName.FADE)) {
+            var _backdropTransitionDuration = Util.getTransitionDurationFromElement(this._backdrop);
+
+            $$$1(this._backdrop).one(Util.TRANSITION_END, callbackRemove).emulateTransitionEnd(_backdropTransitionDuration);
+          } else {
+            callbackRemove();
+          }
+        } else if (callback) {
+          callback();
+        }
+      }; // ----------------------------------------------------------------------
+      // the following methods are used to handle overflowing modals
+      // todo (fat): these should probably be refactored out of modal.js
+      // ----------------------------------------------------------------------
+
+
+      _proto._adjustDialog = function _adjustDialog() {
+        var isModalOverflowing = this._element.scrollHeight > document.documentElement.clientHeight;
+
+        if (!this._isBodyOverflowing && isModalOverflowing) {
+          this._element.style.paddingLeft = this._scrollbarWidth + "px";
+        }
+
+        if (this._isBodyOverflowing && !isModalOverflowing) {
+          this._element.style.paddingRight = this._scrollbarWidth + "px";
+        }
+      };
+
+      _proto._resetAdjustments = function _resetAdjustments() {
+        this._element.style.paddingLeft = '';
+        this._element.style.paddingRight = '';
+      };
+
+      _proto._checkScrollbar = function _checkScrollbar() {
+        var rect = document.body.getBoundingClientRect();
+        this._isBodyOverflowing = rect.left + rect.right < window.innerWidth;
+        this._scrollbarWidth = this._getScrollbarWidth();
+      };
+
+      _proto._setScrollbar = function _setScrollbar() {
+        var _this9 = this;
+
+        if (this._isBodyOverflowing) {
+          // Note: DOMNode.style.paddingRight returns the actual value or '' if not set
+          //   while $(DOMNode).css('padding-right') returns the calculated value or 0 if not set
+          // Adjust fixed content padding
+          $$$1(Selector.FIXED_CONTENT).each(function (index, element) {
+            var actualPadding = $$$1(element)[0].style.paddingRight;
+            var calculatedPadding = $$$1(element).css('padding-right');
+            $$$1(element).data('padding-right', actualPadding).css('padding-right', parseFloat(calculatedPadding) + _this9._scrollbarWidth + "px");
+          }); // Adjust sticky content margin
+
+          $$$1(Selector.STICKY_CONTENT).each(function (index, element) {
+            var actualMargin = $$$1(element)[0].style.marginRight;
+            var calculatedMargin = $$$1(element).css('margin-right');
+            $$$1(element).data('margin-right', actualMargin).css('margin-right', parseFloat(calculatedMargin) - _this9._scrollbarWidth + "px");
+          }); // Adjust navbar-toggler margin
+
+          $$$1(Selector.NAVBAR_TOGGLER).each(function (index, element) {
+            var actualMargin = $$$1(element)[0].style.marginRight;
+            var calculatedMargin = $$$1(element).css('margin-right');
+            $$$1(element).data('margin-right', actualMargin).css('margin-right', parseFloat(calculatedMargin) + _this9._scrollbarWidth + "px");
+          }); // Adjust body padding
+
+          var actualPadding = document.body.style.paddingRight;
+          var calculatedPadding = $$$1(document.body).css('padding-right');
+          $$$1(document.body).data('padding-right', actualPadding).css('padding-right', parseFloat(calculatedPadding) + this._scrollbarWidth + "px");
+        }
+      };
+
+      _proto._resetScrollbar = function _resetScrollbar() {
+        // Restore fixed content padding
+        $$$1(Selector.FIXED_CONTENT).each(function (index, element) {
+          var padding = $$$1(element).data('padding-right');
+
+          if (typeof padding !== 'undefined') {
+            $$$1(element).css('padding-right', padding).removeData('padding-right');
+          }
+        }); // Restore sticky content and navbar-toggler margin
+
+        $$$1(Selector.STICKY_CONTENT + ", " + Selector.NAVBAR_TOGGLER).each(function (index, element) {
+          var margin = $$$1(element).data('margin-right');
+
+          if (typeof margin !== 'undefined') {
+            $$$1(element).css('margin-right', margin).removeData('margin-right');
+          }
+        }); // Restore body padding
+
+        var padding = $$$1(document.body).data('padding-right');
+
+        if (typeof padding !== 'undefined') {
+          $$$1(document.body).css('padding-right', padding).removeData('padding-right');
+        }
+      };
+
+      _proto._getScrollbarWidth = function _getScrollbarWidth() {
+        // thx d.walsh
+        var scrollDiv = document.createElement('div');
+        scrollDiv.className = ClassName.SCROLLBAR_MEASURER;
+        document.body.appendChild(scrollDiv);
+        var scrollbarWidth = scrollDiv.getBoundingClientRect().width - scrollDiv.clientWidth;
+        document.body.removeChild(scrollDiv);
+        return scrollbarWidth;
+      }; // Static
+
+
+      Modal._jQueryInterface = function _jQueryInterface(config, relatedTarget) {
+        return this.each(function () {
+          var data = $$$1(this).data(DATA_KEY);
+
+          var _config = _objectSpread({}, Default, $$$1(this).data(), typeof config === 'object' && config ? config : {});
+
+          if (!data) {
+            data = new Modal(this, _config);
+            $$$1(this).data(DATA_KEY, data);
+          }
+
+          if (typeof config === 'string') {
+            if (typeof data[config] === 'undefined') {
+              throw new TypeError("No method named \"" + config + "\"");
+            }
+
+            data[config](relatedTarget);
+          } else if (_config.show) {
+            data.show(relatedTarget);
+          }
+        });
+      };
+
+      _createClass(Modal, null, [{
+        key: "VERSION",
+        get: function get() {
+          return VERSION;
+        }
+      }, {
+        key: "Default",
+        get: function get() {
+          return Default;
+        }
+      }]);
+
+      return Modal;
+    }();
+    /**
+     * ------------------------------------------------------------------------
+     * Data Api implementation
+     * ------------------------------------------------------------------------
+     */
+
+
+    $$$1(document).on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE, function (event) {
+      var _this10 = this;
+
+      var target;
+      var selector = Util.getSelectorFromElement(this);
+
+      if (selector) {
+        target = $$$1(selector)[0];
+      }
+
+      var config = $$$1(target).data(DATA_KEY) ? 'toggle' : _objectSpread({}, $$$1(target).data(), $$$1(this).data());
+
+      if (this.tagName === 'A' || this.tagName === 'AREA') {
+        event.preventDefault();
+      }
+
+      var $target = $$$1(target).one(Event.SHOW, function (showEvent) {
+        if (showEvent.isDefaultPrevented()) {
+          // Only register focus restorer if modal will actually get shown
+          return;
+        }
+
+        $target.one(Event.HIDDEN, function () {
+          if ($$$1(_this10).is(':visible')) {
+            _this10.focus();
+          }
+        });
+      });
+
+      Modal._jQueryInterface.call($$$1(target), config, this);
+    });
+    /**
+     * ------------------------------------------------------------------------
+     * jQuery
+     * ------------------------------------------------------------------------
+     */
+
+    $$$1.fn[NAME] = Modal._jQueryInterface;
+    $$$1.fn[NAME].Constructor = Modal;
+
+    $$$1.fn[NAME].noConflict = function () {
+      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
+      return Modal._jQueryInterface;
+    };
+
+    return Modal;
+  }($);
+
+  /**
+   * --------------------------------------------------------------------------
+   * Bootstrap (v4.1.1): tooltip.js
+   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+   * --------------------------------------------------------------------------
+   */
+
+  var Tooltip = function ($$$1) {
+    /**
+     * ------------------------------------------------------------------------
+     * Constants
+     * ------------------------------------------------------------------------
+     */
+    var NAME = 'tooltip';
+    var VERSION = '4.1.1';
+    var DATA_KEY = 'bs.tooltip';
+    var EVENT_KEY = "." + DATA_KEY;
+    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
+    var CLASS_PREFIX = 'bs-tooltip';
+    var BSCLS_PREFIX_REGEX = new RegExp("(^|\\s)" + CLASS_PREFIX + "\\S+", 'g');
+    var DefaultType = {
+      animation: 'boolean',
+      template: 'string',
+      title: '(string|element|function)',
+      trigger: 'string',
+      delay: '(number|object)',
+      html: 'boolean',
+      selector: '(string|boolean)',
+      placement: '(string|function)',
+      offset: '(number|string)',
+      container: '(string|element|boolean)',
+      fallbackPlacement: '(string|array)',
+      boundary: '(string|element)'
+    };
+    var AttachmentMap = {
+      AUTO: 'auto',
+      TOP: 'top',
+      RIGHT: 'right',
+      BOTTOM: 'bottom',
+      LEFT: 'left'
+    };
+    var Default = {
+      animation: true,
+      template: '<div class="tooltip" role="tooltip">' + '<div class="arrow"></div>' + '<div class="tooltip-inner"></div></div>',
+      trigger: 'hover focus',
+      title: '',
+      delay: 0,
+      html: false,
+      selector: false,
+      placement: 'top',
+      offset: 0,
+      container: false,
+      fallbackPlacement: 'flip',
+      boundary: 'scrollParent'
+    };
+    var HoverState = {
+      SHOW: 'show',
+      OUT: 'out'
+    };
+    var Event = {
+      HIDE: "hide" + EVENT_KEY,
+      HIDDEN: "hidden" + EVENT_KEY,
+      SHOW: "show" + EVENT_KEY,
+      SHOWN: "shown" + EVENT_KEY,
+      INSERTED: "inserted" + EVENT_KEY,
+      CLICK: "click" + EVENT_KEY,
+      FOCUSIN: "focusin" + EVENT_KEY,
+      FOCUSOUT: "focusout" + EVENT_KEY,
+      MOUSEENTER: "mouseenter" + EVENT_KEY,
+      MOUSELEAVE: "mouseleave" + EVENT_KEY
+    };
+    var ClassName = {
+      FADE: 'fade',
+      SHOW: 'show'
+    };
+    var Selector = {
+      TOOLTIP: '.tooltip',
+      TOOLTIP_INNER: '.tooltip-inner',
+      ARROW: '.arrow'
+    };
+    var Trigger = {
+      HOVER: 'hover',
+      FOCUS: 'focus',
+      CLICK: 'click',
+      MANUAL: 'manual'
+      /**
+       * ------------------------------------------------------------------------
+       * Class Definition
+       * ------------------------------------------------------------------------
+       */
+
+    };
+
+    var Tooltip =
+    /*#__PURE__*/
+    function () {
+      function Tooltip(element, config) {
+        /**
+         * Check for Popper dependency
+         * Popper - https://popper.js.org
+         */
+        if (typeof Popper === 'undefined') {
+          throw new TypeError('Bootstrap tooltips require Popper.js (https://popper.js.org)');
+        } // private
+
+
+        this._isEnabled = true;
+        this._timeout = 0;
+        this._hoverState = '';
+        this._activeTrigger = {};
+        this._popper = null; // Protected
+
+        this.element = element;
+        this.config = this._getConfig(config);
+        this.tip = null;
+
+        this._setListeners();
+      } // Getters
+
+
+      var _proto = Tooltip.prototype;
+
+      // Public
+      _proto.enable = function enable() {
+        this._isEnabled = true;
+      };
+
+      _proto.disable = function disable() {
+        this._isEnabled = false;
+      };
+
+      _proto.toggleEnabled = function toggleEnabled() {
+        this._isEnabled = !this._isEnabled;
+      };
+
+      _proto.toggle = function toggle(event) {
+        if (!this._isEnabled) {
+          return;
+        }
+
+        if (event) {
+          var dataKey = this.constructor.DATA_KEY;
+          var context = $$$1(event.currentTarget).data(dataKey);
+
+          if (!context) {
+            context = new this.constructor(event.currentTarget, this._getDelegateConfig());
+            $$$1(event.currentTarget).data(dataKey, context);
+          }
+
+          context._activeTrigger.click = !context._activeTrigger.click;
+
+          if (context._isWithActiveTrigger()) {
+            context._enter(null, context);
+          } else {
+            context._leave(null, context);
+          }
+        } else {
+          if ($$$1(this.getTipElement()).hasClass(ClassName.SHOW)) {
+            this._leave(null, this);
+
+            return;
+          }
+
+          this._enter(null, this);
+        }
+      };
+
+      _proto.dispose = function dispose() {
+        clearTimeout(this._timeout);
+        $$$1.removeData(this.element, this.constructor.DATA_KEY);
+        $$$1(this.element).off(this.constructor.EVENT_KEY);
+        $$$1(this.element).closest('.modal').off('hide.bs.modal');
+
+        if (this.tip) {
+          $$$1(this.tip).remove();
+        }
+
+        this._isEnabled = null;
+        this._timeout = null;
+        this._hoverState = null;
+        this._activeTrigger = null;
+
+        if (this._popper !== null) {
+          this._popper.destroy();
+        }
+
+        this._popper = null;
+        this.element = null;
+        this.config = null;
+        this.tip = null;
+      };
+
+      _proto.show = function show() {
+        var _this = this;
+
+        if ($$$1(this.element).css('display') === 'none') {
+          throw new Error('Please use show on visible elements');
+        }
+
+        var showEvent = $$$1.Event(this.constructor.Event.SHOW);
+
+        if (this.isWithContent() && this._isEnabled) {
+          $$$1(this.element).trigger(showEvent);
+          var isInTheDom = $$$1.contains(this.element.ownerDocument.documentElement, this.element);
+
+          if (showEvent.isDefaultPrevented() || !isInTheDom) {
+            return;
+          }
+
+          var tip = this.getTipElement();
+          var tipId = Util.getUID(this.constructor.NAME);
+          tip.setAttribute('id', tipId);
+          this.element.setAttribute('aria-describedby', tipId);
+          this.setContent();
+
+          if (this.config.animation) {
+            $$$1(tip).addClass(ClassName.FADE);
+          }
+
+          var placement = typeof this.config.placement === 'function' ? this.config.placement.call(this, tip, this.element) : this.config.placement;
+
+          var attachment = this._getAttachment(placement);
+
+          this.addAttachmentClass(attachment);
+          var container = this.config.container === false ? document.body : $$$1(this.config.container);
+          $$$1(tip).data(this.constructor.DATA_KEY, this);
+
+          if (!$$$1.contains(this.element.ownerDocument.documentElement, this.tip)) {
+            $$$1(tip).appendTo(container);
+          }
+
+          $$$1(this.element).trigger(this.constructor.Event.INSERTED);
+          this._popper = new Popper(this.element, tip, {
+            placement: attachment,
+            modifiers: {
+              offset: {
+                offset: this.config.offset
+              },
+              flip: {
+                behavior: this.config.fallbackPlacement
+              },
+              arrow: {
+                element: Selector.ARROW
+              },
+              preventOverflow: {
+                boundariesElement: this.config.boundary
+              }
+            },
+            onCreate: function onCreate(data) {
+              if (data.originalPlacement !== data.placement) {
+                _this._handlePopperPlacementChange(data);
+              }
+            },
+            onUpdate: function onUpdate(data) {
+              _this._handlePopperPlacementChange(data);
+            }
+          });
+          $$$1(tip).addClass(ClassName.SHOW); // If this is a touch-enabled device we add extra
+          // empty mouseover listeners to the body's immediate children;
+          // only needed because of broken event delegation on iOS
+          // https://www.quirksmode.org/blog/archives/2014/02/mouse_event_bub.html
+
+          if ('ontouchstart' in document.documentElement) {
+            $$$1(document.body).children().on('mouseover', null, $$$1.noop);
+          }
+
+          var complete = function complete() {
+            if (_this.config.animation) {
+              _this._fixTransition();
+            }
+
+            var prevHoverState = _this._hoverState;
+            _this._hoverState = null;
+            $$$1(_this.element).trigger(_this.constructor.Event.SHOWN);
+
+            if (prevHoverState === HoverState.OUT) {
+              _this._leave(null, _this);
+            }
+          };
+
+          if ($$$1(this.tip).hasClass(ClassName.FADE)) {
+            var transitionDuration = Util.getTransitionDurationFromElement(this.tip);
+            $$$1(this.tip).one(Util.TRANSITION_END, complete).emulateTransitionEnd(transitionDuration);
+          } else {
+            complete();
+          }
+        }
+      };
+
+      _proto.hide = function hide(callback) {
+        var _this2 = this;
+
+        var tip = this.getTipElement();
+        var hideEvent = $$$1.Event(this.constructor.Event.HIDE);
+
+        var complete = function complete() {
+          if (_this2._hoverState !== HoverState.SHOW && tip.parentNode) {
+            tip.parentNode.removeChild(tip);
+          }
+
+          _this2._cleanTipClass();
+
+          _this2.element.removeAttribute('aria-describedby');
+
+          $$$1(_this2.element).trigger(_this2.constructor.Event.HIDDEN);
+
+          if (_this2._popper !== null) {
+            _this2._popper.destroy();
+          }
+
+          if (callback) {
+            callback();
+          }
+        };
+
+        $$$1(this.element).trigger(hideEvent);
+
+        if (hideEvent.isDefaultPrevented()) {
+          return;
+        }
+
+        $$$1(tip).removeClass(ClassName.SHOW); // If this is a touch-enabled device we remove the extra
+        // empty mouseover listeners we added for iOS support
+
+        if ('ontouchstart' in document.documentElement) {
+          $$$1(document.body).children().off('mouseover', null, $$$1.noop);
+        }
+
+        this._activeTrigger[Trigger.CLICK] = false;
+        this._activeTrigger[Trigger.FOCUS] = false;
+        this._activeTrigger[Trigger.HOVER] = false;
+
+        if ($$$1(this.tip).hasClass(ClassName.FADE)) {
+          var transitionDuration = Util.getTransitionDurationFromElement(tip);
+          $$$1(tip).one(Util.TRANSITION_END, complete).emulateTransitionEnd(transitionDuration);
+        } else {
+          complete();
+        }
+
+        this._hoverState = '';
+      };
+
+      _proto.update = function update() {
+        if (this._popper !== null) {
+          this._popper.scheduleUpdate();
+        }
+      }; // Protected
+
+
+      _proto.isWithContent = function isWithContent() {
+        return Boolean(this.getTitle());
+      };
+
+      _proto.addAttachmentClass = function addAttachmentClass(attachment) {
+        $$$1(this.getTipElement()).addClass(CLASS_PREFIX + "-" + attachment);
+      };
+
+      _proto.getTipElement = function getTipElement() {
+        this.tip = this.tip || $$$1(this.config.template)[0];
+        return this.tip;
+      };
+
+      _proto.setContent = function setContent() {
+        var $tip = $$$1(this.getTipElement());
+        this.setElementContent($tip.find(Selector.TOOLTIP_INNER), this.getTitle());
+        $tip.removeClass(ClassName.FADE + " " + ClassName.SHOW);
+      };
+
+      _proto.setElementContent = function setElementContent($element, content) {
+        var html = this.config.html;
+
+        if (typeof content === 'object' && (content.nodeType || content.jquery)) {
+          // Content is a DOM node or a jQuery
+          if (html) {
+            if (!$$$1(content).parent().is($element)) {
+              $element.empty().append(content);
+            }
+          } else {
+            $element.text($$$1(content).text());
+          }
+        } else {
+          $element[html ? 'html' : 'text'](content);
+        }
+      };
+
+      _proto.getTitle = function getTitle() {
+        var title = this.element.getAttribute('data-original-title');
+
+        if (!title) {
+          title = typeof this.config.title === 'function' ? this.config.title.call(this.element) : this.config.title;
+        }
+
+        return title;
+      }; // Private
+
+
+      _proto._getAttachment = function _getAttachment(placement) {
+        return AttachmentMap[placement.toUpperCase()];
+      };
+
+      _proto._setListeners = function _setListeners() {
+        var _this3 = this;
+
+        var triggers = this.config.trigger.split(' ');
+        triggers.forEach(function (trigger) {
+          if (trigger === 'click') {
+            $$$1(_this3.element).on(_this3.constructor.Event.CLICK, _this3.config.selector, function (event) {
+              return _this3.toggle(event);
+            });
+          } else if (trigger !== Trigger.MANUAL) {
+            var eventIn = trigger === Trigger.HOVER ? _this3.constructor.Event.MOUSEENTER : _this3.constructor.Event.FOCUSIN;
+            var eventOut = trigger === Trigger.HOVER ? _this3.constructor.Event.MOUSELEAVE : _this3.constructor.Event.FOCUSOUT;
+            $$$1(_this3.element).on(eventIn, _this3.config.selector, function (event) {
+              return _this3._enter(event);
+            }).on(eventOut, _this3.config.selector, function (event) {
+              return _this3._leave(event);
+            });
+          }
+
+          $$$1(_this3.element).closest('.modal').on('hide.bs.modal', function () {
+            return _this3.hide();
+          });
+        });
+
+        if (this.config.selector) {
+          this.config = _objectSpread({}, this.config, {
+            trigger: 'manual',
+            selector: ''
+          });
+        } else {
+          this._fixTitle();
+        }
+      };
+
+      _proto._fixTitle = function _fixTitle() {
+        var titleType = typeof this.element.getAttribute('data-original-title');
+
+        if (this.element.getAttribute('title') || titleType !== 'string') {
+          this.element.setAttribute('data-original-title', this.element.getAttribute('title') || '');
+          this.element.setAttribute('title', '');
+        }
+      };
+
+      _proto._enter = function _enter(event, context) {
+        var dataKey = this.constructor.DATA_KEY;
+        context = context || $$$1(event.currentTarget).data(dataKey);
+
+        if (!context) {
+          context = new this.constructor(event.currentTarget, this._getDelegateConfig());
+          $$$1(event.currentTarget).data(dataKey, context);
+        }
+
+        if (event) {
+          context._activeTrigger[event.type === 'focusin' ? Trigger.FOCUS : Trigger.HOVER] = true;
+        }
+
+        if ($$$1(context.getTipElement()).hasClass(ClassName.SHOW) || context._hoverState === HoverState.SHOW) {
+          context._hoverState = HoverState.SHOW;
+          return;
+        }
+
+        clearTimeout(context._timeout);
+        context._hoverState = HoverState.SHOW;
+
+        if (!context.config.delay || !context.config.delay.show) {
+          context.show();
+          return;
+        }
+
+        context._timeout = setTimeout(function () {
+          if (context._hoverState === HoverState.SHOW) {
+            context.show();
+          }
+        }, context.config.delay.show);
+      };
+
+      _proto._leave = function _leave(event, context) {
+        var dataKey = this.constructor.DATA_KEY;
+        context = context || $$$1(event.currentTarget).data(dataKey);
+
+        if (!context) {
+          context = new this.constructor(event.currentTarget, this._getDelegateConfig());
+          $$$1(event.currentTarget).data(dataKey, context);
+        }
+
+        if (event) {
+          context._activeTrigger[event.type === 'focusout' ? Trigger.FOCUS : Trigger.HOVER] = false;
+        }
+
+        if (context._isWithActiveTrigger()) {
+          return;
+        }
+
+        clearTimeout(context._timeout);
+        context._hoverState = HoverState.OUT;
+
+        if (!context.config.delay || !context.config.delay.hide) {
+          context.hide();
+          return;
+        }
+
+        context._timeout = setTimeout(function () {
+          if (context._hoverState === HoverState.OUT) {
+            context.hide();
+          }
+        }, context.config.delay.hide);
+      };
+
+      _proto._isWithActiveTrigger = function _isWithActiveTrigger() {
+        for (var trigger in this._activeTrigger) {
+          if (this._activeTrigger[trigger]) {
+            return true;
+          }
+        }
+
+        return false;
+      };
+
+      _proto._getConfig = function _getConfig(config) {
+        config = _objectSpread({}, this.constructor.Default, $$$1(this.element).data(), typeof config === 'object' && config ? config : {});
+
+        if (typeof config.delay === 'number') {
+          config.delay = {
+            show: config.delay,
+            hide: config.delay
+          };
+        }
+
+        if (typeof config.title === 'number') {
+          config.title = config.title.toString();
+        }
+
+        if (typeof config.content === 'number') {
+          config.content = config.content.toString();
+        }
+
+        Util.typeCheckConfig(NAME, config, this.constructor.DefaultType);
+        return config;
+      };
+
+      _proto._getDelegateConfig = function _getDelegateConfig() {
+        var config = {};
+
+        if (this.config) {
+          for (var key in this.config) {
+            if (this.constructor.Default[key] !== this.config[key]) {
+              config[key] = this.config[key];
+            }
+          }
+        }
+
+        return config;
+      };
+
+      _proto._cleanTipClass = function _cleanTipClass() {
+        var $tip = $$$1(this.getTipElement());
+        var tabClass = $tip.attr('class').match(BSCLS_PREFIX_REGEX);
+
+        if (tabClass !== null && tabClass.length > 0) {
+          $tip.removeClass(tabClass.join(''));
+        }
+      };
+
+      _proto._handlePopperPlacementChange = function _handlePopperPlacementChange(data) {
+        this._cleanTipClass();
+
+        this.addAttachmentClass(this._getAttachment(data.placement));
+      };
+
+      _proto._fixTransition = function _fixTransition() {
+        var tip = this.getTipElement();
+        var initConfigAnimation = this.config.animation;
+
+        if (tip.getAttribute('x-placement') !== null) {
+          return;
+        }
+
+        $$$1(tip).removeClass(ClassName.FADE);
+        this.config.animation = false;
+        this.hide();
+        this.show();
+        this.config.animation = initConfigAnimation;
+      }; // Static
+
+
+      Tooltip._jQueryInterface = function _jQueryInterface(config) {
+        return this.each(function () {
+          var data = $$$1(this).data(DATA_KEY);
+
+          var _config = typeof config === 'object' && config;
+
+          if (!data && /dispose|hide/.test(config)) {
+            return;
+          }
+
+          if (!data) {
+            data = new Tooltip(this, _config);
+            $$$1(this).data(DATA_KEY, data);
+          }
+
+          if (typeof config === 'string') {
+            if (typeof data[config] === 'undefined') {
+              throw new TypeError("No method named \"" + config + "\"");
+            }
+
+            data[config]();
+          }
+        });
+      };
+
+      _createClass(Tooltip, null, [{
+        key: "VERSION",
+        get: function get() {
+          return VERSION;
+        }
+      }, {
+        key: "Default",
+        get: function get() {
+          return Default;
+        }
+      }, {
+        key: "NAME",
+        get: function get() {
+          return NAME;
+        }
+      }, {
+        key: "DATA_KEY",
+        get: function get() {
+          return DATA_KEY;
+        }
+      }, {
+        key: "Event",
+        get: function get() {
+          return Event;
+        }
+      }, {
+        key: "EVENT_KEY",
+        get: function get() {
+          return EVENT_KEY;
+        }
+      }, {
+        key: "DefaultType",
+        get: function get() {
+          return DefaultType;
+        }
+      }]);
+
+      return Tooltip;
+    }();
+    /**
+     * ------------------------------------------------------------------------
+     * jQuery
+     * ------------------------------------------------------------------------
+     */
+
+
+    $$$1.fn[NAME] = Tooltip._jQueryInterface;
+    $$$1.fn[NAME].Constructor = Tooltip;
+
+    $$$1.fn[NAME].noConflict = function () {
+      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
+      return Tooltip._jQueryInterface;
+    };
+
+    return Tooltip;
+  }($, Popper);
+
+  /**
+   * --------------------------------------------------------------------------
+   * Bootstrap (v4.1.1): popover.js
+   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+   * --------------------------------------------------------------------------
+   */
+
+  var Popover = function ($$$1) {
+    /**
+     * ------------------------------------------------------------------------
+     * Constants
+     * ------------------------------------------------------------------------
+     */
+    var NAME = 'popover';
+    var VERSION = '4.1.1';
+    var DATA_KEY = 'bs.popover';
+    var EVENT_KEY = "." + DATA_KEY;
+    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
+    var CLASS_PREFIX = 'bs-popover';
+    var BSCLS_PREFIX_REGEX = new RegExp("(^|\\s)" + CLASS_PREFIX + "\\S+", 'g');
+
+    var Default = _objectSpread({}, Tooltip.Default, {
+      placement: 'right',
+      trigger: 'click',
+      content: '',
+      template: '<div class="popover" role="tooltip">' + '<div class="arrow"></div>' + '<h3 class="popover-header"></h3>' + '<div class="popover-body"></div></div>'
+    });
+
+    var DefaultType = _objectSpread({}, Tooltip.DefaultType, {
+      content: '(string|element|function)'
+    });
+
+    var ClassName = {
+      FADE: 'fade',
+      SHOW: 'show'
+    };
+    var Selector = {
+      TITLE: '.popover-header',
+      CONTENT: '.popover-body'
+    };
+    var Event = {
+      HIDE: "hide" + EVENT_KEY,
+      HIDDEN: "hidden" + EVENT_KEY,
+      SHOW: "show" + EVENT_KEY,
+      SHOWN: "shown" + EVENT_KEY,
+      INSERTED: "inserted" + EVENT_KEY,
+      CLICK: "click" + EVENT_KEY,
+      FOCUSIN: "focusin" + EVENT_KEY,
+      FOCUSOUT: "focusout" + EVENT_KEY,
+      MOUSEENTER: "mouseenter" + EVENT_KEY,
+      MOUSELEAVE: "mouseleave" + EVENT_KEY
+      /**
+       * ------------------------------------------------------------------------
+       * Class Definition
+       * ------------------------------------------------------------------------
+       */
+
+    };
+
+    var Popover =
+    /*#__PURE__*/
+    function (_Tooltip) {
+      _inheritsLoose(Popover, _Tooltip);
+
+      function Popover() {
+        return _Tooltip.apply(this, arguments) || this;
+      }
+
+      var _proto = Popover.prototype;
+
+      // Overrides
+      _proto.isWithContent = function isWithContent() {
+        return this.getTitle() || this._getContent();
+      };
+
+      _proto.addAttachmentClass = function addAttachmentClass(attachment) {
+        $$$1(this.getTipElement()).addClass(CLASS_PREFIX + "-" + attachment);
+      };
+
+      _proto.getTipElement = function getTipElement() {
+        this.tip = this.tip || $$$1(this.config.template)[0];
+        return this.tip;
+      };
+
+      _proto.setContent = function setContent() {
+        var $tip = $$$1(this.getTipElement()); // We use append for html objects to maintain js events
+
+        this.setElementContent($tip.find(Selector.TITLE), this.getTitle());
+
+        var content = this._getContent();
+
+        if (typeof content === 'function') {
+          content = content.call(this.element);
+        }
+
+        this.setElementContent($tip.find(Selector.CONTENT), content);
+        $tip.removeClass(ClassName.FADE + " " + ClassName.SHOW);
+      }; // Private
+
+
+      _proto._getContent = function _getContent() {
+        return this.element.getAttribute('data-content') || this.config.content;
+      };
+
+      _proto._cleanTipClass = function _cleanTipClass() {
+        var $tip = $$$1(this.getTipElement());
+        var tabClass = $tip.attr('class').match(BSCLS_PREFIX_REGEX);
+
+        if (tabClass !== null && tabClass.length > 0) {
+          $tip.removeClass(tabClass.join(''));
+        }
+      }; // Static
+
+
+      Popover._jQueryInterface = function _jQueryInterface(config) {
+        return this.each(function () {
+          var data = $$$1(this).data(DATA_KEY);
+
+          var _config = typeof config === 'object' ? config : null;
+
+          if (!data && /destroy|hide/.test(config)) {
+            return;
+          }
+
+          if (!data) {
+            data = new Popover(this, _config);
+            $$$1(this).data(DATA_KEY, data);
+          }
+
+          if (typeof config === 'string') {
+            if (typeof data[config] === 'undefined') {
+              throw new TypeError("No method named \"" + config + "\"");
+            }
+
+            data[config]();
+          }
+        });
+      };
+
+      _createClass(Popover, null, [{
+        key: "VERSION",
+        // Getters
+        get: function get() {
+          return VERSION;
+        }
+      }, {
+        key: "Default",
+        get: function get() {
+          return Default;
+        }
+      }, {
+        key: "NAME",
+        get: function get() {
+          return NAME;
+        }
+      }, {
+        key: "DATA_KEY",
+        get: function get() {
+          return DATA_KEY;
+        }
+      }, {
+        key: "Event",
+        get: function get() {
+          return Event;
+        }
+      }, {
+        key: "EVENT_KEY",
+        get: function get() {
+          return EVENT_KEY;
+        }
+      }, {
+        key: "DefaultType",
+        get: function get() {
+          return DefaultType;
+        }
+      }]);
+
+      return Popover;
+    }(Tooltip);
+    /**
+     * ------------------------------------------------------------------------
+     * jQuery
+     * ------------------------------------------------------------------------
+     */
+
+
+    $$$1.fn[NAME] = Popover._jQueryInterface;
+    $$$1.fn[NAME].Constructor = Popover;
+
+    $$$1.fn[NAME].noConflict = function () {
+      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
+      return Popover._jQueryInterface;
+    };
+
+    return Popover;
+  }($);
+
+  /**
+   * --------------------------------------------------------------------------
+   * Bootstrap (v4.1.1): scrollspy.js
+   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+   * --------------------------------------------------------------------------
+   */
+
+  var ScrollSpy = function ($$$1) {
+    /**
+     * ------------------------------------------------------------------------
+     * Constants
+     * ------------------------------------------------------------------------
+     */
+    var NAME = 'scrollspy';
+    var VERSION = '4.1.1';
+    var DATA_KEY = 'bs.scrollspy';
+    var EVENT_KEY = "." + DATA_KEY;
+    var DATA_API_KEY = '.data-api';
+    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
+    var Default = {
+      offset: 10,
+      method: 'auto',
+      target: ''
+    };
+    var DefaultType = {
+      offset: 'number',
+      method: 'string',
+      target: '(string|element)'
+    };
+    var Event = {
+      ACTIVATE: "activate" + EVENT_KEY,
+      SCROLL: "scroll" + EVENT_KEY,
+      LOAD_DATA_API: "load" + EVENT_KEY + DATA_API_KEY
+    };
+    var ClassName = {
+      DROPDOWN_ITEM: 'dropdown-item',
+      DROPDOWN_MENU: 'dropdown-menu',
+      ACTIVE: 'active'
+    };
+    var Selector = {
+      DATA_SPY: '[data-spy="scroll"]',
+      ACTIVE: '.active',
+      NAV_LIST_GROUP: '.nav, .list-group',
+      NAV_LINKS: '.nav-link',
+      NAV_ITEMS: '.nav-item',
+      LIST_ITEMS: '.list-group-item',
+      DROPDOWN: '.dropdown',
+      DROPDOWN_ITEMS: '.dropdown-item',
+      DROPDOWN_TOGGLE: '.dropdown-toggle'
+    };
+    var OffsetMethod = {
+      OFFSET: 'offset',
+      POSITION: 'position'
+      /**
+       * ------------------------------------------------------------------------
+       * Class Definition
+       * ------------------------------------------------------------------------
+       */
+
+    };
+
+    var ScrollSpy =
+    /*#__PURE__*/
+    function () {
+      function ScrollSpy(element, config) {
+        var _this = this;
+
+        this._element = element;
+        this._scrollElement = element.tagName === 'BODY' ? window : element;
+        this._config = this._getConfig(config);
+        this._selector = this._config.target + " " + Selector.NAV_LINKS + "," + (this._config.target + " " + Selector.LIST_ITEMS + ",") + (this._config.target + " " + Selector.DROPDOWN_ITEMS);
+        this._offsets = [];
+        this._targets = [];
+        this._activeTarget = null;
+        this._scrollHeight = 0;
+        $$$1(this._scrollElement).on(Event.SCROLL, function (event) {
+          return _this._process(event);
+        });
+        this.refresh();
+
+        this._process();
+      } // Getters
+
+
+      var _proto = ScrollSpy.prototype;
+
+      // Public
+      _proto.refresh = function refresh() {
+        var _this2 = this;
+
+        var autoMethod = this._scrollElement === this._scrollElement.window ? OffsetMethod.OFFSET : OffsetMethod.POSITION;
+        var offsetMethod = this._config.method === 'auto' ? autoMethod : this._config.method;
+        var offsetBase = offsetMethod === OffsetMethod.POSITION ? this._getScrollTop() : 0;
+        this._offsets = [];
+        this._targets = [];
+        this._scrollHeight = this._getScrollHeight();
+        var targets = $$$1.makeArray($$$1(this._selector));
+        targets.map(function (element) {
+          var target;
+          var targetSelector = Util.getSelectorFromElement(element);
+
+          if (targetSelector) {
+            target = $$$1(targetSelector)[0];
+          }
+
+          if (target) {
+            var targetBCR = target.getBoundingClientRect();
+
+            if (targetBCR.width || targetBCR.height) {
+              // TODO (fat): remove sketch reliance on jQuery position/offset
+              return [$$$1(target)[offsetMethod]().top + offsetBase, targetSelector];
+            }
+          }
+
+          return null;
+        }).filter(function (item) {
+          return item;
+        }).sort(function (a, b) {
+          return a[0] - b[0];
+        }).forEach(function (item) {
+          _this2._offsets.push(item[0]);
+
+          _this2._targets.push(item[1]);
+        });
+      };
+
+      _proto.dispose = function dispose() {
+        $$$1.removeData(this._element, DATA_KEY);
+        $$$1(this._scrollElement).off(EVENT_KEY);
+        this._element = null;
+        this._scrollElement = null;
+        this._config = null;
+        this._selector = null;
+        this._offsets = null;
+        this._targets = null;
+        this._activeTarget = null;
+        this._scrollHeight = null;
+      }; // Private
+
+
+      _proto._getConfig = function _getConfig(config) {
+        config = _objectSpread({}, Default, typeof config === 'object' && config ? config : {});
+
+        if (typeof config.target !== 'string') {
+          var id = $$$1(config.target).attr('id');
+
+          if (!id) {
+            id = Util.getUID(NAME);
+            $$$1(config.target).attr('id', id);
+          }
+
+          config.target = "#" + id;
+        }
+
+        Util.typeCheckConfig(NAME, config, DefaultType);
+        return config;
+      };
+
+      _proto._getScrollTop = function _getScrollTop() {
+        return this._scrollElement === window ? this._scrollElement.pageYOffset : this._scrollElement.scrollTop;
+      };
+
+      _proto._getScrollHeight = function _getScrollHeight() {
+        return this._scrollElement.scrollHeight || Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+      };
+
+      _proto._getOffsetHeight = function _getOffsetHeight() {
+        return this._scrollElement === window ? window.innerHeight : this._scrollElement.getBoundingClientRect().height;
+      };
+
+      _proto._process = function _process() {
+        var scrollTop = this._getScrollTop() + this._config.offset;
+
+        var scrollHeight = this._getScrollHeight();
+
+        var maxScroll = this._config.offset + scrollHeight - this._getOffsetHeight();
+
+        if (this._scrollHeight !== scrollHeight) {
+          this.refresh();
+        }
+
+        if (scrollTop >= maxScroll) {
+          var target = this._targets[this._targets.length - 1];
+
+          if (this._activeTarget !== target) {
+            this._activate(target);
+          }
+
+          return;
+        }
+
+        if (this._activeTarget && scrollTop < this._offsets[0] && this._offsets[0] > 0) {
+          this._activeTarget = null;
+
+          this._clear();
+
+          return;
+        }
+
+        for (var i = this._offsets.length; i--;) {
+          var isActiveTarget = this._activeTarget !== this._targets[i] && scrollTop >= this._offsets[i] && (typeof this._offsets[i + 1] === 'undefined' || scrollTop < this._offsets[i + 1]);
+
+          if (isActiveTarget) {
+            this._activate(this._targets[i]);
+          }
+        }
+      };
+
+      _proto._activate = function _activate(target) {
+        this._activeTarget = target;
+
+        this._clear();
+
+        var queries = this._selector.split(','); // eslint-disable-next-line arrow-body-style
+
+
+        queries = queries.map(function (selector) {
+          return selector + "[data-target=\"" + target + "\"]," + (selector + "[href=\"" + target + "\"]");
+        });
+        var $link = $$$1(queries.join(','));
+
+        if ($link.hasClass(ClassName.DROPDOWN_ITEM)) {
+          $link.closest(Selector.DROPDOWN).find(Selector.DROPDOWN_TOGGLE).addClass(ClassName.ACTIVE);
+          $link.addClass(ClassName.ACTIVE);
+        } else {
+          // Set triggered link as active
+          $link.addClass(ClassName.ACTIVE); // Set triggered links parents as active
+          // With both <ul> and <nav> markup a parent is the previous sibling of any nav ancestor
+
+          $link.parents(Selector.NAV_LIST_GROUP).prev(Selector.NAV_LINKS + ", " + Selector.LIST_ITEMS).addClass(ClassName.ACTIVE); // Handle special case when .nav-link is inside .nav-item
+
+          $link.parents(Selector.NAV_LIST_GROUP).prev(Selector.NAV_ITEMS).children(Selector.NAV_LINKS).addClass(ClassName.ACTIVE);
+        }
+
+        $$$1(this._scrollElement).trigger(Event.ACTIVATE, {
+          relatedTarget: target
+        });
+      };
+
+      _proto._clear = function _clear() {
+        $$$1(this._selector).filter(Selector.ACTIVE).removeClass(ClassName.ACTIVE);
+      }; // Static
+
+
+      ScrollSpy._jQueryInterface = function _jQueryInterface(config) {
+        return this.each(function () {
+          var data = $$$1(this).data(DATA_KEY);
+
+          var _config = typeof config === 'object' && config;
+
+          if (!data) {
+            data = new ScrollSpy(this, _config);
+            $$$1(this).data(DATA_KEY, data);
+          }
+
+          if (typeof config === 'string') {
+            if (typeof data[config] === 'undefined') {
+              throw new TypeError("No method named \"" + config + "\"");
+            }
+
+            data[config]();
+          }
+        });
+      };
+
+      _createClass(ScrollSpy, null, [{
+        key: "VERSION",
+        get: function get() {
+          return VERSION;
+        }
+      }, {
+        key: "Default",
+        get: function get() {
+          return Default;
+        }
+      }]);
+
+      return ScrollSpy;
+    }();
+    /**
+     * ------------------------------------------------------------------------
+     * Data Api implementation
+     * ------------------------------------------------------------------------
+     */
+
+
+    $$$1(window).on(Event.LOAD_DATA_API, function () {
+      var scrollSpys = $$$1.makeArray($$$1(Selector.DATA_SPY));
+
+      for (var i = scrollSpys.length; i--;) {
+        var $spy = $$$1(scrollSpys[i]);
+
+        ScrollSpy._jQueryInterface.call($spy, $spy.data());
+      }
+    });
+    /**
+     * ------------------------------------------------------------------------
+     * jQuery
+     * ------------------------------------------------------------------------
+     */
+
+    $$$1.fn[NAME] = ScrollSpy._jQueryInterface;
+    $$$1.fn[NAME].Constructor = ScrollSpy;
+
+    $$$1.fn[NAME].noConflict = function () {
+      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
+      return ScrollSpy._jQueryInterface;
+    };
+
+    return ScrollSpy;
+  }($);
+
+  /**
+   * --------------------------------------------------------------------------
+   * Bootstrap (v4.1.1): tab.js
+   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+   * --------------------------------------------------------------------------
+   */
+
+  var Tab = function ($$$1) {
+    /**
+     * ------------------------------------------------------------------------
+     * Constants
+     * ------------------------------------------------------------------------
+     */
+    var NAME = 'tab';
+    var VERSION = '4.1.1';
+    var DATA_KEY = 'bs.tab';
+    var EVENT_KEY = "." + DATA_KEY;
+    var DATA_API_KEY = '.data-api';
+    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
+    var Event = {
+      HIDE: "hide" + EVENT_KEY,
+      HIDDEN: "hidden" + EVENT_KEY,
+      SHOW: "show" + EVENT_KEY,
+      SHOWN: "shown" + EVENT_KEY,
+      CLICK_DATA_API: "click" + EVENT_KEY + DATA_API_KEY
+    };
+    var ClassName = {
+      DROPDOWN_MENU: 'dropdown-menu',
+      ACTIVE: 'active',
+      DISABLED: 'disabled',
+      FADE: 'fade',
+      SHOW: 'show'
+    };
+    var Selector = {
+      DROPDOWN: '.dropdown',
+      NAV_LIST_GROUP: '.nav, .list-group',
+      ACTIVE: '.active',
+      ACTIVE_UL: '> li > .active',
+      DATA_TOGGLE: '[data-toggle="tab"], [data-toggle="pill"], [data-toggle="list"]',
+      DROPDOWN_TOGGLE: '.dropdown-toggle',
+      DROPDOWN_ACTIVE_CHILD: '> .dropdown-menu .active'
+      /**
+       * ------------------------------------------------------------------------
+       * Class Definition
+       * ------------------------------------------------------------------------
+       */
+
+    };
+
+    var Tab =
+    /*#__PURE__*/
+    function () {
+      function Tab(element) {
+        this._element = element;
+      } // Getters
+
+
+      var _proto = Tab.prototype;
+
+      // Public
+      _proto.show = function show() {
+        var _this = this;
+
+        if (this._element.parentNode && this._element.parentNode.nodeType === Node.ELEMENT_NODE && $$$1(this._element).hasClass(ClassName.ACTIVE) || $$$1(this._element).hasClass(ClassName.DISABLED)) {
+          return;
+        }
+
+        var target;
+        var previous;
+        var listElement = $$$1(this._element).closest(Selector.NAV_LIST_GROUP)[0];
+        var selector = Util.getSelectorFromElement(this._element);
+
+        if (listElement) {
+          var itemSelector = listElement.nodeName === 'UL' ? Selector.ACTIVE_UL : Selector.ACTIVE;
+          previous = $$$1.makeArray($$$1(listElement).find(itemSelector));
+          previous = previous[previous.length - 1];
+        }
+
+        var hideEvent = $$$1.Event(Event.HIDE, {
+          relatedTarget: this._element
+        });
+        var showEvent = $$$1.Event(Event.SHOW, {
+          relatedTarget: previous
+        });
+
+        if (previous) {
+          $$$1(previous).trigger(hideEvent);
+        }
+
+        $$$1(this._element).trigger(showEvent);
+
+        if (showEvent.isDefaultPrevented() || hideEvent.isDefaultPrevented()) {
+          return;
+        }
+
+        if (selector) {
+          target = $$$1(selector)[0];
+        }
+
+        this._activate(this._element, listElement);
+
+        var complete = function complete() {
+          var hiddenEvent = $$$1.Event(Event.HIDDEN, {
+            relatedTarget: _this._element
+          });
+          var shownEvent = $$$1.Event(Event.SHOWN, {
+            relatedTarget: previous
+          });
+          $$$1(previous).trigger(hiddenEvent);
+          $$$1(_this._element).trigger(shownEvent);
+        };
+
+        if (target) {
+          this._activate(target, target.parentNode, complete);
+        } else {
+          complete();
+        }
+      };
+
+      _proto.dispose = function dispose() {
+        $$$1.removeData(this._element, DATA_KEY);
+        this._element = null;
+      }; // Private
+
+
+      _proto._activate = function _activate(element, container, callback) {
+        var _this2 = this;
+
+        var activeElements;
+
+        if (container.nodeName === 'UL') {
+          activeElements = $$$1(container).find(Selector.ACTIVE_UL);
+        } else {
+          activeElements = $$$1(container).children(Selector.ACTIVE);
+        }
+
+        var active = activeElements[0];
+        var isTransitioning = callback && active && $$$1(active).hasClass(ClassName.FADE);
+
+        var complete = function complete() {
+          return _this2._transitionComplete(element, active, callback);
+        };
+
+        if (active && isTransitioning) {
+          var transitionDuration = Util.getTransitionDurationFromElement(active);
+          $$$1(active).one(Util.TRANSITION_END, complete).emulateTransitionEnd(transitionDuration);
+        } else {
+          complete();
+        }
+      };
+
+      _proto._transitionComplete = function _transitionComplete(element, active, callback) {
+        if (active) {
+          $$$1(active).removeClass(ClassName.SHOW + " " + ClassName.ACTIVE);
+          var dropdownChild = $$$1(active.parentNode).find(Selector.DROPDOWN_ACTIVE_CHILD)[0];
+
+          if (dropdownChild) {
+            $$$1(dropdownChild).removeClass(ClassName.ACTIVE);
+          }
+
+          if (active.getAttribute('role') === 'tab') {
+            active.setAttribute('aria-selected', false);
+          }
+        }
+
+        $$$1(element).addClass(ClassName.ACTIVE);
+
+        if (element.getAttribute('role') === 'tab') {
+          element.setAttribute('aria-selected', true);
+        }
+
+        Util.reflow(element);
+        $$$1(element).addClass(ClassName.SHOW);
+
+        if (element.parentNode && $$$1(element.parentNode).hasClass(ClassName.DROPDOWN_MENU)) {
+          var dropdownElement = $$$1(element).closest(Selector.DROPDOWN)[0];
+
+          if (dropdownElement) {
+            $$$1(dropdownElement).find(Selector.DROPDOWN_TOGGLE).addClass(ClassName.ACTIVE);
+          }
+
+          element.setAttribute('aria-expanded', true);
+        }
+
+        if (callback) {
+          callback();
+        }
+      }; // Static
+
+
+      Tab._jQueryInterface = function _jQueryInterface(config) {
+        return this.each(function () {
+          var $this = $$$1(this);
+          var data = $this.data(DATA_KEY);
+
+          if (!data) {
+            data = new Tab(this);
+            $this.data(DATA_KEY, data);
+          }
+
+          if (typeof config === 'string') {
+            if (typeof data[config] === 'undefined') {
+              throw new TypeError("No method named \"" + config + "\"");
+            }
+
+            data[config]();
+          }
+        });
+      };
+
+      _createClass(Tab, null, [{
+        key: "VERSION",
+        get: function get() {
+          return VERSION;
+        }
+      }]);
+
+      return Tab;
+    }();
+    /**
+     * ------------------------------------------------------------------------
+     * Data Api implementation
+     * ------------------------------------------------------------------------
+     */
+
+
+    $$$1(document).on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE, function (event) {
+      event.preventDefault();
+
+      Tab._jQueryInterface.call($$$1(this), 'show');
+    });
+    /**
+     * ------------------------------------------------------------------------
+     * jQuery
+     * ------------------------------------------------------------------------
+     */
+
+    $$$1.fn[NAME] = Tab._jQueryInterface;
+    $$$1.fn[NAME].Constructor = Tab;
+
+    $$$1.fn[NAME].noConflict = function () {
+      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
+      return Tab._jQueryInterface;
+    };
+
+    return Tab;
+  }($);
+
+  /**
+   * --------------------------------------------------------------------------
+   * Bootstrap (v4.1.1): index.js
+   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+   * --------------------------------------------------------------------------
+   */
+
+  (function ($$$1) {
+    if (typeof $$$1 === 'undefined') {
+      throw new TypeError('Bootstrap\'s JavaScript requires jQuery. jQuery must be included before Bootstrap\'s JavaScript.');
+    }
+
+    var version = $$$1.fn.jquery.split(' ')[0].split('.');
+    var minMajor = 1;
+    var ltMajor = 2;
+    var minMinor = 9;
+    var minPatch = 1;
+    var maxMajor = 4;
+
+    if (version[0] < ltMajor && version[1] < minMinor || version[0] === minMajor && version[1] === minMinor && version[2] < minPatch || version[0] >= maxMajor) {
+      throw new Error('Bootstrap\'s JavaScript requires at least jQuery v1.9.1 but less than v4.0.0');
+    }
+  })($);
+
+  exports.Util = Util;
+  exports.Alert = Alert;
+  exports.Button = Button;
+  exports.Carousel = Carousel;
+  exports.Collapse = Collapse;
+  exports.Dropdown = Dropdown;
+  exports.Modal = Modal;
+  exports.Popover = Popover;
+  exports.Scrollspy = ScrollSpy;
+  exports.Tab = Tab;
+  exports.Tooltip = Tooltip;
+
+  Object.defineProperty(exports, '__esModule', { value: true });
+
+})));
+//# sourceMappingURL=bootstrap.js.map
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
+ * bootstrap-fileinput v4.4.8
+ * http://plugins.krajee.com/file-input
+ *
+ * Author: Kartik Visweswaran
+ * Copyright: 2014 - 2018, Kartik Visweswaran, Krajee.com
+ *
+ * Licensed under the BSD 3-Clause
+ * https://github.com/kartik-v/bootstrap-fileinput/blob/master/LICENSE.md
+ */
+(function (factory) {
+    "use strict";
+    //noinspection JSUnresolvedVariable
+    if (true) { // jshint ignore:line
+        // AMD. Register as an anonymous module.
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(0)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__)); // jshint ignore:line
+    } else { // noinspection JSUnresolvedVariable
+        if (typeof module === 'object' && module.exports) { // jshint ignore:line
+            // Node/CommonJS
+            // noinspection JSUnresolvedVariable
+            module.exports = factory(require('jquery')); // jshint ignore:line
+        } else {
+            // Browser globals
+            factory(window.jQuery);
+        }
+    }
+}(function ($) {
+    "use strict";
+
+    $.fn.fileinputLocales = {};
+    $.fn.fileinputThemes = {};
+
+    String.prototype.setTokens = function (replacePairs) {
+        var str = this.toString(), key, re;
+        for (key in replacePairs) {
+            if (replacePairs.hasOwnProperty(key)) {
+                re = new RegExp("\{" + key + "\}", "g");
+                str = str.replace(re, replacePairs[key]);
+            }
+        }
+        return str;
+    };
+
+    var $h, FileInput;
+
+    // fileinput helper object for all global variables and internal helper methods
+    //noinspection JSUnresolvedVariable
+    $h = {
+        FRAMES: '.kv-preview-thumb',
+        SORT_CSS: 'file-sortable',
+        OBJECT_PARAMS: '<param name="controller" value="true" />\n' +
+        '<param name="allowFullScreen" value="true" />\n' +
+        '<param name="allowScriptAccess" value="always" />\n' +
+        '<param name="autoPlay" value="false" />\n' +
+        '<param name="autoStart" value="false" />\n' +
+        '<param name="quality" value="high" />\n',
+        DEFAULT_PREVIEW: '<div class="file-preview-other">\n' +
+        '<span class="{previewFileIconClass}">{previewFileIcon}</span>\n' +
+        '</div>',
+        MODAL_ID: 'kvFileinputModal',
+        MODAL_EVENTS: ['show', 'shown', 'hide', 'hidden', 'loaded'],
+        objUrl: window.URL || window.webkitURL,
+        compare: function (input, str, exact) {
+            return input !== undefined && (exact ? input === str : input.match(str));
+        },
+        isIE: function (ver) {
+            // check for IE versions < 11
+            if (navigator.appName !== 'Microsoft Internet Explorer') {
+                return false;
+            }
+            if (ver === 10) {
+                return new RegExp('msie\\s' + ver, 'i').test(navigator.userAgent);
+            }
+            var div = document.createElement("div"), status;
+            div.innerHTML = "<!--[if IE " + ver + "]> <i></i> <![endif]-->";
+            status = div.getElementsByTagName("i").length;
+            document.body.appendChild(div);
+            div.parentNode.removeChild(div);
+            return status;
+        },
+        canAssignFilesToInput: function () {
+            var input = document.createElement('input');
+            try {
+                input.type = "file";
+                input.files = null;
+                return true;
+            } catch (err) {
+                return false;
+            }
+        },
+        getDragDropFolders: function (items) {
+            var i, item, len = items.length, folders = 0;
+            if (len > 0 && items[0].webkitGetAsEntry()) {
+                for (i = 0; i < len; i++) {
+                    item = items[i].webkitGetAsEntry();
+                    if (item && item.isDirectory) {
+                        folders++;
+                    }
+                }
+            }
+            return folders;
+        },
+        initModal: function ($modal) {
+            var $body = $('body');
+            if ($body.length) {
+                $modal.appendTo($body);
+            }
+        },
+        isEmpty: function (value, trim) {
+            return value === undefined || value === null || value.length === 0 || (trim && $.trim(value) === '');
+        },
+        isArray: function (a) {
+            return Array.isArray(a) || Object.prototype.toString.call(a) === '[object Array]';
+        },
+        ifSet: function (needle, haystack, def) {
+            def = def || '';
+            return (haystack && typeof haystack === 'object' && needle in haystack) ? haystack[needle] : def;
+        },
+        cleanArray: function (arr) {
+            if (!(arr instanceof Array)) {
+                arr = [];
+            }
+            return arr.filter(function (e) {
+                return (e !== undefined && e !== null);
+            });
+        },
+        spliceArray: function (arr, index, reverseOrder) {
+            var i, j = 0, out = [], newArr;
+            if (!(arr instanceof Array)) {
+                return [];
+            }
+            newArr = $.extend(true, [], arr);
+            if (reverseOrder) {
+                newArr.reverse();
+            }
+            for (i = 0; i < newArr.length; i++) {
+                if (i !== index) {
+                    out[j] = newArr[i];
+                    j++;
+                }
+            }
+            if (reverseOrder) {
+                out.reverse();
+            }
+            return out;
+        },
+        getNum: function (num, def) {
+            def = def || 0;
+            if (typeof num === "number") {
+                return num;
+            }
+            if (typeof num === "string") {
+                num = parseFloat(num);
+            }
+            return isNaN(num) ? def : num;
+        },
+        hasFileAPISupport: function () {
+            return !!(window.File && window.FileReader);
+        },
+        hasDragDropSupport: function () {
+            var div = document.createElement('div');
+            /** @namespace div.draggable */
+            /** @namespace div.ondragstart */
+            /** @namespace div.ondrop */
+            return !$h.isIE(9) &&
+                (div.draggable !== undefined || (div.ondragstart !== undefined && div.ondrop !== undefined));
+        },
+        hasFileUploadSupport: function () {
+            return $h.hasFileAPISupport() && window.FormData;
+        },
+        hasBlobSupport: function () {
+            try {
+                return !!window.Blob && Boolean(new Blob());
+            } catch (e) {
+                return false;
+            }
+        },
+        hasArrayBufferViewSupport: function () {
+            try {
+                return new Blob([new Uint8Array(100)]).size === 100;
+            } catch (e) {
+                return false;
+            }
+        },
+        dataURI2Blob: function (dataURI) {
+            //noinspection JSUnresolvedVariable
+            var BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder ||
+                window.MSBlobBuilder, canBlob = $h.hasBlobSupport(), byteStr, arrayBuffer, intArray, i, mimeStr, bb,
+                canProceed = (canBlob || BlobBuilder) && window.atob && window.ArrayBuffer && window.Uint8Array;
+            if (!canProceed) {
+                return null;
+            }
+            if (dataURI.split(',')[0].indexOf('base64') >= 0) {
+                byteStr = atob(dataURI.split(',')[1]);
+            } else {
+                byteStr = decodeURIComponent(dataURI.split(',')[1]);
+            }
+            arrayBuffer = new ArrayBuffer(byteStr.length);
+            intArray = new Uint8Array(arrayBuffer);
+            for (i = 0; i < byteStr.length; i += 1) {
+                intArray[i] = byteStr.charCodeAt(i);
+            }
+            mimeStr = dataURI.split(',')[0].split(':')[1].split(';')[0];
+            if (canBlob) {
+                return new Blob([$h.hasArrayBufferViewSupport() ? intArray : arrayBuffer], {type: mimeStr});
+            }
+            bb = new BlobBuilder();
+            bb.append(arrayBuffer);
+            return bb.getBlob(mimeStr);
+        },
+        arrayBuffer2String: function (buffer) {
+            //noinspection JSUnresolvedVariable
+            if (window.TextDecoder) {
+                // noinspection JSUnresolvedFunction
+                return new TextDecoder("utf-8").decode(buffer);
+            }
+            var array = Array.prototype.slice.apply(new Uint8Array(buffer)), out = '', i = 0, len, c, char2, char3;
+            len = array.length;
+            while (i < len) {
+                c = array[i++];
+                switch (c >> 4) { // jshint ignore:line
+                    case 0:
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                    case 5:
+                    case 6:
+                    case 7:
+                        // 0xxxxxxx
+                        out += String.fromCharCode(c);
+                        break;
+                    case 12:
+                    case 13:
+                        // 110x xxxx   10xx xxxx
+                        char2 = array[i++];
+                        out += String.fromCharCode(((c & 0x1F) << 6) | (char2 & 0x3F)); // jshint ignore:line
+                        break;
+                    case 14:
+                        // 1110 xxxx  10xx xxxx  10xx xxxx
+                        char2 = array[i++];
+                        char3 = array[i++];
+                        out += String.fromCharCode(((c & 0x0F) << 12) | // jshint ignore:line
+                            ((char2 & 0x3F) << 6) |  // jshint ignore:line
+                            ((char3 & 0x3F) << 0)); // jshint ignore:line
+                        break;
+                }
+            }
+            return out;
+        },
+        isHtml: function (str) {
+            var a = document.createElement('div');
+            a.innerHTML = str;
+            for (var c = a.childNodes, i = c.length; i--;) {
+                if (c[i].nodeType === 1) {
+                    return true;
+                }
+            }
+            return false;
+        },
+        isSvg: function (str) {
+            return str.match(/^\s*<\?xml/i) && (str.match(/<!DOCTYPE svg/i) || str.match(/<svg/i));
+        },
+        getMimeType: function (signature, contents, type) {
+            switch (signature) {
+                case "ffd8ffe0":
+                case "ffd8ffe1":
+                case "ffd8ffe2":
+                    return 'image/jpeg';
+                case '89504E47':
+                    return 'image/png';
+                case '47494638':
+                    return 'image/gif';
+                case '49492a00':
+                    return 'image/tiff';
+                case '52494646':
+                    return 'image/webp';
+                case '66747970':
+                    return 'video/3gp';
+                case '4f676753':
+                    return 'video/ogg';
+                case '1a45dfa3':
+                    return 'video/mkv';
+                case '000001ba':
+                case '000001b3':
+                    return 'video/mpeg';
+                case '3026b275':
+                    return 'video/wmv';
+                case '25504446':
+                    return 'application/pdf';
+                case '25215053':
+                    return 'application/ps';
+                case '504b0304':
+                case '504b0506':
+                case '504b0508':
+                    return 'application/zip';
+                case '377abcaf':
+                    return 'application/7z';
+                case '75737461':
+                    return 'application/tar';
+                case '7801730d':
+                    return 'application/dmg';
+                default:
+                    switch (signature.substring(0, 6)) {
+                        case '435753':
+                            return 'application/x-shockwave-flash';
+                        case '494433':
+                            return 'audio/mp3';
+                        case '425a68':
+                            return 'application/bzip';
+                        default:
+                            switch (signature.substring(0, 4)) {
+                                case '424d':
+                                    return 'image/bmp';
+                                case 'fffb':
+                                    return 'audio/mp3';
+                                case '4d5a':
+                                    return 'application/exe';
+                                case '1f9d':
+                                case '1fa0':
+                                    return 'application/zip';
+                                case '1f8b':
+                                    return 'application/gzip';
+                                default:
+                                    return contents && !contents.match(/[^\u0000-\u007f]/) ? 'application/text-plain' : type;
+                            }
+                    }
+            }
+        },
+        addCss: function ($el, css) {
+            $el.removeClass(css).addClass(css);
+        },
+        getElement: function (options, param, value) {
+            return ($h.isEmpty(options) || $h.isEmpty(options[param])) ? value : $(options[param]);
+        },
+        uniqId: function () {
+            return Math.round(new Date().getTime()) + '_' + Math.round(Math.random() * 100);
+        },
+        htmlEncode: function (str) {
+            return str.replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&apos;');
+        },
+        replaceTags: function (str, tags) {
+            var out = str;
+            if (!tags) {
+                return out;
+            }
+            $.each(tags, function (key, value) {
+                if (typeof value === "function") {
+                    value = value();
+                }
+                out = out.split(key).join(value);
+            });
+            return out;
+        },
+        cleanMemory: function ($thumb) {
+            var data = $thumb.is('img') ? $thumb.attr('src') : $thumb.find('source').attr('src');
+            /** @namespace $h.objUrl.revokeObjectURL */
+            $h.objUrl.revokeObjectURL(data);
+        },
+        findFileName: function (filePath) {
+            var sepIndex = filePath.lastIndexOf('/');
+            if (sepIndex === -1) {
+                sepIndex = filePath.lastIndexOf('\\');
+            }
+            return filePath.split(filePath.substring(sepIndex, sepIndex + 1)).pop();
+        },
+        checkFullScreen: function () {
+            //noinspection JSUnresolvedVariable
+            return document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement ||
+                document.msFullscreenElement;
+        },
+        toggleFullScreen: function (maximize) {
+            var doc = document, de = doc.documentElement;
+            if (de && maximize && !$h.checkFullScreen()) {
+                /** @namespace document.requestFullscreen */
+                /** @namespace document.msRequestFullscreen */
+                /** @namespace document.mozRequestFullScreen */
+                /** @namespace document.webkitRequestFullscreen */
+                /** @namespace Element.ALLOW_KEYBOARD_INPUT */
+                if (de.requestFullscreen) {
+                    de.requestFullscreen();
+                } else if (de.msRequestFullscreen) {
+                    de.msRequestFullscreen();
+                } else if (de.mozRequestFullScreen) {
+                    de.mozRequestFullScreen();
+                } else if (de.webkitRequestFullscreen) {
+                    de.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                }
+            } else {
+                /** @namespace document.exitFullscreen */
+                /** @namespace document.msExitFullscreen */
+                /** @namespace document.mozCancelFullScreen */
+                /** @namespace document.webkitExitFullscreen */
+                if (doc.exitFullscreen) {
+                    doc.exitFullscreen();
+                } else if (doc.msExitFullscreen) {
+                    doc.msExitFullscreen();
+                } else if (doc.mozCancelFullScreen) {
+                    doc.mozCancelFullScreen();
+                } else if (doc.webkitExitFullscreen) {
+                    doc.webkitExitFullscreen();
+                }
+            }
+        },
+        moveArray: function (arr, oldIndex, newIndex, reverseOrder) {
+            var newArr = $.extend(true, [], arr);
+            if (reverseOrder) {
+                newArr.reverse();
+            }
+            if (newIndex >= newArr.length) {
+                var k = newIndex - newArr.length;
+                while ((k--) + 1) {
+                    newArr.push(undefined);
+                }
+            }
+            newArr.splice(newIndex, 0, newArr.splice(oldIndex, 1)[0]);
+            if (reverseOrder) {
+                newArr.reverse();
+            }
+            return newArr;
+        },
+        cleanZoomCache: function ($el) {
+            var $cache = $el.closest('.kv-zoom-cache-theme');
+            if (!$cache.length) {
+                $cache = $el.closest('.kv-zoom-cache');
+            }
+            $cache.remove();
+        },
+        setOrientation: function (buffer, callback) {
+            var scanner = new DataView(buffer), idx = 0, value = 1, // Non-rotated is the default
+                maxBytes, uInt16, exifLength;
+            if (scanner.getUint16(idx) !== 0xFFD8 || buffer.length < 2) { // not a proper JPEG
+                if (callback) {
+                    callback();
+                }
+                return;
+            }
+            idx += 2;
+            maxBytes = scanner.byteLength;
+            while (idx < maxBytes - 2) {
+                uInt16 = scanner.getUint16(idx);
+                idx += 2;
+                switch (uInt16) {
+                    case 0xFFE1: // Start of EXIF
+                        exifLength = scanner.getUint16(idx);
+                        maxBytes = exifLength - idx;
+                        idx += 2;
+                        break;
+                    case 0x0112: // Orientation tag
+                        value = scanner.getUint16(idx + 6, false);
+                        maxBytes = 0; // Stop scanning
+                        break;
+                }
+            }
+            if (callback) {
+                callback(value);
+            }
+        },
+        validateOrientation: function (file, callback) {
+            if (!window.FileReader || !window.DataView) {
+                return; // skip orientation if pre-requisite libraries not supported by browser
+            }
+            var reader = new FileReader(), buffer;
+            reader.onloadend = function () {
+                buffer = reader.result;
+                $h.setOrientation(buffer, callback);
+            };
+            reader.readAsArrayBuffer(file);
+        },
+        adjustOrientedImage: function ($img, isZoom) {
+            var offsetContTop, offsetTop, newTop;
+            if (!$img.hasClass('is-portrait-gt4')) {
+                return;
+            }
+            if (isZoom) {
+                $img.css({width: $img.parent().height()});
+                return;
+            } else {
+                $img.css({height: 'auto', width: $img.height()});
+            }
+            offsetContTop = $img.parent().offset().top;
+            offsetTop = $img.offset().top;
+            newTop = offsetContTop - offsetTop;
+            $img.css('margin-top', newTop);
+        },
+        closeButton: function (css) {
+            css = css ? 'close ' + css : 'close';
+            return '<button type="button" class="' + css + '" aria-label="Close">\n' +
+                '  <span aria-hidden="true">&times;</span>\n' +
+                '</button>';
+        }
+    };
+    FileInput = function (element, options) {
+        var self = this;
+        self.$element = $(element);
+        self.$parent = self.$element.parent();
+        if (!self._validate()) {
+            return;
+        }
+        self.isPreviewable = $h.hasFileAPISupport();
+        self.isIE9 = $h.isIE(9);
+        self.isIE10 = $h.isIE(10);
+        if (self.isPreviewable || self.isIE9) {
+            self._init(options);
+            self._listen();
+        }
+        self.$element.removeClass('file-loading');
+    };
+    //noinspection JSUnusedGlobalSymbols
+    FileInput.prototype = {
+        constructor: FileInput,
+        _cleanup: function () {
+            var self = this;
+            self.reader = null;
+            self.formdata = {};
+            self.uploadCount = 0;
+            self.uploadStatus = {};
+            self.uploadLog = [];
+            self.uploadAsyncCount = 0;
+            self.loadedImages = [];
+            self.totalImagesCount = 0;
+            self.ajaxRequests = [];
+            self.clearStack();
+            self.fileBatchCompleted = true;
+            if (!self.isPreviewable) {
+                self.showPreview = false;
+            }
+            self.isError = false;
+            self.ajaxAborted = false;
+            self.cancelling = false;
+        },
+        _init: function (options, refreshMode) {
+            var self = this, f, $el = self.$element, $cont, t, tmp;
+            self.options = options;
+            $.each(options, function (key, value) {
+                switch (key) {
+                    case 'minFileCount':
+                    case 'maxFileCount':
+                    case 'minFileSize':
+                    case 'maxFileSize':
+                    case 'maxFilePreviewSize':
+                    case 'resizeImageQuality':
+                    case 'resizeIfSizeMoreThan':
+                    case 'progressUploadThreshold':
+                    case 'initialPreviewCount':
+                    case 'zoomModalHeight':
+                    case 'minImageHeight':
+                    case 'maxImageHeight':
+                    case 'minImageWidth':
+                    case 'maxImageWidth':
+                        self[key] = $h.getNum(value);
+                        break;
+                    default:
+                        self[key] = value;
+                        break;
+                }
+            });
+            if (self.rtl) { // swap buttons for rtl
+                tmp = self.previewZoomButtonIcons.prev;
+                self.previewZoomButtonIcons.prev = self.previewZoomButtonIcons.next;
+                self.previewZoomButtonIcons.next = tmp;
+            }
+            if (!refreshMode) {
+                self._cleanup();
+            }
+            self.$form = $el.closest('form');
+            self._initTemplateDefaults();
+            self.uploadFileAttr = !$h.isEmpty($el.attr('name')) ? $el.attr('name') : 'file_data';
+            t = self._getLayoutTemplate('progress');
+            self.progressTemplate = t.replace('{class}', self.progressClass);
+            self.progressCompleteTemplate = t.replace('{class}', self.progressCompleteClass);
+            self.progressErrorTemplate = t.replace('{class}', self.progressErrorClass);
+            self.dropZoneEnabled = $h.hasDragDropSupport() && self.dropZoneEnabled && $h.canAssignFilesToInput();
+            self.isDisabled = $el.attr('disabled') || $el.attr('readonly');
+            if (self.isDisabled) {
+                $el.attr('disabled', true);
+            }
+            self.isAjaxUpload = $h.hasFileUploadSupport() && !$h.isEmpty(self.uploadUrl);
+            self.isClickable = self.browseOnZoneClick && self.showPreview &&
+                (self.dropZoneEnabled || !$h.isEmpty(self.defaultPreviewContent));
+            self.slug = typeof options.slugCallback === "function" ? options.slugCallback : self._slugDefault;
+            self.mainTemplate = self.showCaption ? self._getLayoutTemplate('main1') : self._getLayoutTemplate('main2');
+            self.captionTemplate = self._getLayoutTemplate('caption');
+            self.previewGenericTemplate = self._getPreviewTemplate('generic');
+            if (!self.imageCanvas && self.resizeImage && (self.maxImageWidth || self.maxImageHeight)) {
+                self.imageCanvas = document.createElement('canvas');
+                self.imageCanvasContext = self.imageCanvas.getContext('2d');
+            }
+            if ($h.isEmpty($el.attr('id'))) {
+                $el.attr('id', $h.uniqId());
+            }
+            self.namespace = '.fileinput_' + $el.attr('id').replace(/-/g, '_');
+            if (self.$container === undefined) {
+                self.$container = self._createContainer();
+            } else {
+                self._refreshContainer();
+            }
+            $cont = self.$container;
+            self.$dropZone = $cont.find('.file-drop-zone');
+            self.$progress = $cont.find('.kv-upload-progress');
+            self.$btnUpload = $cont.find('.fileinput-upload');
+            self.$captionContainer = $h.getElement(options, 'elCaptionContainer', $cont.find('.file-caption'));
+            self.$caption = $h.getElement(options, 'elCaptionText', $cont.find('.file-caption-name'));
+            if (!$h.isEmpty(self.msgPlaceholder)) {
+                f = $el.attr('multiple') ? self.filePlural : self.fileSingle;
+                self.$caption.attr('placeholder', self.msgPlaceholder.replace('{files}', f));
+            }
+            self.$captionIcon = self.$captionContainer.find('.file-caption-icon');
+            self.$previewContainer = $h.getElement(options, 'elPreviewContainer', $cont.find('.file-preview'));
+            self.$preview = $h.getElement(options, 'elPreviewImage', $cont.find('.file-preview-thumbnails'));
+            self.$previewStatus = $h.getElement(options, 'elPreviewStatus', $cont.find('.file-preview-status'));
+            self.$errorContainer = $h.getElement(options, 'elErrorContainer', self.$previewContainer.find('.kv-fileinput-error'));
+            self._validateDisabled();
+            if (!$h.isEmpty(self.msgErrorClass)) {
+                $h.addCss(self.$errorContainer, self.msgErrorClass);
+            }
+            if (!refreshMode) {
+                self.$errorContainer.hide();
+                self.previewInitId = "preview-" + $h.uniqId();
+                self._initPreviewCache();
+                self._initPreview(true);
+                self._initPreviewActions();
+                if (self.$parent.hasClass('file-loading')) {
+                    self.$container.insertBefore(self.$parent);
+                    self.$parent.remove();
+                }
+            } else {
+                if (!self._errorsExist()) {
+                    self.$errorContainer.hide();
+                }
+            }
+            self._setFileDropZoneTitle();
+            if ($el.attr('disabled')) {
+                self.disable();
+            }
+            self._initZoom();
+            if (self.hideThumbnailContent) {
+                $h.addCss(self.$preview, 'hide-content');
+            }
+        },
+        _initTemplateDefaults: function () {
+            var self = this, tMain1, tMain2, tPreview, tFileIcon, tClose, tCaption, tBtnDefault, tBtnLink, tBtnBrowse,
+                tModalMain, tModal, tProgress, tSize, tFooter, tActions, tActionDelete, tActionUpload, tActionDownload,
+                tActionZoom, tActionDrag, tIndicator, tTagBef, tTagBef1, tTagBef2, tTagAft, tGeneric, tHtml, tImage,
+                tText, tOffice, tGdocs, tVideo, tAudio, tFlash, tObject, tPdf, tOther, tStyle, tZoomCache, vDefaultDim;
+            tMain1 = '{preview}\n' +
+                '<div class="kv-upload-progress kv-hidden"></div><div class="clearfix"></div>\n' +
+                '<div class="input-group {class}">\n' +
+                '  {caption}\n' +
+                '<div class="input-group-btn input-group-append">\n' +
+                '      {remove}\n' +
+                '      {cancel}\n' +
+                '      {upload}\n' +
+                '      {browse}\n' +
+                '    </div>\n' +
+                '</div>';
+            tMain2 = '{preview}\n<div class="kv-upload-progress kv-hidden"></div>\n<div class="clearfix"></div>\n{remove}\n{cancel}\n{upload}\n{browse}\n';
+            tPreview = '<div class="file-preview {class}">\n' +
+                '    {close}' +
+                '    <div class="{dropClass}">\n' +
+                '    <div class="file-preview-thumbnails">\n' +
+                '    </div>\n' +
+                '    <div class="clearfix"></div>' +
+                '    <div class="file-preview-status text-center text-success"></div>\n' +
+                '    <div class="kv-fileinput-error"></div>\n' +
+                '    </div>\n' +
+                '</div>';
+            tClose = $h.closeButton('fileinput-remove');
+            tFileIcon = '<i class="glyphicon glyphicon-file"></i>';
+            // noinspection HtmlUnknownAttribute
+            tCaption = '<div class="file-caption form-control {class}" tabindex="500">\n' +
+                '  <span class="file-caption-icon"></span>\n' +
+                '  <input class="file-caption-name" onkeydown="return false;" onpaste="return false;">\n' +
+                '</div>';
+            //noinspection HtmlUnknownAttribute
+            tBtnDefault = '<button type="{type}" tabindex="500" title="{title}" class="{css}" ' +
+                '{status}>{icon} {label}</button>';
+            //noinspection HtmlUnknownAttribute
+            tBtnLink = '<a href="{href}" tabindex="500" title="{title}" class="{css}" {status}>{icon} {label}</a>';
+            //noinspection HtmlUnknownAttribute
+            tBtnBrowse = '<div tabindex="500" class="{css}" {status}>{icon} {label}</div>';
+            tModalMain = '<div id="' + $h.MODAL_ID + '" class="file-zoom-dialog modal fade" ' +
+                'tabindex="-1" aria-labelledby="' + $h.MODAL_ID + 'Label"></div>';
+            tModal = '<div class="modal-dialog modal-lg{rtl}" role="document">\n' +
+                '  <div class="modal-content">\n' +
+                '    <div class="modal-header">\n' +
+                '      <h5 class="modal-title">{heading}</h5>\n' +
+                '      <span class="kv-zoom-title"></span>\n' +
+                '      <div class="kv-zoom-actions">{toggleheader}{fullscreen}{borderless}{close}</div>\n' +
+                '    </div>\n' +
+                '    <div class="modal-body">\n' +
+                '      <div class="floating-buttons"></div>\n' +
+                '      <div class="kv-zoom-body file-zoom-content {zoomFrameClass}"></div>\n' + '{prev} {next}\n' +
+                '    </div>\n' +
+                '  </div>\n' +
+                '</div>\n';
+            tProgress = '<div class="progress">\n' +
+                '    <div class="{class}" role="progressbar"' +
+                ' aria-valuenow="{percent}" aria-valuemin="0" aria-valuemax="100" style="width:{percent}%;">\n' +
+                '        {status}\n' +
+                '     </div>\n' +
+                '</div>';
+            tSize = ' <samp>({sizeText})</samp>';
+            tFooter = '<div class="file-thumbnail-footer">\n' +
+                '    <div class="file-footer-caption" title="{caption}">\n' +
+                '        <div class="file-caption-info">{caption}</div>\n' +
+                '        <div class="file-size-info">{size}</div>\n' +
+                '    </div>\n' +
+                '    {progress}\n{indicator}\n{actions}\n' +
+                '</div>';
+            tActions = '<div class="file-actions">\n' +
+                '    <div class="file-footer-buttons">\n' +
+                '        {download} {upload} {delete} {zoom} {other}' +
+                '    </div>\n' +
+                '</div>\n' +
+                '{drag}\n' +
+                '<div class="clearfix"></div>';
+            //noinspection HtmlUnknownAttribute
+            tActionDelete = '<button type="button" class="kv-file-remove {removeClass}" ' +
+                'title="{removeTitle}" {dataUrl}{dataKey}>{removeIcon}</button>\n';
+            tActionUpload = '<button type="button" class="kv-file-upload {uploadClass}" title="{uploadTitle}">' +
+                '{uploadIcon}</button>';
+            tActionDownload = '<a class="kv-file-download {downloadClass}" title="{downloadTitle}" ' +
+                'href="{downloadUrl}" download="{caption}" target="_blank">{downloadIcon}</a>';
+            tActionZoom = '<button type="button" class="kv-file-zoom {zoomClass}" ' +
+                'title="{zoomTitle}">{zoomIcon}</button>';
+            tActionDrag = '<span class="file-drag-handle {dragClass}" title="{dragTitle}">{dragIcon}</span>';
+            tIndicator = '<div class="file-upload-indicator" title="{indicatorTitle}">{indicator}</div>';
+            tTagBef = '<div class="file-preview-frame {frameClass}" id="{previewId}" data-fileindex="{fileindex}"' +
+                ' data-template="{template}"';
+            tTagBef1 = tTagBef + '><div class="kv-file-content">\n';
+            tTagBef2 = tTagBef + ' title="{caption}"><div class="kv-file-content">\n';
+            tTagAft = '</div>{footer}\n</div>\n';
+            tGeneric = '{content}\n';
+            tStyle = ' {style}';
+            tHtml = '<div class="kv-preview-data file-preview-html" title="{caption}"' + tStyle + '>{data}</div>\n';
+            tImage = '<img src="{data}" class="file-preview-image kv-preview-data" title="{caption}" ' +
+                'alt="{caption}"' + tStyle + '>\n';
+            tText = '<textarea class="kv-preview-data file-preview-text" title="{caption}" readonly' + tStyle + '>' +
+                '{data}</textarea>\n';
+            tOffice = '<iframe class="kv-preview-data file-preview-office" ' +
+                'src="https://view.officeapps.live.com/op/embed.aspx?src={data}"' + tStyle + '></iframe>';
+            tGdocs = '<iframe class="kv-preview-data file-preview-gdocs" ' +
+                'src="https://docs.google.com/gview?url={data}&embedded=true"' + tStyle + '></iframe>';
+            tVideo = '<video class="kv-preview-data file-preview-video" controls' + tStyle + '>\n' +
+                '<source src="{data}" type="{type}">\n' + $h.DEFAULT_PREVIEW + '\n</video>\n';
+            tAudio = '<!--suppress ALL --><audio class="kv-preview-data file-preview-audio" controls' + tStyle + '>\n<source src="{data}" ' +
+                'type="{type}">\n' + $h.DEFAULT_PREVIEW + '\n</audio>\n';
+            tFlash = '<embed class="kv-preview-data file-preview-flash" src="{data}" type="application/x-shockwave-flash"' + tStyle + '>\n';
+            tPdf = '<embed class="kv-preview-data file-preview-pdf" src="{data}" type="application/pdf"' + tStyle + '>\n';
+            tObject = '<object class="kv-preview-data file-preview-object file-object {typeCss}" ' +
+                'data="{data}" type="{type}"' + tStyle + '>\n' + '<param name="movie" value="{caption}" />\n' +
+                $h.OBJECT_PARAMS + ' ' + $h.DEFAULT_PREVIEW + '\n</object>\n';
+            tOther = '<div class="kv-preview-data file-preview-other-frame"' + tStyle + '>\n' + $h.DEFAULT_PREVIEW + '\n</div>\n';
+            tZoomCache = '<div class="kv-zoom-cache" style="display:none">{zoomContent}</div>';
+            vDefaultDim = {width: "100%", height: "100%", 'min-height': "480px"};
+            self.defaults = {
+                layoutTemplates: {
+                    main1: tMain1,
+                    main2: tMain2,
+                    preview: tPreview,
+                    close: tClose,
+                    fileIcon: tFileIcon,
+                    caption: tCaption,
+                    modalMain: tModalMain,
+                    modal: tModal,
+                    progress: tProgress,
+                    size: tSize,
+                    footer: tFooter,
+                    indicator: tIndicator,
+                    actions: tActions,
+                    actionDelete: tActionDelete,
+                    actionUpload: tActionUpload,
+                    actionDownload: tActionDownload,
+                    actionZoom: tActionZoom,
+                    actionDrag: tActionDrag,
+                    btnDefault: tBtnDefault,
+                    btnLink: tBtnLink,
+                    btnBrowse: tBtnBrowse,
+                    zoomCache: tZoomCache
+                },
+                previewMarkupTags: {
+                    tagBefore1: tTagBef1,
+                    tagBefore2: tTagBef2,
+                    tagAfter: tTagAft
+                },
+                previewContentTemplates: {
+                    generic: tGeneric,
+                    html: tHtml,
+                    image: tImage,
+                    text: tText,
+                    office: tOffice,
+                    gdocs: tGdocs,
+                    video: tVideo,
+                    audio: tAudio,
+                    flash: tFlash,
+                    object: tObject,
+                    pdf: tPdf,
+                    other: tOther
+                },
+                allowedPreviewTypes: ['image', 'html', 'text', 'video', 'audio', 'flash', 'pdf', 'object'],
+                previewTemplates: {},
+                previewSettings: {
+                    image: {width: "auto", height: "auto", 'max-width': "100%", 'max-height': "100%"},
+                    html: {width: "213px", height: "160px"},
+                    text: {width: "213px", height: "160px"},
+                    office: {width: "213px", height: "160px"},
+                    gdocs: {width: "213px", height: "160px"},
+                    video: {width: "213px", height: "160px"},
+                    audio: {width: "100%", height: "30px"},
+                    flash: {width: "213px", height: "160px"},
+                    object: {width: "213px", height: "160px"},
+                    pdf: {width: "213px", height: "160px"},
+                    other: {width: "213px", height: "160px"}
+                },
+                previewSettingsSmall: {
+                    image: {width: "auto", height: "auto", 'max-width': "100%", 'max-height': "100%"},
+                    html: {width: "100%", height: "160px"},
+                    text: {width: "100%", height: "160px"},
+                    office: {width: "100%", height: "160px"},
+                    gdocs: {width: "100%", height: "160px"},
+                    video: {width: "100%", height: "auto"},
+                    audio: {width: "100%", height: "30px"},
+                    flash: {width: "100%", height: "auto"},
+                    object: {width: "100%", height: "auto"},
+                    pdf: {width: "100%", height: "160px"},
+                    other: {width: "100%", height: "160px"}
+                },
+                previewZoomSettings: {
+                    image: {width: "auto", height: "auto", 'max-width': "100%", 'max-height': "100%"},
+                    html: vDefaultDim,
+                    text: vDefaultDim,
+                    office: {width: "100%", height: "100%", 'max-width': "100%", 'min-height': "480px"},
+                    gdocs: {width: "100%", height: "100%", 'max-width': "100%", 'min-height': "480px"},
+                    video: {width: "auto", height: "100%", 'max-width': "100%"},
+                    audio: {width: "100%", height: "30px"},
+                    flash: {width: "auto", height: "480px"},
+                    object: {width: "auto", height: "100%", 'max-width': "100%", 'min-height': "480px"},
+                    pdf: vDefaultDim,
+                    other: {width: "auto", height: "100%", 'min-height': "480px"}
+                },
+                fileTypeSettings: {
+                    image: function (vType, vName) {
+                        return ($h.compare(vType, 'image.*') && !$h.compare(vType, /(tiff?|wmf)$/i) ||
+                            $h.compare(vName, /\.(gif|png|jpe?g)$/i));
+                    },
+                    html: function (vType, vName) {
+                        return $h.compare(vType, 'text/html') || $h.compare(vName, /\.(htm|html)$/i);
+                    },
+                    office: function (vType, vName) {
+                        return $h.compare(vType, /(word|excel|powerpoint|office)$/i) ||
+                            $h.compare(vName, /\.(docx?|xlsx?|pptx?|pps|potx?)$/i);
+                    },
+                    gdocs: function (vType, vName) {
+                        return $h.compare(vType, /(word|excel|powerpoint|office|iwork-pages|tiff?)$/i) ||
+                            $h.compare(vName, /\.(docx?|xlsx?|pptx?|pps|potx?|rtf|ods|odt|pages|ai|dxf|ttf|tiff?|wmf|e?ps)$/i);
+                    },
+                    text: function (vType, vName) {
+                        return $h.compare(vType, 'text.*') || $h.compare(vName, /\.(xml|javascript)$/i) ||
+                            $h.compare(vName, /\.(txt|md|csv|nfo|ini|json|php|js|css)$/i);
+                    },
+                    video: function (vType, vName) {
+                        return $h.compare(vType, 'video.*') && ($h.compare(vType, /(ogg|mp4|mp?g|mov|webm|3gp)$/i) ||
+                            $h.compare(vName, /\.(og?|mp4|webm|mp?g|mov|3gp)$/i));
+                    },
+                    audio: function (vType, vName) {
+                        return $h.compare(vType, 'audio.*') && ($h.compare(vName, /(ogg|mp3|mp?g|wav)$/i) ||
+                            $h.compare(vName, /\.(og?|mp3|mp?g|wav)$/i));
+                    },
+                    flash: function (vType, vName) {
+                        return $h.compare(vType, 'application/x-shockwave-flash', true) || $h.compare(vName, /\.(swf)$/i);
+                    },
+                    pdf: function (vType, vName) {
+                        return $h.compare(vType, 'application/pdf', true) || $h.compare(vName, /\.(pdf)$/i);
+                    },
+                    object: function () {
+                        return true;
+                    },
+                    other: function () {
+                        return true;
+                    }
+                },
+                fileActionSettings: {
+                    showRemove: true,
+                    showUpload: true,
+                    showDownload: true,
+                    showZoom: true,
+                    showDrag: true,
+                    removeIcon: '<i class="glyphicon glyphicon-trash"></i>',
+                    removeClass: 'btn btn-sm btn-kv btn-default btn-outline-secondary',
+                    removeErrorClass: 'btn btn-sm btn-kv btn-danger',
+                    removeTitle: 'Remove file',
+                    uploadIcon: '<i class="glyphicon glyphicon-upload"></i>',
+                    uploadClass: 'btn btn-sm btn-kv btn-default btn-outline-secondary',
+                    uploadTitle: 'Upload file',
+                    uploadRetryIcon: '<i class="glyphicon glyphicon-repeat"></i>',
+                    uploadRetryTitle: 'Retry upload',
+                    downloadIcon: '<i class="glyphicon glyphicon-download"></i>',
+                    downloadClass: 'btn btn-sm btn-kv btn-default btn-outline-secondary',
+                    downloadTitle: 'Download file',
+                    zoomIcon: '<i class="glyphicon glyphicon-zoom-in"></i>',
+                    zoomClass: 'btn btn-sm btn-kv btn-default btn-outline-secondary',
+                    zoomTitle: 'View Details',
+                    dragIcon: '<i class="glyphicon glyphicon-move"></i>',
+                    dragClass: 'text-info',
+                    dragTitle: 'Move / Rearrange',
+                    dragSettings: {},
+                    indicatorNew: '<i class="glyphicon glyphicon-plus-sign text-warning"></i>',
+                    indicatorSuccess: '<i class="glyphicon glyphicon-ok-sign text-success"></i>',
+                    indicatorError: '<i class="glyphicon glyphicon-exclamation-sign text-danger"></i>',
+                    indicatorLoading: '<i class="glyphicon glyphicon-hourglass text-muted"></i>',
+                    indicatorNewTitle: 'Not uploaded yet',
+                    indicatorSuccessTitle: 'Uploaded',
+                    indicatorErrorTitle: 'Upload Error',
+                    indicatorLoadingTitle: 'Uploading ...'
+                }
+            };
+            $.each(self.defaults, function (key, setting) {
+                if (key === 'allowedPreviewTypes') {
+                    if (self.allowedPreviewTypes === undefined) {
+                        self.allowedPreviewTypes = setting;
+                    }
+                    return;
+                }
+                self[key] = $.extend(true, {}, setting, self[key]);
+            });
+            self._initPreviewTemplates();
+        },
+        _initPreviewTemplates: function () {
+            var self = this, cfg = self.defaults, tags = self.previewMarkupTags, tagBef, tagAft = tags.tagAfter;
+            $.each(cfg.previewContentTemplates, function (key, value) {
+                if ($h.isEmpty(self.previewTemplates[key])) {
+                    tagBef = tags.tagBefore2;
+                    if (key === 'generic' || key === 'image' || key === 'html' || key === 'text') {
+                        tagBef = tags.tagBefore1;
+                    }
+                    self.previewTemplates[key] = tagBef + value + tagAft;
+                }
+            });
+        },
+        _initPreviewCache: function () {
+            var self = this;
+            self.previewCache = {
+                data: {},
+                init: function () {
+                    var content = self.initialPreview;
+                    if (content.length > 0 && !$h.isArray(content)) {
+                        content = content.split(self.initialPreviewDelimiter);
+                    }
+                    self.previewCache.data = {
+                        content: content,
+                        config: self.initialPreviewConfig,
+                        tags: self.initialPreviewThumbTags
+                    };
+                },
+                count: function () {
+                    return !!self.previewCache.data && !!self.previewCache.data.content ?
+                        self.previewCache.data.content.length : 0;
+                },
+                get: function (i, isDisabled) {
+                    var ind = 'init_' + i, data = self.previewCache.data, config = data.config[i],
+                        content = data.content[i], previewId = self.previewInitId + '-' + ind, out, $tmp, cat, ftr,
+                        fname, ftype, frameClass, asData = $h.ifSet('previewAsData', config, self.initialPreviewAsData),
+                        parseTemplate = function (cat, dat, fn, ft, id, ftr, ind, fc, t) {
+                            fc = ' file-preview-initial ' + $h.SORT_CSS + (fc ? ' ' + fc : '');
+                            return self._generatePreviewTemplate(cat, dat, fn, ft, id, false, null, fc, ftr, ind, t);
+                        };
+                    if (!content) {
+                        return '';
+                    }
+                    isDisabled = isDisabled === undefined ? true : isDisabled;
+                    cat = $h.ifSet('type', config, self.initialPreviewFileType || 'generic');
+                    fname = $h.ifSet('filename', config, $h.ifSet('caption', config));
+                    ftype = $h.ifSet('filetype', config, cat);
+                    ftr = self.previewCache.footer(i, isDisabled, (config && config.size || null));
+                    frameClass = $h.ifSet('frameClass', config);
+                    if (asData) {
+                        out = parseTemplate(cat, content, fname, ftype, previewId, ftr, ind, frameClass);
+                    } else {
+                        out = parseTemplate('generic', content, fname, ftype, previewId, ftr, ind, frameClass, cat)
+                            .setTokens({'content': data.content[i]});
+                    }
+                    if (data.tags.length && data.tags[i]) {
+                        out = $h.replaceTags(out, data.tags[i]);
+                    }
+                    /** @namespace config.frameAttr */
+                    if (!$h.isEmpty(config) && !$h.isEmpty(config.frameAttr)) {
+                        $tmp = $(document.createElement('div')).html(out);
+                        $tmp.find('.file-preview-initial').attr(config.frameAttr);
+                        out = $tmp.html();
+                        $tmp.remove();
+                    }
+                    return out;
+                },
+                add: function (content, config, tags, append) {
+                    var data = self.previewCache.data, index;
+                    if (!$h.isArray(content)) {
+                        content = content.split(self.initialPreviewDelimiter);
+                    }
+                    if (append) {
+                        index = data.content.push(content) - 1;
+                        data.config[index] = config;
+                        data.tags[index] = tags;
+                    } else {
+                        index = content.length - 1;
+                        data.content = content;
+                        data.config = config;
+                        data.tags = tags;
+                    }
+                    self.previewCache.data = data;
+                    return index;
+                },
+                set: function (content, config, tags, append) {
+                    var data = self.previewCache.data, i, chk;
+                    if (!content || !content.length) {
+                        return;
+                    }
+                    if (!$h.isArray(content)) {
+                        content = content.split(self.initialPreviewDelimiter);
+                    }
+                    chk = content.filter(function (n) {
+                        return n !== null;
+                    });
+                    if (!chk.length) {
+                        return;
+                    }
+                    if (data.content === undefined) {
+                        data.content = [];
+                    }
+                    if (data.config === undefined) {
+                        data.config = [];
+                    }
+                    if (data.tags === undefined) {
+                        data.tags = [];
+                    }
+                    if (append) {
+                        for (i = 0; i < content.length; i++) {
+                            if (content[i]) {
+                                data.content.push(content[i]);
+                            }
+                        }
+                        for (i = 0; i < config.length; i++) {
+                            if (config[i]) {
+                                data.config.push(config[i]);
+                            }
+                        }
+                        for (i = 0; i < tags.length; i++) {
+                            if (tags[i]) {
+                                data.tags.push(tags[i]);
+                            }
+                        }
+                    } else {
+                        data.content = content;
+                        data.config = config;
+                        data.tags = tags;
+                    }
+                    self.previewCache.data = data;
+                },
+                unset: function (index) {
+                    var chk = self.previewCache.count(), rev = self.reversePreviewOrder;
+                    if (!chk) {
+                        return;
+                    }
+                    if (chk === 1) {
+                        self.previewCache.data.content = [];
+                        self.previewCache.data.config = [];
+                        self.previewCache.data.tags = [];
+                        self.initialPreview = [];
+                        self.initialPreviewConfig = [];
+                        self.initialPreviewThumbTags = [];
+                        return;
+                    }
+                    self.previewCache.data.content = $h.spliceArray(self.previewCache.data.content, index, rev);
+                    self.previewCache.data.config = $h.spliceArray(self.previewCache.data.config, index, rev);
+                    self.previewCache.data.tags = $h.spliceArray(self.previewCache.data.tags, index, rev);
+                },
+                out: function () {
+                    var html = '', caption, len = self.previewCache.count(), i, content;
+                    if (len === 0) {
+                        return {content: '', caption: ''};
+                    }
+                    for (i = 0; i < len; i++) {
+                        content = self.previewCache.get(i);
+                        html = self.reversePreviewOrder ? (content + html) : (html + content);
+                    }
+                    caption = self._getMsgSelected(len);
+                    return {content: html, caption: caption};
+                },
+                footer: function (i, isDisabled, size) {
+                    var data = self.previewCache.data || {};
+                    if ($h.isEmpty(data.content)) {
+                        return '';
+                    }
+                    if ($h.isEmpty(data.config) || $h.isEmpty(data.config[i])) {
+                        data.config[i] = {};
+                    }
+                    isDisabled = isDisabled === undefined ? true : isDisabled;
+                    var config = data.config[i], caption = $h.ifSet('caption', config), a,
+                        width = $h.ifSet('width', config, 'auto'), url = $h.ifSet('url', config, false),
+                        key = $h.ifSet('key', config, null), fs = self.fileActionSettings,
+                        initPreviewShowDel = self.initialPreviewShowDelete || false,
+                        dUrl = config.downloadUrl || self.initialPreviewDownloadUrl || '',
+                        dFil = config.filename || config.caption || '',
+                        initPreviewShowDwl = !!(dUrl),
+                        sDel = $h.ifSet('showRemove', config, $h.ifSet('showRemove', fs, initPreviewShowDel)),
+                        sDwl = $h.ifSet('showDownload', config, $h.ifSet('showDownload', fs, initPreviewShowDwl)),
+                        sZm = $h.ifSet('showZoom', config, $h.ifSet('showZoom', fs, true)),
+                        sDrg = $h.ifSet('showDrag', config, $h.ifSet('showDrag', fs, true)),
+                        dis = (url === false) && isDisabled;
+                    sDwl = sDwl && config.downloadUrl !== false && !!dUrl;
+                    a = self._renderFileActions(false, sDwl, sDel, sZm, sDrg, dis, url, key, true, dUrl, dFil);
+                    return self._getLayoutTemplate('footer').setTokens({
+                        'progress': self._renderThumbProgress(),
+                        'actions': a,
+                        'caption': caption,
+                        'size': self._getSize(size),
+                        'width': width,
+                        'indicator': ''
+                    });
+                }
+            };
+            self.previewCache.init();
+        },
+        _handler: function ($el, event, callback) {
+            var self = this, ns = self.namespace, ev = event.split(' ').join(ns + ' ') + ns;
+            if (!$el || !$el.length) {
+                return;
+            }
+            $el.off(ev).on(ev, callback);
+        },
+        _log: function (msg) {
+            var self = this, id = self.$element.attr('id');
+            if (id) {
+                msg = '"' + id + '": ' + msg;
+            }
+            if (typeof window.console.log !== "undefined") {
+                window.console.log(msg);
+            } else {
+                window.alert(msg);
+            }
+        },
+        _validate: function () {
+            var self = this, status = self.$element.attr('type') === 'file';
+            if (!status) {
+                self._log('The input "type" must be set to "file" for initializing the "bootstrap-fileinput" plugin.');
+            }
+            return status;
+        },
+        _errorsExist: function () {
+            var self = this, $err, $errList = self.$errorContainer.find('li');
+            if ($errList.length) {
+                return true;
+            }
+            $err = $(document.createElement('div')).html(self.$errorContainer.html());
+            $err.find('.kv-error-close').remove();
+            $err.find('ul').remove();
+            return !!$.trim($err.text()).length;
+        },
+        _errorHandler: function (evt, caption) {
+            var self = this, err = evt.target.error, showError = function (msg) {
+                self._showError(msg.replace('{name}', caption));
+            };
+            /** @namespace err.NOT_FOUND_ERR */
+            /** @namespace err.SECURITY_ERR */
+            /** @namespace err.NOT_READABLE_ERR */
+            if (err.code === err.NOT_FOUND_ERR) {
+                showError(self.msgFileNotFound);
+            } else if (err.code === err.SECURITY_ERR) {
+                showError(self.msgFileSecured);
+            } else if (err.code === err.NOT_READABLE_ERR) {
+                showError(self.msgFileNotReadable);
+            } else if (err.code === err.ABORT_ERR) {
+                showError(self.msgFilePreviewAborted);
+            } else {
+                showError(self.msgFilePreviewError);
+            }
+        },
+        _addError: function (msg) {
+            var self = this, $error = self.$errorContainer;
+            if (msg && $error.length) {
+                $error.html(self.errorCloseButton + msg);
+                self._handler($error.find('.kv-error-close'), 'click', function () {
+                    setTimeout(function () {
+                        if (self.showPreview && !self.getFrames().length) {
+                            self.clear();
+                        }
+                        $error.fadeOut('slow');
+                    }, 10);
+                });
+            }
+        },
+        _setValidationError: function (css) {
+            var self = this;
+            css = (css ? css + ' ' : '') + 'has-error';
+            self.$container.removeClass(css).addClass('has-error');
+            $h.addCss(self.$captionContainer, 'is-invalid');
+        },
+        _resetErrors: function (fade) {
+            var self = this, $error = self.$errorContainer;
+            self.isError = false;
+            self.$container.removeClass('has-error');
+            self.$captionContainer.removeClass('is-invalid');
+            $error.html('');
+            if (fade) {
+                $error.fadeOut('slow');
+            } else {
+                $error.hide();
+            }
+        },
+        _showFolderError: function (folders) {
+            var self = this, $error = self.$errorContainer, msg;
+            if (!folders) {
+                return;
+            }
+            if (!self.isAjaxUpload) {
+                self._clearFileInput();
+            }
+            msg = self.msgFoldersNotAllowed.replace('{n}', folders);
+            self._addError(msg);
+            self._setValidationError();
+            $error.fadeIn(800);
+            self._raise('filefoldererror', [folders, msg]);
+        },
+        _showUploadError: function (msg, params, event) {
+            var self = this, $error = self.$errorContainer, ev = event || 'fileuploaderror', e = params && params.id ?
+                '<li data-file-id="' + params.id + '">' + msg + '</li>' : '<li>' + msg + '</li>';
+            if ($error.find('ul').length === 0) {
+                self._addError('<ul>' + e + '</ul>');
+            } else {
+                $error.find('ul').append(e);
+            }
+            $error.fadeIn(800);
+            self._raise(ev, [params, msg]);
+            self._setValidationError('file-input-new');
+            return true;
+        },
+        _showError: function (msg, params, event) {
+            var self = this, $error = self.$errorContainer, ev = event || 'fileerror';
+            params = params || {};
+            params.reader = self.reader;
+            self._addError(msg);
+            $error.fadeIn(800);
+            self._raise(ev, [params, msg]);
+            if (!self.isAjaxUpload) {
+                self._clearFileInput();
+            }
+            self._setValidationError('file-input-new');
+            self.$btnUpload.attr('disabled', true);
+            return true;
+        },
+        _noFilesError: function (params) {
+            var self = this, label = self.minFileCount > 1 ? self.filePlural : self.fileSingle,
+                msg = self.msgFilesTooLess.replace('{n}', self.minFileCount).replace('{files}', label),
+                $error = self.$errorContainer;
+            self._addError(msg);
+            self.isError = true;
+            self._updateFileDetails(0);
+            $error.fadeIn(800);
+            self._raise('fileerror', [params, msg]);
+            self._clearFileInput();
+            self._setValidationError();
+        },
+        _parseError: function (operation, jqXHR, errorThrown, fileName) {
+            /** @namespace jqXHR.responseJSON */
+            var self = this, errMsg = $.trim(errorThrown + ''), textPre,
+                text = jqXHR.responseJSON !== undefined && jqXHR.responseJSON.error !== undefined ?
+                    jqXHR.responseJSON.error : jqXHR.responseText;
+            if (self.cancelling && self.msgUploadAborted) {
+                errMsg = self.msgUploadAborted;
+            }
+            if (self.showAjaxErrorDetails && text) {
+                text = $.trim(text.replace(/\n\s*\n/g, '\n'));
+                textPre = text.length ? '<pre>' + text + '</pre>' : '';
+                errMsg += errMsg ? textPre : text;
+            }
+            if (!errMsg) {
+                errMsg = self.msgAjaxError.replace('{operation}', operation);
+            }
+            self.cancelling = false;
+            return fileName ? '<b>' + fileName + ': </b>' + errMsg : errMsg;
+        },
+        _parseFileType: function (type, name) {
+            var self = this, isValid, vType, cat, i, types = self.allowedPreviewTypes || [];
+            if (type === 'application/text-plain') {
+                return 'text';
+            }
+            for (i = 0; i < types.length; i++) {
+                cat = types[i];
+                isValid = self.fileTypeSettings[cat];
+                vType = isValid(type, name) ? cat : '';
+                if (!$h.isEmpty(vType)) {
+                    return vType;
+                }
+            }
+            return 'other';
+        },
+        _getPreviewIcon: function (fname) {
+            var self = this, ext, out = null;
+            if (fname && fname.indexOf('.') > -1) {
+                ext = fname.split('.').pop();
+                if (self.previewFileIconSettings) {
+                    out = self.previewFileIconSettings[ext] || self.previewFileIconSettings[ext.toLowerCase()] || null;
+                }
+                if (self.previewFileExtSettings) {
+                    $.each(self.previewFileExtSettings, function (key, func) {
+                        if (self.previewFileIconSettings[key] && func(ext)) {
+                            out = self.previewFileIconSettings[key];
+                            //noinspection UnnecessaryReturnStatementJS
+                            return;
+                        }
+                    });
+                }
+            }
+            return out;
+        },
+        _parseFilePreviewIcon: function (content, fname) {
+            var self = this, icn = self._getPreviewIcon(fname) || self.previewFileIcon, out = content;
+            if (out.indexOf('{previewFileIcon}') > -1) {
+                out = out.setTokens({'previewFileIconClass': self.previewFileIconClass, 'previewFileIcon': icn});
+            }
+            return out;
+        },
+        _raise: function (event, params) {
+            var self = this, e = $.Event(event);
+            if (params !== undefined) {
+                self.$element.trigger(e, params);
+            } else {
+                self.$element.trigger(e);
+            }
+            if (e.isDefaultPrevented() || e.result === false) {
+                return false;
+            }
+            switch (event) {
+                // ignore these events
+                case 'filebatchuploadcomplete':
+                case 'filebatchuploadsuccess':
+                case 'fileuploaded':
+                case 'fileclear':
+                case 'filecleared':
+                case 'filereset':
+                case 'fileerror':
+                case 'filefoldererror':
+                case 'fileuploaderror':
+                case 'filebatchuploaderror':
+                case 'filedeleteerror':
+                case 'filecustomerror':
+                case 'filesuccessremove':
+                    break;
+                // receive data response via `filecustomerror` event`
+                default:
+                    if (!self.ajaxAborted) {
+                        self.ajaxAborted = e.result;
+                    }
+                    break;
+            }
+            return true;
+        },
+        _listenFullScreen: function (isFullScreen) {
+            var self = this, $modal = self.$modal, $btnFull, $btnBord;
+            if (!$modal || !$modal.length) {
+                return;
+            }
+            $btnFull = $modal && $modal.find('.btn-fullscreen');
+            $btnBord = $modal && $modal.find('.btn-borderless');
+            if (!$btnFull.length || !$btnBord.length) {
+                return;
+            }
+            $btnFull.removeClass('active').attr('aria-pressed', 'false');
+            $btnBord.removeClass('active').attr('aria-pressed', 'false');
+            if (isFullScreen) {
+                $btnFull.addClass('active').attr('aria-pressed', 'true');
+            } else {
+                $btnBord.addClass('active').attr('aria-pressed', 'true');
+            }
+            if ($modal.hasClass('file-zoom-fullscreen')) {
+                self._maximizeZoomDialog();
+            } else {
+                if (isFullScreen) {
+                    self._maximizeZoomDialog();
+                } else {
+                    $btnBord.removeClass('active').attr('aria-pressed', 'false');
+                }
+            }
+        },
+        _listen: function () {
+            var self = this, $el = self.$element, $form = self.$form, $cont = self.$container, fullScreenEvents;
+            self._handler($el, 'change', $.proxy(self._change, self));
+            if (self.showBrowse) {
+                self._handler(self.$btnFile, 'click', $.proxy(self._browse, self));
+            }
+            self._handler($cont.find('.fileinput-remove:not([disabled])'), 'click', $.proxy(self.clear, self));
+            self._handler($cont.find('.fileinput-cancel'), 'click', $.proxy(self.cancel, self));
+            self._initDragDrop();
+            self._handler($form, 'reset', $.proxy(self.clear, self));
+            if (!self.isAjaxUpload) {
+                self._handler($form, 'submit', $.proxy(self._submitForm, self));
+            }
+            self._handler(self.$container.find('.fileinput-upload'), 'click', $.proxy(self._uploadClick, self));
+            self._handler($(window), 'resize', function () {
+                self._listenFullScreen(screen.width === window.innerWidth && screen.height === window.innerHeight);
+            });
+            fullScreenEvents = 'webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange';
+            self._handler($(document), fullScreenEvents, function () {
+                self._listenFullScreen($h.checkFullScreen());
+            });
+            self._autoFitContent();
+            self._initClickable();
+        },
+        _autoFitContent: function () {
+            var width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth,
+                self = this, config = width < 400 ? (self.previewSettingsSmall || self.defaults.previewSettingsSmall) :
+                (self.previewSettings || self.defaults.previewSettings), sel;
+            $.each(config, function (cat, settings) {
+                sel = '.file-preview-frame .file-preview-' + cat;
+                self.$preview.find(sel + '.kv-preview-data,' + sel + ' .kv-preview-data').css(settings);
+            });
+        },
+        _initClickable: function () {
+            var self = this, $zone;
+            if (!self.isClickable) {
+                return;
+            }
+            $zone = self.isAjaxUpload ? self.$dropZone : self.$preview.find('.file-default-preview');
+            $h.addCss($zone, 'clickable');
+            $zone.attr('tabindex', -1);
+            self._handler($zone, 'click', function (e) {
+                var $tar = $(e.target);
+                if (!$(self.elErrorContainer + ':visible').length &&
+                    (!$tar.parents('.file-preview-thumbnails').length || $tar.parents('.file-default-preview').length)) {
+                    self.$element.trigger('click');
+                    $zone.blur();
+                }
+            });
+        },
+        _scanDroppedItems: function (item, files, path) {
+            path = path || "";
+            var self = this, i, dirReader, readDir, errorHandler = function (e) {
+                self._log('Error scanning dropped files!');
+                self._log(e);
+            };
+            if (item.isFile) {
+                item.file(function (file) {
+                    files.push(file);
+                }, errorHandler);
+            } else {
+                if (item.isDirectory) {
+                    dirReader = item.createReader();
+                    readDir = function () {
+                        dirReader.readEntries(function (entries) {
+                            if (entries && entries.length > 0) {
+                                for (i = 0; i < entries.length; i++) {
+                                    self._scanDroppedItems(entries[i], files, path + item.name + "/");
+                                }
+                                // recursively call readDir() again, since browser can only handle first 100 entries.
+                                readDir();
+                            }
+                            return null;
+                        }, errorHandler);
+                    };
+                    readDir();
+                }
+            }
+
+        },
+        _initDragDrop: function () {
+            var self = this, $zone = self.$dropZone;
+            if (self.dropZoneEnabled && self.showPreview) {
+                self._handler($zone, 'dragenter dragover', $.proxy(self._zoneDragEnter, self));
+                self._handler($zone, 'dragleave', $.proxy(self._zoneDragLeave, self));
+                self._handler($zone, 'drop', $.proxy(self._zoneDrop, self));
+                self._handler($(document), 'dragenter dragover drop', self._zoneDragDropInit);
+            }
+        },
+        _zoneDragDropInit: function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+        },
+        _zoneDragEnter: function (e) {
+            var self = this, hasFiles = $.inArray('Files', e.originalEvent.dataTransfer.types) > -1;
+            self._zoneDragDropInit(e);
+            if (self.isDisabled || !hasFiles) {
+                e.originalEvent.dataTransfer.effectAllowed = 'none';
+                e.originalEvent.dataTransfer.dropEffect = 'none';
+                return;
+            }
+            $h.addCss(self.$dropZone, 'file-highlighted');
+        },
+        _zoneDragLeave: function (e) {
+            var self = this;
+            self._zoneDragDropInit(e);
+            if (self.isDisabled) {
+                return;
+            }
+            self.$dropZone.removeClass('file-highlighted');
+        },
+        _zoneDrop: function (e) {
+            /** @namespace e.originalEvent.dataTransfer */
+            var self = this, i, $el = self.$element, dataTransfer = e.originalEvent.dataTransfer,
+                files = dataTransfer.files, items = dataTransfer.items, folders = $h.getDragDropFolders(items),
+                processFiles = function () {
+                    if (!self.isAjaxUpload) {
+                        self.changeTriggered = true;
+                        $el.get(0).files = files;
+                        setTimeout(function () {
+                            self.changeTriggered = false;
+                            $el.trigger('change' + self.namespace);
+                        }, 10);
+                    } else {
+                        self._change(e, files);
+                    }
+                    self.$dropZone.removeClass('file-highlighted');
+                };
+            e.preventDefault();
+            if (self.isDisabled || $h.isEmpty(files)) {
+                return;
+            }
+            if (folders > 0) {
+                if (!self.isAjaxUpload) {
+                    self._showFolderError(folders);
+                    return;
+                }
+                files = [];
+                for (i = 0; i < items.length; i++) {
+                    var item = items[i].webkitGetAsEntry();
+                    if (item) {
+                        self._scanDroppedItems(item, files);
+                    }
+                }
+                setTimeout(function () {
+                    processFiles();
+                }, 500);
+            } else {
+                processFiles();
+            }
+        },
+        _uploadClick: function (e) {
+            var self = this, $btn = self.$container.find('.fileinput-upload'), $form,
+                isEnabled = !$btn.hasClass('disabled') && $h.isEmpty($btn.attr('disabled'));
+            if (e && e.isDefaultPrevented()) {
+                return;
+            }
+            if (!self.isAjaxUpload) {
+                if (isEnabled && $btn.attr('type') !== 'submit') {
+                    $form = $btn.closest('form');
+                    // downgrade to normal form submit if possible
+                    if ($form.length) {
+                        $form.trigger('submit');
+                    }
+                    e.preventDefault();
+                }
+                return;
+            }
+            e.preventDefault();
+            if (isEnabled) {
+                self.upload();
+            }
+        },
+        _submitForm: function () {
+            var self = this;
+            return self._isFileSelectionValid() && !self._abort({});
+        },
+        _clearPreview: function () {
+            var self = this, $p = self.$preview,
+                $thumbs = self.showUploadedThumbs ? self.getFrames(':not(.file-preview-success)') : self.getFrames();
+            $thumbs.each(function () {
+                var $thumb = $(this);
+                $thumb.remove();
+                $h.cleanZoomCache($p.find('#zoom-' + $thumb.attr('id')));
+            });
+            if (!self.getFrames().length || !self.showPreview) {
+                self._resetUpload();
+            }
+            self._validateDefaultPreview();
+        },
+        _initSortable: function () {
+            var self = this, $el = self.$preview, settings, selector = '.' + $h.SORT_CSS,
+                rev = self.reversePreviewOrder;
+            if (!window.KvSortable || $el.find(selector).length === 0) {
+                return;
+            }
+            //noinspection JSUnusedGlobalSymbols
+            settings = {
+                handle: '.drag-handle-init',
+                dataIdAttr: 'data-preview-id',
+                scroll: false,
+                draggable: selector,
+                onSort: function (e) {
+                    var oldIndex = e.oldIndex, newIndex = e.newIndex, i = 0;
+                    self.initialPreview = $h.moveArray(self.initialPreview, oldIndex, newIndex, rev);
+                    self.initialPreviewConfig = $h.moveArray(self.initialPreviewConfig, oldIndex, newIndex, rev);
+                    self.previewCache.init();
+                    self.getFrames('.file-preview-initial').each(function () {
+                        $(this).attr('data-fileindex', 'init_' + i);
+                        i++;
+                    });
+                    self._raise('filesorted', {
+                        previewId: $(e.item).attr('id'),
+                        'oldIndex': oldIndex,
+                        'newIndex': newIndex,
+                        stack: self.initialPreviewConfig
+                    });
+                }
+            };
+            if ($el.data('kvsortable')) {
+                $el.kvsortable('destroy');
+            }
+            $.extend(true, settings, self.fileActionSettings.dragSettings);
+            $el.kvsortable(settings);
+        },
+        _setPreviewContent: function (content) {
+            var self = this;
+            self.$preview.html(content);
+            self._autoFitContent();
+        },
+        _initPreview: function (isInit) {
+            var self = this, cap = self.initialCaption || '', out;
+            if (!self.previewCache.count()) {
+                self._clearPreview();
+                if (isInit) {
+                    self._setCaption(cap);
+                } else {
+                    self._initCaption();
+                }
+                return;
+            }
+            out = self.previewCache.out();
+            cap = isInit && self.initialCaption ? self.initialCaption : out.caption;
+            self._setPreviewContent(out.content);
+            self._setInitThumbAttr();
+            self._setCaption(cap);
+            self._initSortable();
+            if (!$h.isEmpty(out.content)) {
+                self.$container.removeClass('file-input-new');
+            }
+        },
+        _getZoomButton: function (type) {
+            var self = this, label = self.previewZoomButtonIcons[type], css = self.previewZoomButtonClasses[type],
+                title = ' title="' + (self.previewZoomButtonTitles[type] || '') + '" ',
+                params = title + (type === 'close' ? ' data-dismiss="modal" aria-hidden="true"' : '');
+            if (type === 'fullscreen' || type === 'borderless' || type === 'toggleheader') {
+                params += ' data-toggle="button" aria-pressed="false" autocomplete="off"';
+            }
+            return '<button type="button" class="' + css + ' btn-' + type + '"' + params + '>' + label + '</button>';
+        },
+        _getModalContent: function () {
+            var self = this;
+            return self._getLayoutTemplate('modal').setTokens({
+                'rtl': self.rtl ? ' kv-rtl' : '',
+                'zoomFrameClass': self.frameClass,
+                'heading': self.msgZoomModalHeading,
+                'prev': self._getZoomButton('prev'),
+                'next': self._getZoomButton('next'),
+                'toggleheader': self._getZoomButton('toggleheader'),
+                'fullscreen': self._getZoomButton('fullscreen'),
+                'borderless': self._getZoomButton('borderless'),
+                'close': self._getZoomButton('close')
+            });
+        },
+        _listenModalEvent: function (event) {
+            var self = this, $modal = self.$modal, getParams = function (e) {
+                return {
+                    sourceEvent: e,
+                    previewId: $modal.data('previewId'),
+                    modal: $modal
+                };
+            };
+            $modal.on(event + '.bs.modal', function (e) {
+                var $btnFull = $modal.find('.btn-fullscreen'), $btnBord = $modal.find('.btn-borderless');
+                self._raise('filezoom' + event, getParams(e));
+                if (event === 'shown') {
+                    $btnBord.removeClass('active').attr('aria-pressed', 'false');
+                    $btnFull.removeClass('active').attr('aria-pressed', 'false');
+                    if ($modal.hasClass('file-zoom-fullscreen')) {
+                        self._maximizeZoomDialog();
+                        if ($h.checkFullScreen()) {
+                            $btnFull.addClass('active').attr('aria-pressed', 'true');
+                        } else {
+                            $btnBord.addClass('active').attr('aria-pressed', 'true');
+                        }
+                    }
+                }
+            });
+        },
+        _initZoom: function () {
+            var self = this, $dialog, modalMain = self._getLayoutTemplate('modalMain'), modalId = '#' + $h.MODAL_ID;
+            if (!self.showPreview) {
+                return;
+            }
+            self.$modal = $(modalId);
+            if (!self.$modal || !self.$modal.length) {
+                $dialog = $(document.createElement('div')).html(modalMain).insertAfter(self.$container);
+                self.$modal = $(modalId).insertBefore($dialog);
+                $dialog.remove();
+            }
+            $h.initModal(self.$modal);
+            self.$modal.html(self._getModalContent());
+            $.each($h.MODAL_EVENTS, function (key, event) {
+                self._listenModalEvent(event);
+            });
+        },
+        _initZoomButtons: function () {
+            var self = this, previewId = self.$modal.data('previewId') || '', $first, $last,
+                thumbs = self.getFrames().toArray(), len = thumbs.length, $prev = self.$modal.find('.btn-prev'),
+                $next = self.$modal.find('.btn-next');
+            if (thumbs.length < 2) {
+                $prev.hide();
+                $next.hide();
+                return;
+            } else {
+                $prev.show();
+                $next.show();
+            }
+            if (!len) {
+                return;
+            }
+            $first = $(thumbs[0]);
+            $last = $(thumbs[len - 1]);
+            $prev.removeAttr('disabled');
+            $next.removeAttr('disabled');
+            if ($first.length && $first.attr('id') === previewId) {
+                $prev.attr('disabled', true);
+            }
+            if ($last.length && $last.attr('id') === previewId) {
+                $next.attr('disabled', true);
+            }
+        },
+        _maximizeZoomDialog: function () {
+            var self = this, $modal = self.$modal, $head = $modal.find('.modal-header:visible'),
+                $foot = $modal.find('.modal-footer:visible'), $body = $modal.find('.modal-body'),
+                h = $(window).height(), diff = 0;
+            $modal.addClass('file-zoom-fullscreen');
+            if ($head && $head.length) {
+                h -= $head.outerHeight(true);
+            }
+            if ($foot && $foot.length) {
+                h -= $foot.outerHeight(true);
+            }
+            if ($body && $body.length) {
+                diff = $body.outerHeight(true) - $body.height();
+                h -= diff;
+            }
+            $modal.find('.kv-zoom-body').height(h);
+        },
+        _resizeZoomDialog: function (fullScreen) {
+            var self = this, $modal = self.$modal, $btnFull = $modal.find('.btn-fullscreen'),
+                $btnBord = $modal.find('.btn-borderless');
+            if ($modal.hasClass('file-zoom-fullscreen')) {
+                $h.toggleFullScreen(false);
+                if (!fullScreen) {
+                    if (!$btnFull.hasClass('active')) {
+                        $modal.removeClass('file-zoom-fullscreen');
+                        self.$modal.find('.kv-zoom-body').css('height', self.zoomModalHeight);
+                    } else {
+                        $btnFull.removeClass('active').attr('aria-pressed', 'false');
+                    }
+                } else {
+                    if (!$btnFull.hasClass('active')) {
+                        $modal.removeClass('file-zoom-fullscreen');
+                        self._resizeZoomDialog(true);
+                        if ($btnBord.hasClass('active')) {
+                            $btnBord.removeClass('active').attr('aria-pressed', 'false');
+                        }
+                    }
+                }
+            } else {
+                if (!fullScreen) {
+                    self._maximizeZoomDialog();
+                    return;
+                }
+                $h.toggleFullScreen(true);
+            }
+            $modal.focus();
+        },
+        _setZoomContent: function ($frame, animate) {
+            var self = this, $content, tmplt, body, title, $body, $dataEl, config, pid = $frame.attr('id'),
+                $modal = self.$modal, $prev = $modal.find('.btn-prev'), $next = $modal.find('.btn-next'), $tmp,
+                $btnFull = $modal.find('.btn-fullscreen'), $btnBord = $modal.find('.btn-borderless'), cap, size,
+                $btnTogh = $modal.find('.btn-toggleheader'), $zoomPreview = self.$preview.find('#zoom-' + pid);
+            tmplt = $zoomPreview.attr('data-template') || 'generic';
+            $content = $zoomPreview.find('.kv-file-content');
+            body = $content.length ? $content.html() : '';
+            cap = $frame.data('caption') || '';
+            size = $frame.data('size') || '';
+            title = cap + ' ' + size;
+            $modal.find('.kv-zoom-title').attr('title', $('<div/>').html(title).text()).html(title);
+            $body = $modal.find('.kv-zoom-body');
+            $modal.removeClass('kv-single-content');
+            if (animate) {
+                $tmp = $body.addClass('file-thumb-loading').clone().insertAfter($body);
+                $body.html(body).hide();
+                $tmp.fadeOut('fast', function () {
+                    $body.fadeIn('fast', function () {
+                        $body.removeClass('file-thumb-loading');
+                    });
+                    $tmp.remove();
+                });
+            } else {
+                $body.html(body);
+            }
+            config = self.previewZoomSettings[tmplt];
+            if (config) {
+                $dataEl = $body.find('.kv-preview-data');
+                $h.addCss($dataEl, 'file-zoom-detail');
+                $.each(config, function (key, value) {
+                    $dataEl.css(key, value);
+                    if (($dataEl.attr('width') && key === 'width') || ($dataEl.attr('height') && key === 'height')) {
+                        $dataEl.removeAttr(key);
+                    }
+                });
+            }
+            $modal.data('previewId', pid);
+            var $img = $body.find('img');
+            if ($img.length) {
+                $h.adjustOrientedImage($img, true);
+            }
+            self._handler($prev, 'click', function () {
+                self._zoomSlideShow('prev', pid);
+            });
+            self._handler($next, 'click', function () {
+                self._zoomSlideShow('next', pid);
+            });
+            self._handler($btnFull, 'click', function () {
+                self._resizeZoomDialog(true);
+            });
+            self._handler($btnBord, 'click', function () {
+                self._resizeZoomDialog(false);
+            });
+            self._handler($btnTogh, 'click', function () {
+                var $header = $modal.find('.modal-header'), $floatBar = $modal.find('.modal-body .floating-buttons'),
+                    ht, $actions = $header.find('.kv-zoom-actions'), resize = function (height) {
+                        var $body = self.$modal.find('.kv-zoom-body'), h = self.zoomModalHeight;
+                        if ($modal.hasClass('file-zoom-fullscreen')) {
+                            h = $body.outerHeight(true);
+                            if (!height) {
+                                h = h - $header.outerHeight(true);
+                            }
+                        }
+                        $body.css('height', height ? h + height : h);
+                    };
+                if ($header.is(':visible')) {
+                    ht = $header.outerHeight(true);
+                    $header.slideUp('slow', function () {
+                        $actions.find('.btn').appendTo($floatBar);
+                        resize(ht);
+                    });
+                } else {
+                    $floatBar.find('.btn').appendTo($actions);
+                    $header.slideDown('slow', function () {
+                        resize();
+                    });
+                }
+                $modal.focus();
+            });
+            self._handler($modal, 'keydown', function (e) {
+                var key = e.which || e.keyCode;
+                if (key === 37 && !$prev.attr('disabled')) {
+                    self._zoomSlideShow('prev', pid);
+                }
+                if (key === 39 && !$next.attr('disabled')) {
+                    self._zoomSlideShow('next', pid);
+                }
+            });
+        },
+        _zoomPreview: function ($btn) {
+            var self = this, $frame, $modal = self.$modal;
+            if (!$btn.length) {
+                throw 'Cannot zoom to detailed preview!';
+            }
+            $h.initModal($modal);
+            $modal.html(self._getModalContent());
+            $frame = $btn.closest($h.FRAMES);
+            self._setZoomContent($frame);
+            $modal.modal('show');
+            self._initZoomButtons();
+        },
+        _zoomSlideShow: function (dir, previewId) {
+            var self = this, $btn = self.$modal.find('.kv-zoom-actions .btn-' + dir), $targFrame, i,
+                thumbs = self.getFrames().toArray(), len = thumbs.length, out;
+            if ($btn.attr('disabled')) {
+                return;
+            }
+            for (i = 0; i < len; i++) {
+                if ($(thumbs[i]).attr('id') === previewId) {
+                    out = dir === 'prev' ? i - 1 : i + 1;
+                    break;
+                }
+            }
+            if (out < 0 || out >= len || !thumbs[out]) {
+                return;
+            }
+            $targFrame = $(thumbs[out]);
+            if ($targFrame.length) {
+                self._setZoomContent($targFrame, true);
+            }
+            self._initZoomButtons();
+            self._raise('filezoom' + dir, {'previewId': previewId, modal: self.$modal});
+        },
+        _initZoomButton: function () {
+            var self = this;
+            self.$preview.find('.kv-file-zoom').each(function () {
+                var $el = $(this);
+                self._handler($el, 'click', function () {
+                    self._zoomPreview($el);
+                });
+            });
+        },
+        _clearObjects: function ($el) {
+            $el.find('video audio').each(function () {
+                this.pause();
+                $(this).remove();
+            });
+            $el.find('img object div').each(function () {
+                $(this).remove();
+            });
+        },
+        _clearFileInput: function () {
+            var self = this, $el = self.$element, $srcFrm, $tmpFrm, $tmpEl;
+            if ($h.isEmpty($el.files) && $h.isEmpty($el.val())) {
+                return;
+            }
+            $el.files = null;
+            $srcFrm = $el.closest('form');
+            $tmpFrm = $(document.createElement('form'));
+            $tmpEl = $(document.createElement('div'));
+            $el.before($tmpEl);
+            if ($srcFrm.length) {
+                $srcFrm.after($tmpFrm);
+            } else {
+                $tmpEl.after($tmpFrm);
+            }
+            $tmpFrm.append($el).trigger('reset');
+            $tmpEl.before($el).remove();
+            $tmpFrm.remove();
+        },
+        _resetUpload: function () {
+            var self = this;
+            self.uploadCache = {content: [], config: [], tags: [], append: true};
+            self.uploadCount = 0;
+            self.uploadStatus = {};
+            self.uploadLog = [];
+            self.uploadAsyncCount = 0;
+            self.loadedImages = [];
+            self.totalImagesCount = 0;
+            self.$btnUpload.removeAttr('disabled');
+            self._setProgress(0);
+            self.$progress.hide();
+            self._resetErrors(false);
+            self.ajaxAborted = false;
+            self.ajaxRequests = [];
+            self._resetCanvas();
+            self.cacheInitialPreview = {};
+            if (self.overwriteInitial) {
+                self.initialPreview = [];
+                self.initialPreviewConfig = [];
+                self.initialPreviewThumbTags = [];
+                self.previewCache.data = {
+                    content: [],
+                    config: [],
+                    tags: []
+                };
+            }
+        },
+        _resetCanvas: function () {
+            var self = this;
+            if (self.canvas && self.imageCanvasContext) {
+                self.imageCanvasContext.clearRect(0, 0, self.canvas.width, self.canvas.height);
+            }
+        },
+        _hasInitialPreview: function () {
+            var self = this;
+            return !self.overwriteInitial && self.previewCache.count();
+        },
+        _resetPreview: function () {
+            var self = this, out, cap;
+            if (self.previewCache.count()) {
+                out = self.previewCache.out();
+                self._setPreviewContent(out.content);
+                self._setInitThumbAttr();
+                cap = self.initialCaption ? self.initialCaption : out.caption;
+                self._setCaption(cap);
+            } else {
+                self._clearPreview();
+                self._initCaption();
+            }
+            if (self.showPreview) {
+                self._initZoom();
+                self._initSortable();
+            }
+        },
+        _clearDefaultPreview: function () {
+            var self = this;
+            self.$preview.find('.file-default-preview').remove();
+        },
+        _validateDefaultPreview: function () {
+            var self = this;
+            if (!self.showPreview || $h.isEmpty(self.defaultPreviewContent)) {
+                return;
+            }
+            self._setPreviewContent('<div class="file-default-preview">' + self.defaultPreviewContent + '</div>');
+            self.$container.removeClass('file-input-new');
+            self._initClickable();
+        },
+        _resetPreviewThumbs: function (isAjax) {
+            var self = this, out;
+            if (isAjax) {
+                self._clearPreview();
+                self.clearStack();
+                return;
+            }
+            if (self._hasInitialPreview()) {
+                out = self.previewCache.out();
+                self._setPreviewContent(out.content);
+                self._setInitThumbAttr();
+                self._setCaption(out.caption);
+                self._initPreviewActions();
+            } else {
+                self._clearPreview();
+            }
+        },
+        _getLayoutTemplate: function (t) {
+            var self = this, template = self.layoutTemplates[t];
+            if ($h.isEmpty(self.customLayoutTags)) {
+                return template;
+            }
+            return $h.replaceTags(template, self.customLayoutTags);
+        },
+        _getPreviewTemplate: function (t) {
+            var self = this, template = self.previewTemplates[t];
+            if ($h.isEmpty(self.customPreviewTags)) {
+                return template;
+            }
+            return $h.replaceTags(template, self.customPreviewTags);
+        },
+        _getOutData: function (jqXHR, responseData, filesData) {
+            var self = this;
+            jqXHR = jqXHR || {};
+            responseData = responseData || {};
+            filesData = filesData || self.filestack.slice(0) || {};
+            return {
+                form: self.formdata,
+                files: filesData,
+                filenames: self.filenames,
+                filescount: self.getFilesCount(),
+                extra: self._getExtraData(),
+                response: responseData,
+                reader: self.reader,
+                jqXHR: jqXHR
+            };
+        },
+        _getMsgSelected: function (n) {
+            var self = this, strFiles = n === 1 ? self.fileSingle : self.filePlural;
+            return n > 0 ? self.msgSelected.replace('{n}', n).replace('{files}', strFiles) : self.msgNoFilesSelected;
+        },
+        _getFrame: function (id) {
+            var self = this, $frame = $('#' + id);
+            if (!$frame.length) {
+                self._log('Invalid thumb frame with id: "' + id + '".');
+                return null;
+            }
+            return $frame;
+        },
+        _getThumbs: function (css) {
+            css = css || '';
+            return this.getFrames(':not(.file-preview-initial)' + css);
+        },
+        _getExtraData: function (previewId, index) {
+            var self = this, data = self.uploadExtraData;
+            if (typeof self.uploadExtraData === "function") {
+                data = self.uploadExtraData(previewId, index);
+            }
+            return data;
+        },
+        _initXhr: function (xhrobj, previewId, fileCount) {
+            var self = this;
+            if (xhrobj.upload) {
+                xhrobj.upload.addEventListener('progress', function (event) {
+                    var pct = 0, total = event.total, position = event.loaded || event.position;
+                    /** @namespace event.lengthComputable */
+                    if (event.lengthComputable) {
+                        pct = Math.floor(position / total * 100);
+                    }
+                    if (previewId) {
+                        self._setAsyncUploadStatus(previewId, pct, fileCount);
+                    } else {
+                        self._setProgress(pct);
+                    }
+                }, false);
+            }
+            return xhrobj;
+        },
+        _initAjaxSettings: function () {
+            var self = this;
+            self._ajaxSettings = $.extend(true, {}, self.ajaxSettings);
+            self._ajaxDeleteSettings = $.extend(true, {}, self.ajaxDeleteSettings);
+        },
+        _mergeAjaxCallback: function (funcName, srcFunc, type) {
+            var self = this, settings = self._ajaxSettings, flag = self.mergeAjaxCallbacks, targFunc;
+            if (type === 'delete') {
+                settings = self._ajaxDeleteSettings;
+                flag = self.mergeAjaxDeleteCallbacks;
+            }
+            targFunc = settings[funcName];
+            if (flag && typeof targFunc === "function") {
+                if (flag === 'before') {
+                    settings[funcName] = function () {
+                        targFunc.apply(this, arguments);
+                        srcFunc.apply(this, arguments);
+                    };
+                } else {
+                    settings[funcName] = function () {
+                        srcFunc.apply(this, arguments);
+                        targFunc.apply(this, arguments);
+                    };
+                }
+            } else {
+                settings[funcName] = srcFunc;
+            }
+        },
+        _ajaxSubmit: function (fnBefore, fnSuccess, fnComplete, fnError, previewId, index) {
+            var self = this, settings;
+            if (!self._raise('filepreajax', [previewId, index])) {
+                return;
+            }
+            self._uploadExtra(previewId, index);
+            self._initAjaxSettings();
+            self._mergeAjaxCallback('beforeSend', fnBefore);
+            self._mergeAjaxCallback('success', fnSuccess);
+            self._mergeAjaxCallback('complete', fnComplete);
+            self._mergeAjaxCallback('error', fnError);
+            settings = $.extend(true, {}, {
+                xhr: function () {
+                    var xhrobj = $.ajaxSettings.xhr();
+                    return self._initXhr(xhrobj, previewId, self.getFileStack().length);
+                },
+                url: index && self.uploadUrlThumb ? self.uploadUrlThumb : self.uploadUrl,
+                type: 'POST',
+                dataType: 'json',
+                data: self.formdata,
+                cache: false,
+                processData: false,
+                contentType: false
+            }, self._ajaxSettings);
+            self.ajaxRequests.push($.ajax(settings));
+        },
+        _mergeArray: function (prop, content) {
+            var self = this, arr1 = $h.cleanArray(self[prop]), arr2 = $h.cleanArray(content);
+            self[prop] = arr1.concat(arr2);
+        },
+        _initUploadSuccess: function (out, $thumb, allFiles) {
+            var self = this, append, data, index, $div, $newCache, content, config, tags, i;
+            if (!self.showPreview || typeof out !== 'object' || $.isEmptyObject(out)) {
+                return;
+            }
+            if (out.initialPreview !== undefined && out.initialPreview.length > 0) {
+                self.hasInitData = true;
+                content = out.initialPreview || [];
+                config = out.initialPreviewConfig || [];
+                tags = out.initialPreviewThumbTags || [];
+                append = out.append === undefined || out.append;
+                if (content.length > 0 && !$h.isArray(content)) {
+                    content = content.split(self.initialPreviewDelimiter);
+                }
+                self._mergeArray('initialPreview', content);
+                self._mergeArray('initialPreviewConfig', config);
+                self._mergeArray('initialPreviewThumbTags', tags);
+                if ($thumb !== undefined) {
+                    if (!allFiles) {
+                        index = self.previewCache.add(content, config[0], tags[0], append);
+                        data = self.previewCache.get(index, false);
+                        $div = $(document.createElement('div')).html(data).hide().insertAfter($thumb);
+                        $newCache = $div.find('.kv-zoom-cache');
+                        if ($newCache && $newCache.length) {
+                            $newCache.insertAfter($thumb);
+                        }
+                        $thumb.fadeOut('slow', function () {
+                            var $newThumb = $div.find('.file-preview-frame');
+                            if ($newThumb && $newThumb.length) {
+                                $newThumb.insertBefore($thumb).fadeIn('slow').css('display:inline-block');
+                            }
+                            self._initPreviewActions();
+                            self._clearFileInput();
+                            $h.cleanZoomCache(self.$preview.find('#zoom-' + $thumb.attr('id')));
+                            $thumb.remove();
+                            $div.remove();
+                            self._initSortable();
+                        });
+                    } else {
+                        i = $thumb.attr('data-fileindex');
+                        self.uploadCache.content[i] = content[0];
+                        self.uploadCache.config[i] = config[0] || [];
+                        self.uploadCache.tags[i] = tags[0] || [];
+                        self.uploadCache.append = append;
+                    }
+                } else {
+                    self.previewCache.set(content, config, tags, append);
+                    self._initPreview();
+                    self._initPreviewActions();
+                }
+            }
+        },
+        _initSuccessThumbs: function () {
+            var self = this;
+            if (!self.showPreview) {
+                return;
+            }
+            self._getThumbs($h.FRAMES + '.file-preview-success').each(function () {
+                var $thumb = $(this), $preview = self.$preview, $remove = $thumb.find('.kv-file-remove');
+                $remove.removeAttr('disabled');
+                self._handler($remove, 'click', function () {
+                    var id = $thumb.attr('id'),
+                        out = self._raise('filesuccessremove', [id, $thumb.attr('data-fileindex')]);
+                    $h.cleanMemory($thumb);
+                    if (out === false) {
+                        return;
+                    }
+                    $thumb.fadeOut('slow', function () {
+                        $h.cleanZoomCache($preview.find('#zoom-' + id));
+                        $thumb.remove();
+                        if (!self.getFrames().length) {
+                            self.reset();
+                        }
+                    });
+                });
+            });
+        },
+        _checkAsyncComplete: function () {
+            var self = this, previewId, i;
+            for (i = 0; i < self.filestack.length; i++) {
+                if (self.filestack[i]) {
+                    previewId = self.previewInitId + "-" + i;
+                    if ($.inArray(previewId, self.uploadLog) === -1) {
+                        return false;
+                    }
+                }
+            }
+            return (self.uploadAsyncCount === self.uploadLog.length);
+        },
+        _uploadExtra: function (previewId, index) {
+            var self = this, data = self._getExtraData(previewId, index);
+            if (data.length === 0) {
+                return;
+            }
+            $.each(data, function (key, value) {
+                self.formdata.append(key, value);
+            });
+        },
+        _uploadSingle: function (i, isBatch) {
+            var self = this, total = self.getFileStack().length, formdata = new FormData(), outData,
+                previewId = self.previewInitId + "-" + i, $thumb, chkComplete, $btnUpload, $btnDelete,
+                hasPostData = self.filestack.length > 0 || !$.isEmptyObject(self.uploadExtraData), uploadFailed,
+                $prog = $('#' + previewId).find('.file-thumb-progress'), fnBefore, fnSuccess, fnComplete, fnError,
+                updateUploadLog, params = {id: previewId, index: i};
+            self.formdata = formdata;
+            if (self.showPreview) {
+                $thumb = $('#' + previewId + ':not(.file-preview-initial)');
+                $btnUpload = $thumb.find('.kv-file-upload');
+                $btnDelete = $thumb.find('.kv-file-remove');
+                $prog.show();
+            }
+            if (total === 0 || !hasPostData || ($btnUpload && $btnUpload.hasClass('disabled')) || self._abort(params)) {
+                return;
+            }
+            updateUploadLog = function (i, previewId) {
+                if (!uploadFailed) {
+                    self.updateStack(i, undefined);
+                }
+                self.uploadLog.push(previewId);
+                if (self._checkAsyncComplete()) {
+                    self.fileBatchCompleted = true;
+                }
+            };
+            chkComplete = function () {
+                var u = self.uploadCache, $initThumbs, i, j, len = 0, data = self.cacheInitialPreview;
+                if (!self.fileBatchCompleted) {
+                    return;
+                }
+                if (data && data.content) {
+                    len = data.content.length;
+                }
+                setTimeout(function () {
+                    var triggerReset = self.getFileStack(true).length === 0;
+                    if (self.showPreview) {
+                        self.previewCache.set(u.content, u.config, u.tags, u.append);
+                        if (len) {
+                            for (i = 0; i < u.content.length; i++) {
+                                j = i + len;
+                                data.content[j] = u.content[i];
+                                //noinspection JSUnresolvedVariable
+                                if (data.config.length) {
+                                    data.config[j] = u.config[i];
+                                }
+                                if (data.tags.length) {
+                                    data.tags[j] = u.tags[i];
+                                }
+                            }
+                            self.initialPreview = $h.cleanArray(data.content);
+                            self.initialPreviewConfig = $h.cleanArray(data.config);
+                            self.initialPreviewThumbTags = $h.cleanArray(data.tags);
+                        } else {
+                            self.initialPreview = u.content;
+                            self.initialPreviewConfig = u.config;
+                            self.initialPreviewThumbTags = u.tags;
+                        }
+                        self.cacheInitialPreview = {};
+                        if (self.hasInitData) {
+                            self._initPreview();
+                            self._initPreviewActions();
+                        }
+                    }
+                    self.unlock(triggerReset);
+                    if (triggerReset) {
+                        self._clearFileInput();
+                    }
+                    $initThumbs = self.$preview.find('.file-preview-initial');
+                    if (self.uploadAsync && $initThumbs.length) {
+                        $h.addCss($initThumbs, $h.SORT_CSS);
+                        self._initSortable();
+                    }
+                    self._raise('filebatchuploadcomplete', [self.filestack, self._getExtraData()]);
+                    self.uploadCount = 0;
+                    self.uploadStatus = {};
+                    self.uploadLog = [];
+                    self._setProgress(101);
+                    self.ajaxAborted = false;
+                }, 100);
+            };
+            fnBefore = function (jqXHR) {
+                outData = self._getOutData(jqXHR);
+                self.fileBatchCompleted = false;
+                if (!isBatch) {
+                    self.ajaxAborted = false;
+                }
+                if (self.showPreview) {
+                    if (!$thumb.hasClass('file-preview-success')) {
+                        self._setThumbStatus($thumb, 'Loading');
+                        $h.addCss($thumb, 'file-uploading');
+                    }
+                    $btnUpload.attr('disabled', true);
+                    $btnDelete.attr('disabled', true);
+                }
+                if (!isBatch) {
+                    self.lock();
+                }
+                self._raise('filepreupload', [outData, previewId, i]);
+                $.extend(true, params, outData);
+                if (self._abort(params)) {
+                    jqXHR.abort();
+                    if (!isBatch) {
+                        self._setThumbStatus($thumb, 'New');
+                        $thumb.removeClass('file-uploading');
+                        $btnUpload.removeAttr('disabled');
+                        $btnDelete.removeAttr('disabled');
+                        self.unlock();
+                    }
+                    self._setProgressCancelled();
+                }
+            };
+            fnSuccess = function (data, textStatus, jqXHR) {
+                var pid = self.showPreview && $thumb.attr('id') ? $thumb.attr('id') : previewId;
+                outData = self._getOutData(jqXHR, data);
+                $.extend(true, params, outData);
+                setTimeout(function () {
+                    if ($h.isEmpty(data) || $h.isEmpty(data.error)) {
+                        if (self.showPreview) {
+                            self._setThumbStatus($thumb, 'Success');
+                            $btnUpload.hide();
+                            self._initUploadSuccess(data, $thumb, isBatch);
+                            self._setProgress(101, $prog);
+                        }
+                        self._raise('fileuploaded', [outData, pid, i]);
+                        if (!isBatch) {
+                            self.updateStack(i, undefined);
+                        } else {
+                            updateUploadLog(i, pid);
+                        }
+                    } else {
+                        uploadFailed = true;
+                        self._showUploadError(data.error, params);
+                        self._setPreviewError($thumb, i, self.filestack[i], self.retryErrorUploads);
+                        if (!self.retryErrorUploads) {
+                            $btnUpload.hide();
+                        }
+                        if (isBatch) {
+                            updateUploadLog(i, pid);
+                        }
+                        self._setProgress(101, $('#' + pid).find('.file-thumb-progress'), self.msgUploadError);
+                    }
+                }, 100);
+            };
+            fnComplete = function () {
+                setTimeout(function () {
+                    if (self.showPreview) {
+                        $btnUpload.removeAttr('disabled');
+                        $btnDelete.removeAttr('disabled');
+                        $thumb.removeClass('file-uploading');
+                    }
+                    if (!isBatch) {
+                        self.unlock(false);
+                        self._clearFileInput();
+                    } else {
+                        chkComplete();
+                    }
+                    self._initSuccessThumbs();
+                }, 100);
+            };
+            fnError = function (jqXHR, textStatus, errorThrown) {
+                var op = self.ajaxOperations.uploadThumb,
+                    errMsg = self._parseError(op, jqXHR, errorThrown, (isBatch && self.filestack[i].name ? self.filestack[i].name : null));
+                uploadFailed = true;
+                setTimeout(function () {
+                    if (isBatch) {
+                        updateUploadLog(i, previewId);
+                    }
+                    self.uploadStatus[previewId] = 100;
+                    self._setPreviewError($thumb, i, self.filestack[i], self.retryErrorUploads);
+                    if (!self.retryErrorUploads) {
+                        $btnUpload.hide();
+                    }
+                    $.extend(true, params, self._getOutData(jqXHR));
+                    self._setProgress(101, $prog, self.msgAjaxProgressError.replace('{operation}', op));
+                    self._setProgress(101, $('#' + previewId).find('.file-thumb-progress'), self.msgUploadError);
+                    self._showUploadError(errMsg, params);
+                }, 100);
+            };
+            formdata.append(self.uploadFileAttr, self.filestack[i], self.filenames[i]);
+            formdata.append('file_id', i);
+            self._ajaxSubmit(fnBefore, fnSuccess, fnComplete, fnError, previewId, i);
+        },
+        _uploadBatch: function () {
+            var self = this, files = self.filestack, total = files.length, params = {}, fnBefore, fnSuccess, fnError,
+                fnComplete, hasPostData = self.filestack.length > 0 || !$.isEmptyObject(self.uploadExtraData),
+                setAllUploaded;
+            self.formdata = new FormData();
+            if (total === 0 || !hasPostData || self._abort(params)) {
+                return;
+            }
+            setAllUploaded = function () {
+                $.each(files, function (key) {
+                    self.updateStack(key, undefined);
+                });
+                self._clearFileInput();
+            };
+            fnBefore = function (jqXHR) {
+                self.lock();
+                var outData = self._getOutData(jqXHR);
+                self.ajaxAborted = false;
+                if (self.showPreview) {
+                    self._getThumbs().each(function () {
+                        var $thumb = $(this), $btnUpload = $thumb.find('.kv-file-upload'),
+                            $btnDelete = $thumb.find('.kv-file-remove');
+                        if (!$thumb.hasClass('file-preview-success')) {
+                            self._setThumbStatus($thumb, 'Loading');
+                            $h.addCss($thumb, 'file-uploading');
+                        }
+                        $btnUpload.attr('disabled', true);
+                        $btnDelete.attr('disabled', true);
+                    });
+                }
+                self._raise('filebatchpreupload', [outData]);
+                if (self._abort(outData)) {
+                    jqXHR.abort();
+                    self._getThumbs().each(function () {
+                        var $thumb = $(this), $btnUpload = $thumb.find('.kv-file-upload'),
+                            $btnDelete = $thumb.find('.kv-file-remove');
+                        if ($thumb.hasClass('file-preview-loading')) {
+                            self._setThumbStatus($thumb, 'New');
+                            $thumb.removeClass('file-uploading');
+                        }
+                        $btnUpload.removeAttr('disabled');
+                        $btnDelete.removeAttr('disabled');
+                    });
+                    self._setProgressCancelled();
+                }
+            };
+            fnSuccess = function (data, textStatus, jqXHR) {
+                /** @namespace data.errorkeys */
+                var outData = self._getOutData(jqXHR, data), key = 0,
+                    $thumbs = self._getThumbs(':not(.file-preview-success)'),
+                    keys = $h.isEmpty(data) || $h.isEmpty(data.errorkeys) ? [] : data.errorkeys;
+
+                if ($h.isEmpty(data) || $h.isEmpty(data.error)) {
+                    self._raise('filebatchuploadsuccess', [outData]);
+                    setAllUploaded();
+                    if (self.showPreview) {
+                        $thumbs.each(function () {
+                            var $thumb = $(this);
+                            self._setThumbStatus($thumb, 'Success');
+                            $thumb.removeClass('file-uploading');
+                            $thumb.find('.kv-file-upload').hide().removeAttr('disabled');
+                        });
+                        self._initUploadSuccess(data);
+                    } else {
+                        self.reset();
+                    }
+                    self._setProgress(101);
+                } else {
+                    if (self.showPreview) {
+                        $thumbs.each(function () {
+                            var $thumb = $(this), i = $thumb.attr('data-fileindex');
+                            $thumb.removeClass('file-uploading');
+                            $thumb.find('.kv-file-upload').removeAttr('disabled');
+                            $thumb.find('.kv-file-remove').removeAttr('disabled');
+                            if (keys.length === 0 || $.inArray(key, keys) !== -1) {
+                                self._setPreviewError($thumb, i, self.filestack[i], self.retryErrorUploads);
+                                if (!self.retryErrorUploads) {
+                                    $thumb.find('.kv-file-upload').hide();
+                                    self.updateStack(i, undefined);
+                                }
+                            } else {
+                                $thumb.find('.kv-file-upload').hide();
+                                self._setThumbStatus($thumb, 'Success');
+                                self.updateStack(i, undefined);
+                            }
+                            if (!$thumb.hasClass('file-preview-error') || self.retryErrorUploads) {
+                                key++;
+                            }
+                        });
+                        self._initUploadSuccess(data);
+                    }
+                    self._showUploadError(data.error, outData, 'filebatchuploaderror');
+                    self._setProgress(101, self.$progress, self.msgUploadError);
+                }
+            };
+            fnComplete = function () {
+                self.unlock();
+                self._initSuccessThumbs();
+                self._clearFileInput();
+                self._raise('filebatchuploadcomplete', [self.filestack, self._getExtraData()]);
+            };
+            fnError = function (jqXHR, textStatus, errorThrown) {
+                var outData = self._getOutData(jqXHR), op = self.ajaxOperations.uploadBatch,
+                    errMsg = self._parseError(op, jqXHR, errorThrown);
+                self._showUploadError(errMsg, outData, 'filebatchuploaderror');
+                self.uploadFileCount = total - 1;
+                if (!self.showPreview) {
+                    return;
+                }
+                self._getThumbs().each(function () {
+                    var $thumb = $(this), key = $thumb.attr('data-fileindex');
+                    $thumb.removeClass('file-uploading');
+                    if (self.filestack[key] !== undefined) {
+                        self._setPreviewError($thumb);
+                    }
+                });
+                self._getThumbs().removeClass('file-uploading');
+                self._getThumbs(' .kv-file-upload').removeAttr('disabled');
+                self._getThumbs(' .kv-file-delete').removeAttr('disabled');
+                self._setProgress(101, self.$progress, self.msgAjaxProgressError.replace('{operation}', op));
+            };
+            $.each(files, function (key, data) {
+                if (!$h.isEmpty(files[key])) {
+                    self.formdata.append(self.uploadFileAttr, data, self.filenames[key]);
+                }
+            });
+            self._ajaxSubmit(fnBefore, fnSuccess, fnComplete, fnError);
+        },
+        _uploadExtraOnly: function () {
+            var self = this, params = {}, fnBefore, fnSuccess, fnComplete, fnError;
+            self.formdata = new FormData();
+            if (self._abort(params)) {
+                return;
+            }
+            fnBefore = function (jqXHR) {
+                self.lock();
+                var outData = self._getOutData(jqXHR);
+                self._raise('filebatchpreupload', [outData]);
+                self._setProgress(50);
+                params.data = outData;
+                params.xhr = jqXHR;
+                if (self._abort(params)) {
+                    jqXHR.abort();
+                    self._setProgressCancelled();
+                }
+            };
+            fnSuccess = function (data, textStatus, jqXHR) {
+                var outData = self._getOutData(jqXHR, data);
+                if ($h.isEmpty(data) || $h.isEmpty(data.error)) {
+                    self._raise('filebatchuploadsuccess', [outData]);
+                    self._clearFileInput();
+                    self._initUploadSuccess(data);
+                    self._setProgress(101);
+                } else {
+                    self._showUploadError(data.error, outData, 'filebatchuploaderror');
+                }
+            };
+            fnComplete = function () {
+                self.unlock();
+                self._clearFileInput();
+                self._raise('filebatchuploadcomplete', [self.filestack, self._getExtraData()]);
+            };
+            fnError = function (jqXHR, textStatus, errorThrown) {
+                var outData = self._getOutData(jqXHR), op = self.ajaxOperations.uploadExtra,
+                    errMsg = self._parseError(op, jqXHR, errorThrown);
+                params.data = outData;
+                self._showUploadError(errMsg, outData, 'filebatchuploaderror');
+                self._setProgress(101, self.$progress, self.msgAjaxProgressError.replace('{operation}', op));
+            };
+            self._ajaxSubmit(fnBefore, fnSuccess, fnComplete, fnError);
+        },
+        _deleteFileIndex: function ($frame) {
+            var self = this, ind = $frame.attr('data-fileindex'), rev = self.reversePreviewOrder;
+            if (ind.substring(0, 5) === 'init_') {
+                ind = parseInt(ind.replace('init_', ''));
+                self.initialPreview = $h.spliceArray(self.initialPreview, ind, rev);
+                self.initialPreviewConfig = $h.spliceArray(self.initialPreviewConfig, ind, rev);
+                self.initialPreviewThumbTags = $h.spliceArray(self.initialPreviewThumbTags, ind, rev);
+                self.getFrames().each(function () {
+                    var $nFrame = $(this), nInd = $nFrame.attr('data-fileindex');
+                    if (nInd.substring(0, 5) === 'init_') {
+                        nInd = parseInt(nInd.replace('init_', ''));
+                        if (nInd > ind) {
+                            nInd--;
+                            $nFrame.attr('data-fileindex', 'init_' + nInd);
+                        }
+                    }
+                });
+                if (self.uploadAsync) {
+                    self.cacheInitialPreview = self.getPreview();
+                }
+            }
+        },
+        _initFileActions: function () {
+            var self = this, $preview = self.$preview;
+            if (!self.showPreview) {
+                return;
+            }
+            self._initZoomButton();
+            self.getFrames(' .kv-file-remove').each(function () {
+                var $el = $(this), $frame = $el.closest($h.FRAMES), hasError, id = $frame.attr('id'),
+                    ind = $frame.attr('data-fileindex'), n, cap, status;
+                self._handler($el, 'click', function () {
+                    status = self._raise('filepreremove', [id, ind]);
+                    if (status === false || !self._validateMinCount()) {
+                        return false;
+                    }
+                    hasError = $frame.hasClass('file-preview-error');
+                    $h.cleanMemory($frame);
+                    $frame.fadeOut('slow', function () {
+                        $h.cleanZoomCache($preview.find('#zoom-' + id));
+                        self.updateStack(ind, undefined);
+                        self._clearObjects($frame);
+                        $frame.remove();
+                        if (id && hasError) {
+                            self.$errorContainer.find('li[data-file-id="' + id + '"]').fadeOut('fast', function () {
+                                $(this).remove();
+                                if (!self._errorsExist()) {
+                                    self._resetErrors();
+                                }
+                            });
+                        }
+                        self._clearFileInput();
+                        var filestack = self.getFileStack(true), chk = self.previewCache.count(),
+                            len = filestack.length, hasThumb = self.showPreview && self.getFrames().length;
+                        if (len === 0 && chk === 0 && !hasThumb) {
+                            self.reset();
+                        } else {
+                            n = chk + len;
+                            cap = n > 1 ? self._getMsgSelected(n) : (filestack[0] ? self._getFileNames()[0] : '');
+                            self._setCaption(cap);
+                        }
+                        self._raise('fileremoved', [id, ind]);
+                    });
+                });
+            });
+            self.getFrames(' .kv-file-upload').each(function () {
+                var $el = $(this);
+                self._handler($el, 'click', function () {
+                    var $frame = $el.closest($h.FRAMES), ind = $frame.attr('data-fileindex');
+                    self.$progress.hide();
+                    if ($frame.hasClass('file-preview-error') && !self.retryErrorUploads) {
+                        return;
+                    }
+                    self._uploadSingle(ind, false);
+                });
+            });
+        },
+        _initPreviewActions: function () {
+            var self = this, $preview = self.$preview, deleteExtraData = self.deleteExtraData || {},
+                btnRemove = $h.FRAMES + ' .kv-file-remove', settings = self.fileActionSettings,
+                origClass = settings.removeClass, errClass = settings.removeErrorClass,
+                resetProgress = function () {
+                    var hasFiles = self.isAjaxUpload ? self.previewCache.count() : self.$element.get(0).files.length;
+                    if (!$preview.find($h.FRAMES).length && !hasFiles) {
+                        self._setCaption('');
+                        self.reset();
+                        self.initialCaption = '';
+                    }
+                };
+            self._initZoomButton();
+            $preview.find(btnRemove).each(function () {
+                var $el = $(this), vUrl = $el.data('url') || self.deleteUrl, vKey = $el.data('key'),
+                    fnBefore, fnSuccess, fnError;
+                if ($h.isEmpty(vUrl) || vKey === undefined) {
+                    return;
+                }
+                var $frame = $el.closest($h.FRAMES), cache = self.previewCache.data,
+                    settings, params, index = $frame.attr('data-fileindex'), config, extraData;
+                index = parseInt(index.replace('init_', ''));
+                config = $h.isEmpty(cache.config) && $h.isEmpty(cache.config[index]) ? null : cache.config[index];
+                extraData = $h.isEmpty(config) || $h.isEmpty(config.extra) ? deleteExtraData : config.extra;
+                if (typeof extraData === "function") {
+                    extraData = extraData();
+                }
+                params = {id: $el.attr('id'), key: vKey, extra: extraData};
+                fnBefore = function (jqXHR) {
+                    self.ajaxAborted = false;
+                    self._raise('filepredelete', [vKey, jqXHR, extraData]);
+                    if (self._abort()) {
+                        jqXHR.abort();
+                    } else {
+                        $el.removeClass(errClass);
+                        $h.addCss($frame, 'file-uploading');
+                        $h.addCss($el, 'disabled ' + origClass);
+                    }
+                };
+                fnSuccess = function (data, textStatus, jqXHR) {
+                    var n, cap;
+                    if (!$h.isEmpty(data) && !$h.isEmpty(data.error)) {
+                        params.jqXHR = jqXHR;
+                        params.response = data;
+                        self._showError(data.error, params, 'filedeleteerror');
+                        $frame.removeClass('file-uploading');
+                        $el.removeClass('disabled ' + origClass).addClass(errClass);
+                        resetProgress();
+                        return;
+                    }
+                    $frame.removeClass('file-uploading').addClass('file-deleted');
+                    $frame.fadeOut('slow', function () {
+                        index = parseInt(($frame.attr('data-fileindex')).replace('init_', ''));
+                        self.previewCache.unset(index);
+                        self._deleteFileIndex($frame);
+                        n = self.previewCache.count();
+                        cap = n > 0 ? self._getMsgSelected(n) : '';
+                        self._setCaption(cap);
+                        self._raise('filedeleted', [vKey, jqXHR, extraData]);
+                        $h.cleanZoomCache($preview.find('#zoom-' + $frame.attr('id')));
+                        self._clearObjects($frame);
+                        $frame.remove();
+                        resetProgress();
+                    });
+                };
+                fnError = function (jqXHR, textStatus, errorThrown) {
+                    var op = self.ajaxOperations.deleteThumb, errMsg = self._parseError(op, jqXHR, errorThrown);
+                    params.jqXHR = jqXHR;
+                    params.response = {};
+                    self._showError(errMsg, params, 'filedeleteerror');
+                    $frame.removeClass('file-uploading');
+                    $el.removeClass('disabled ' + origClass).addClass(errClass);
+                    resetProgress();
+                };
+                self._initAjaxSettings();
+                self._mergeAjaxCallback('beforeSend', fnBefore, 'delete');
+                self._mergeAjaxCallback('success', fnSuccess, 'delete');
+                self._mergeAjaxCallback('error', fnError, 'delete');
+                settings = $.extend(true, {}, {
+                    url: vUrl,
+                    type: 'POST',
+                    dataType: 'json',
+                    data: $.extend(true, {}, {key: vKey}, extraData)
+                }, self._ajaxDeleteSettings);
+                self._handler($el, 'click', function () {
+                    if (!self._validateMinCount()) {
+                        return false;
+                    }
+                    self.ajaxAborted = false;
+                    self._raise('filebeforedelete', [vKey, extraData]);
+                    //noinspection JSUnresolvedVariable,JSHint
+                    if (self.ajaxAborted instanceof Promise) {
+                        self.ajaxAborted.then(function (result) {
+                            if (!result) {
+                                $.ajax(settings);
+                            }
+                        });
+                    } else {
+                        if (!self.ajaxAborted) {
+                            $.ajax(settings);
+                        }
+                    }
+                });
+            });
+        },
+        _hideFileIcon: function () {
+            var self = this;
+            if (self.overwriteInitial) {
+                self.$captionContainer.removeClass('icon-visible');
+            }
+        },
+        _showFileIcon: function () {
+            var self = this;
+            $h.addCss(self.$captionContainer, 'icon-visible');
+        },
+        _getSize: function (bytes) {
+            var self = this, size = parseFloat(bytes), i, func = self.fileSizeGetter, sizes, out;
+            if (!$.isNumeric(bytes) || !$.isNumeric(size)) {
+                return '';
+            }
+            if (typeof func === 'function') {
+                out = func(size);
+            } else {
+                if (size === 0) {
+                    out = '0.00 B';
+                } else {
+                    i = Math.floor(Math.log(size) / Math.log(1024));
+                    sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+                    out = (size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + sizes[i];
+                }
+            }
+            return self._getLayoutTemplate('size').replace('{sizeText}', out);
+        },
+        _generatePreviewTemplate: function (cat, data, fname, ftype, previewId, isError, size, frameClass, foot, ind, templ) {
+            var self = this, caption = self.slug(fname), prevContent, zoomContent = '', styleAttribs = '',
+                screenW = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth,
+                config = screenW < 400 ? (self.previewSettingsSmall[cat] || self.defaults.previewSettingsSmall[cat]) :
+                    (self.previewSettings[cat] || self.defaults.previewSettings[cat]),
+                footer = foot || self._renderFileFooter(caption, size, 'auto', isError),
+                hasIconSetting = self._getPreviewIcon(fname), typeCss = 'type-default',
+                forcePrevIcon = hasIconSetting && self.preferIconicPreview,
+                forceZoomIcon = hasIconSetting && self.preferIconicZoomPreview, getContent;
+            if (config) {
+                $.each(config, function (key, val) {
+                    styleAttribs += key + ':' + val + ';';
+                });
+            }
+            getContent = function (c, d, zoom, frameCss) {
+                var id = zoom ? 'zoom-' + previewId : previewId, tmplt = self._getPreviewTemplate(c),
+                    css = (frameClass || '') + ' ' + frameCss;
+                if (self.frameClass) {
+                    css = self.frameClass + ' ' + css;
+                }
+                if (zoom) {
+                    css = css.replace(' ' + $h.SORT_CSS, '');
+                }
+                tmplt = self._parseFilePreviewIcon(tmplt, fname);
+                if (c === 'text') {
+                    d = $h.htmlEncode(d);
+                }
+                if (cat === 'object' && !ftype) {
+                    $.each(self.defaults.fileTypeSettings, function (key, func) {
+                        if (key === 'object' || key === 'other') {
+                            return;
+                        }
+                        if (func(fname, ftype)) {
+                            typeCss = 'type-' + key;
+                        }
+                    });
+                }
+                return tmplt.setTokens({
+                    'previewId': id,
+                    'caption': caption,
+                    'frameClass': css,
+                    'type': ftype,
+                    'fileindex': ind,
+                    'typeCss': typeCss,
+                    'footer': footer,
+                    'data': d,
+                    'template': templ || cat,
+                    'style': styleAttribs ? 'style="' + styleAttribs + '"' : ''
+                });
+            };
+            ind = ind || previewId.slice(previewId.lastIndexOf('-') + 1);
+            if (self.fileActionSettings.showZoom) {
+                zoomContent = getContent((forceZoomIcon ? 'other' : cat), data, true, 'kv-zoom-thumb');
+            }
+            zoomContent = '\n' + self._getLayoutTemplate('zoomCache').replace('{zoomContent}', zoomContent);
+            prevContent = getContent((forcePrevIcon ? 'other' : cat), data, false, 'kv-preview-thumb');
+            return prevContent + zoomContent;
+        },
+        _addToPreview: function ($preview, content) {
+            var self = this;
+            return self.reversePreviewOrder ? $preview.prepend(content) : $preview.append(content);
+        },
+        _previewDefault: function (file, previewId, isDisabled) {
+            var self = this, $preview = self.$preview;
+            if (!self.showPreview) {
+                return;
+            }
+            var fname = file ? file.name : '', ftype = file ? file.type : '', content, size = file.size || 0,
+                caption = self.slug(fname), isError = isDisabled === true && !self.isAjaxUpload,
+                data = $h.objUrl.createObjectURL(file);
+            self._clearDefaultPreview();
+            content = self._generatePreviewTemplate('other', data, fname, ftype, previewId, isError, size);
+            self._addToPreview($preview, content);
+            self._setThumbAttr(previewId, caption, size);
+            if (isDisabled === true && self.isAjaxUpload) {
+                self._setThumbStatus($('#' + previewId), 'Error');
+            }
+        },
+        _previewFile: function (i, file, theFile, previewId, data, fileInfo) {
+            if (!this.showPreview) {
+                return;
+            }
+            var self = this, fname = file ? file.name : '', ftype = fileInfo.type, caption = fileInfo.name,
+                cat = self._parseFileType(ftype, fname), types = self.allowedPreviewTypes, content,
+                mimes = self.allowedPreviewMimeTypes, $preview = self.$preview, fsize = file.size || 0,
+                chkTypes = types && types.indexOf(cat) >= 0, chkMimes = mimes && mimes.indexOf(ftype) !== -1,
+                iData = (cat === 'text' || cat === 'html' || cat === 'image') ? theFile.target.result : data;
+            /** @namespace window.DOMPurify */
+            if (cat === 'html' && self.purifyHtml && window.DOMPurify) {
+                iData = window.DOMPurify.sanitize(iData);
+            }
+            if (chkTypes || chkMimes) {
+                content = self._generatePreviewTemplate(cat, iData, fname, ftype, previewId, false, fsize);
+                self._clearDefaultPreview();
+                self._addToPreview($preview, content);
+                var $img = $preview.find('#' + previewId + ' img');
+                if ($img.length && self.autoOrientImage) {
+                    $h.validateOrientation(file, function (value) {
+                        if (!value) {
+                            self._validateImage(previewId, caption, ftype, fsize, iData);
+                            return;
+                        }
+                        var $zoomImg = $preview.find('#zoom-' + previewId + ' img'), css = 'rotate-' + value;
+                        if (value > 4) {
+                            css += ($img.width() > $img.height() ? ' is-portrait-gt4' : ' is-landscape-gt4');
+                        }
+                        $h.addCss($img, css);
+                        $h.addCss($zoomImg, css);
+                        self._raise('fileimageoriented', {'$img': $img, 'file': file});
+                        self._validateImage(previewId, caption, ftype, fsize, iData);
+                        $h.adjustOrientedImage($img);
+                    });
+                } else {
+                    self._validateImage(previewId, caption, ftype, fsize, iData);
+                }
+            } else {
+                self._previewDefault(file, previewId);
+            }
+            self._setThumbAttr(previewId, caption, fsize);
+            self._initSortable();
+        },
+        _setThumbAttr: function (id, caption, size) {
+            var self = this, $frame = $('#' + id);
+            if ($frame.length) {
+                size = size && size > 0 ? self._getSize(size) : '';
+                $frame.data({'caption': caption, 'size': size});
+            }
+        },
+        _setInitThumbAttr: function () {
+            var self = this, data = self.previewCache.data, len = self.previewCache.count(), config,
+                caption, size, previewId;
+            if (len === 0) {
+                return;
+            }
+            for (var i = 0; i < len; i++) {
+                config = data.config[i];
+                previewId = self.previewInitId + '-' + 'init_' + i;
+                caption = $h.ifSet('caption', config, $h.ifSet('filename', config));
+                size = $h.ifSet('size', config);
+                self._setThumbAttr(previewId, caption, size);
+            }
+        },
+        _slugDefault: function (text) {
+            return $h.isEmpty(text) ? '' : String(text).replace(/[\[\]\/\{}:;#%=\(\)\*\+\?\\\^\$\|<>&"']/g, '_');
+        },
+        _updateFileDetails: function (numFiles) {
+            var self = this, $el = self.$element, fileStack = self.getFileStack(),
+                name = ($h.isIE(9) && $h.findFileName($el.val())) ||
+                    ($el[0].files[0] && $el[0].files[0].name) || (fileStack.length && fileStack[0].name) || '',
+                label = self.slug(name), n = self.isAjaxUpload ? fileStack.length : numFiles,
+                nFiles = self.previewCache.count() + n, log = n === 1 ? label : self._getMsgSelected(nFiles);
+            if (self.isError) {
+                self.$previewContainer.removeClass('file-thumb-loading');
+                self.$previewStatus.html('');
+                self.$captionContainer.removeClass('icon-visible');
+            } else {
+                self._showFileIcon();
+            }
+            self._setCaption(log, self.isError);
+            self.$container.removeClass('file-input-new file-input-ajax-new');
+            if (arguments.length === 1) {
+                self._raise('fileselect', [numFiles, label]);
+            }
+            if (self.previewCache.count()) {
+                self._initPreviewActions();
+            }
+        },
+        _setThumbStatus: function ($thumb, status) {
+            var self = this;
+            if (!self.showPreview) {
+                return;
+            }
+            var icon = 'indicator' + status, msg = icon + 'Title',
+                css = 'file-preview-' + status.toLowerCase(),
+                $indicator = $thumb.find('.file-upload-indicator'),
+                config = self.fileActionSettings;
+            $thumb.removeClass('file-preview-success file-preview-error file-preview-loading');
+            if (status === 'Success') {
+                $thumb.find('.file-drag-handle').remove();
+            }
+            $indicator.html(config[icon]);
+            $indicator.attr('title', config[msg]);
+            $thumb.addClass(css);
+            if (status === 'Error' && !self.retryErrorUploads) {
+                $thumb.find('.kv-file-upload').attr('disabled', true);
+            }
+        },
+        _setProgressCancelled: function () {
+            var self = this;
+            self._setProgress(101, self.$progress, self.msgCancelled);
+        },
+        _setProgress: function (p, $el, error) {
+            var self = this, pct = Math.min(p, 100), out, pctLimit = self.progressUploadThreshold,
+                t = p <= 100 ? self.progressTemplate : self.progressCompleteTemplate,
+                template = pct < 100 ? self.progressTemplate : (error ? self.progressErrorTemplate : t);
+            $el = $el || self.$progress;
+            if (!$h.isEmpty(template)) {
+                if (pctLimit && pct > pctLimit && p <= 100) {
+                    out = template.setTokens({'percent': pctLimit, 'status': self.msgUploadThreshold});
+                } else {
+                    out = template.setTokens({'percent': pct, 'status': (p > 100 ? self.msgUploadEnd : pct + '%')});
+                }
+                $el.html(out);
+                if (error) {
+                    $el.find('[role="progressbar"]').html(error);
+                }
+            }
+        },
+        _setFileDropZoneTitle: function () {
+            var self = this, $zone = self.$container.find('.file-drop-zone'), title = self.dropZoneTitle, strFiles;
+            if (self.isClickable) {
+                strFiles = $h.isEmpty(self.$element.attr('multiple')) ? self.fileSingle : self.filePlural;
+                title += self.dropZoneClickTitle.replace('{files}', strFiles);
+            }
+            $zone.find('.' + self.dropZoneTitleClass).remove();
+            if (!self.showPreview || $zone.length === 0 || self.getFileStack().length > 0 || !self.dropZoneEnabled ||
+                (!self.isAjaxUpload && self.$element.files)) {
+                return;
+            }
+            if ($zone.find($h.FRAMES).length === 0 && $h.isEmpty(self.defaultPreviewContent)) {
+                $zone.prepend('<div class="' + self.dropZoneTitleClass + '">' + title + '</div>');
+            }
+            self.$container.removeClass('file-input-new');
+            $h.addCss(self.$container, 'file-input-ajax-new');
+        },
+        _setAsyncUploadStatus: function (previewId, pct, total) {
+            var self = this, sum = 0;
+            self._setProgress(pct, $('#' + previewId).find('.file-thumb-progress'));
+            self.uploadStatus[previewId] = pct;
+            $.each(self.uploadStatus, function (key, value) {
+                sum += value;
+            });
+            self._setProgress(Math.floor(sum / total));
+        },
+        _validateMinCount: function () {
+            var self = this, len = self.isAjaxUpload ? self.getFileStack().length : self.$element.get(0).files.length;
+            if (self.validateInitialCount && self.minFileCount > 0 && self._getFileCount(len - 1) < self.minFileCount) {
+                self._noFilesError({});
+                return false;
+            }
+            return true;
+        },
+        _getFileCount: function (fileCount) {
+            var self = this, addCount = 0;
+            if (self.validateInitialCount && !self.overwriteInitial) {
+                addCount = self.previewCache.count();
+                fileCount += addCount;
+            }
+            return fileCount;
+        },
+        _getFileId: function (file) {
+            var self = this, custom = self.generateFileId, relativePath;
+            if (typeof custom === 'function') {
+                return custom(file, event);
+            }
+            if (!file) {
+                return null;
+            }
+            /** @namespace file.webkitRelativePath */
+            relativePath = String(file.webkitRelativePath || file.fileName || file.name || null);
+            if (!relativePath) {
+                return null;
+            }
+            return (file.size + '-' + relativePath.replace(/[^0-9a-zA-Z_-]/img, ''));
+        },
+        _getFileName: function (file) {
+            return file && file.name ? this.slug(file.name) : undefined;
+        },
+        _getFileIds: function (skipNull) {
+            var self = this;
+            return self.fileids.filter(function (n) {
+                return (skipNull ? n !== undefined : n !== undefined && n !== null);
+            });
+        },
+        _getFileNames: function (skipNull) {
+            var self = this;
+            return self.filenames.filter(function (n) {
+                return (skipNull ? n !== undefined : n !== undefined && n !== null);
+            });
+        },
+        _setPreviewError: function ($thumb, i, val, repeat) {
+            var self = this;
+            if (i !== undefined) {
+                self.updateStack(i, val);
+            }
+            if (!self.showPreview) {
+                return;
+            }
+            if (self.removeFromPreviewOnError && !repeat) {
+                $thumb.remove();
+                return;
+            } else {
+                self._setThumbStatus($thumb, 'Error');
+            }
+            self._refreshUploadButton($thumb, repeat);
+        },
+        _refreshUploadButton: function ($thumb, repeat) {
+            var self = this, $btn = $thumb.find('.kv-file-upload'), cfg = self.fileActionSettings,
+                icon = cfg.uploadIcon, title = cfg.uploadTitle;
+            if (!$btn.length) {
+                return;
+            }
+            if (repeat) {
+                icon = cfg.uploadRetryIcon;
+                title = cfg.uploadRetryTitle;
+            }
+            $btn.attr('title', title).html(icon);
+        },
+        _checkDimensions: function (i, chk, $img, $thumb, fname, type, params) {
+            var self = this, msg, dim, tag = chk === 'Small' ? 'min' : 'max', limit = self[tag + 'Image' + type],
+                $imgEl, isValid;
+            if ($h.isEmpty(limit) || !$img.length) {
+                return;
+            }
+            $imgEl = $img[0];
+            dim = (type === 'Width') ? $imgEl.naturalWidth || $imgEl.width : $imgEl.naturalHeight || $imgEl.height;
+            isValid = chk === 'Small' ? dim >= limit : dim <= limit;
+            if (isValid) {
+                return;
+            }
+            msg = self['msgImage' + type + chk].setTokens({'name': fname, 'size': limit});
+            self._showUploadError(msg, params);
+            self._setPreviewError($thumb, i, null);
+        },
+        _validateImage: function (previewId, fname, ftype, fsize, iData) {
+            var self = this, $preview = self.$preview, params, w1, w2, $thumb = $preview.find("#" + previewId),
+                i = $thumb.attr('data-fileindex'), $img = $thumb.find('img'), exifObject;
+            fname = fname || 'Untitled';
+            $img.one('load', function () {
+                w1 = $thumb.width();
+                w2 = $preview.width();
+                if (w1 > w2) {
+                    $img.css('width', '100%');
+                }
+                params = {ind: i, id: previewId};
+                self._checkDimensions(i, 'Small', $img, $thumb, fname, 'Width', params);
+                self._checkDimensions(i, 'Small', $img, $thumb, fname, 'Height', params);
+                if (!self.resizeImage) {
+                    self._checkDimensions(i, 'Large', $img, $thumb, fname, 'Width', params);
+                    self._checkDimensions(i, 'Large', $img, $thumb, fname, 'Height', params);
+                }
+                self._raise('fileimageloaded', [previewId]);
+                try {
+                    exifObject = window.piexif ? window.piexif.load(iData) : null;
+                } catch (err) {
+                    exifObject = null;
+                }
+                self.loadedImages.push({
+                    ind: i,
+                    img: $img,
+                    thumb: $thumb,
+                    pid: previewId,
+                    typ: ftype,
+                    siz: fsize,
+                    validated: false,
+                    imgData: iData,
+                    exifObj: exifObject
+                });
+                $thumb.data('exif', exifObject);
+                self._validateAllImages();
+            }).one('error', function () {
+                self._raise('fileimageloaderror', [previewId]);
+            }).each(function () {
+                if (this.complete) {
+                    $(this).trigger('load');
+                } else {
+                    if (this.error) {
+                        $(this).trigger('error');
+                    }
+                }
+            });
+        },
+        _validateAllImages: function () {
+            var self = this, i, counter = {val: 0}, numImgs = self.loadedImages.length, config,
+                fsize, minSize = self.resizeIfSizeMoreThan;
+            if (numImgs !== self.totalImagesCount) {
+                return;
+            }
+            self._raise('fileimagesloaded');
+            if (!self.resizeImage) {
+                return;
+            }
+            for (i = 0; i < self.loadedImages.length; i++) {
+                config = self.loadedImages[i];
+                if (config.validated) {
+                    continue;
+                }
+                fsize = config.siz;
+                if (fsize && fsize > minSize * 1000) {
+                    self._getResizedImage(config, counter, numImgs);
+                }
+                self.loadedImages[i].validated = true;
+            }
+        },
+        _getResizedImage: function (config, counter, numImgs) {
+            var self = this, img = $(config.img)[0], width = img.naturalWidth, height = img.naturalHeight, blob,
+                ratio = 1, maxWidth = self.maxImageWidth || width, maxHeight = self.maxImageHeight || height,
+                isValidImage = !!(width && height), chkWidth, chkHeight, canvas = self.imageCanvas, dataURI,
+                context = self.imageCanvasContext, type = config.typ, pid = config.pid, ind = config.ind,
+                $thumb = config.thumb, throwError, msg, exifObj = config.exifObj, exifStr;
+            throwError = function (msg, params, ev) {
+                if (self.isAjaxUpload) {
+                    self._showUploadError(msg, params, ev);
+                } else {
+                    self._showError(msg, params, ev);
+                }
+                self._setPreviewError($thumb, ind);
+            };
+            if (!self.filestack[ind] || !isValidImage || (width <= maxWidth && height <= maxHeight)) {
+                if (isValidImage && self.filestack[ind]) {
+                    self._raise('fileimageresized', [pid, ind]);
+                }
+                counter.val++;
+                if (counter.val === numImgs) {
+                    self._raise('fileimagesresized');
+                }
+                if (!isValidImage) {
+                    throwError(self.msgImageResizeError, {id: pid, 'index': ind}, 'fileimageresizeerror');
+                    return;
+                }
+            }
+            type = type || self.resizeDefaultImageType;
+            chkWidth = width > maxWidth;
+            chkHeight = height > maxHeight;
+            if (self.resizePreference === 'width') {
+                ratio = chkWidth ? maxWidth / width : (chkHeight ? maxHeight / height : 1);
+            } else {
+                ratio = chkHeight ? maxHeight / height : (chkWidth ? maxWidth / width : 1);
+            }
+            self._resetCanvas();
+            width *= ratio;
+            height *= ratio;
+            canvas.width = width;
+            canvas.height = height;
+            try {
+                context.drawImage(img, 0, 0, width, height);
+                dataURI = canvas.toDataURL(type, self.resizeQuality);
+                if (exifObj) {
+                    exifStr = window.piexif.dump(exifObj);
+                    dataURI = window.piexif.insert(exifStr, dataURI);
+                }
+                blob = $h.dataURI2Blob(dataURI);
+                self.filestack[ind] = blob;
+                self._raise('fileimageresized', [pid, ind]);
+                counter.val++;
+                if (counter.val === numImgs) {
+                    self._raise('fileimagesresized', [undefined, undefined]);
+                }
+                if (!(blob instanceof Blob)) {
+                    throwError(self.msgImageResizeError, {id: pid, 'index': ind}, 'fileimageresizeerror');
+                }
+            }
+            catch (err) {
+                counter.val++;
+                if (counter.val === numImgs) {
+                    self._raise('fileimagesresized', [undefined, undefined]);
+                }
+                msg = self.msgImageResizeException.replace('{errors}', err.message);
+                throwError(msg, {id: pid, 'index': ind}, 'fileimageresizeexception');
+            }
+        },
+        _initBrowse: function ($container) {
+            var self = this;
+            if (self.showBrowse) {
+                self.$btnFile = $container.find('.btn-file');
+                self.$btnFile.append(self.$element);
+            } else {
+                self.$element.hide();
+            }
+        },
+        _initCaption: function () {
+            var self = this, cap = self.initialCaption || '';
+            if (self.overwriteInitial || $h.isEmpty(cap)) {
+                self.$caption.val('');
+                return false;
+            }
+            self._setCaption(cap);
+            return true;
+        },
+        _setCaption: function (content, isError) {
+            var self = this, title, out, icon, n, cap, stack = self.getFileStack();
+            if (!self.$caption.length) {
+                return;
+            }
+            self.$captionContainer.removeClass('icon-visible');
+            if (isError) {
+                title = $('<div>' + self.msgValidationError + '</div>').text();
+                n = stack.length;
+                if (n) {
+                    cap = n === 1 && stack[0] ? self._getFileNames()[0] : self._getMsgSelected(n);
+                } else {
+                    cap = self._getMsgSelected(self.msgNo);
+                }
+                out = $h.isEmpty(content) ? cap : content;
+                icon = '<span class="' + self.msgValidationErrorClass + '">' + self.msgValidationErrorIcon + '</span>';
+            } else {
+                if ($h.isEmpty(content)) {
+                    return;
+                }
+                title = $('<div>' + content + '</div>').text();
+                out = title;
+                icon = self._getLayoutTemplate('fileIcon');
+            }
+            self.$captionContainer.addClass('icon-visible');
+            self.$caption.attr('title', title).val(out);
+            self.$captionIcon.html(icon);
+        },
+        _createContainer: function () {
+            var self = this, attribs = {"class": 'file-input file-input-new' + (self.rtl ? ' kv-rtl' : '')},
+                $container = $(document.createElement("div")).attr(attribs).html(self._renderMain());
+            self.$element.before($container);
+            self._initBrowse($container);
+            if (self.theme) {
+                $container.addClass('theme-' + self.theme);
+            }
+            return $container;
+        },
+        _refreshContainer: function () {
+            var self = this, $container = self.$container;
+            $container.before(self.$element);
+            $container.html(self._renderMain());
+            self._initBrowse($container);
+            self._validateDisabled();
+        },
+        _validateDisabled: function () {
+            var self = this;
+            self.$caption.attr({readonly: self.isDisabled});
+        },
+        _renderMain: function () {
+            var self = this,
+                dropCss = self.dropZoneEnabled ? ' file-drop-zone' : 'file-drop-disabled',
+                close = !self.showClose ? '' : self._getLayoutTemplate('close'),
+                preview = !self.showPreview ? '' : self._getLayoutTemplate('preview')
+                    .setTokens({'class': self.previewClass, 'dropClass': dropCss}),
+                css = self.isDisabled ? self.captionClass + ' file-caption-disabled' : self.captionClass,
+                caption = self.captionTemplate.setTokens({'class': css + ' kv-fileinput-caption'});
+            return self.mainTemplate.setTokens({
+                'class': self.mainClass + (!self.showBrowse && self.showCaption ? ' no-browse' : ''),
+                'preview': preview,
+                'close': close,
+                'caption': caption,
+                'upload': self._renderButton('upload'),
+                'remove': self._renderButton('remove'),
+                'cancel': self._renderButton('cancel'),
+                'browse': self._renderButton('browse')
+            });
+
+        },
+        _renderButton: function (type) {
+            var self = this, tmplt = self._getLayoutTemplate('btnDefault'), css = self[type + 'Class'],
+                title = self[type + 'Title'], icon = self[type + 'Icon'], label = self[type + 'Label'],
+                status = self.isDisabled ? ' disabled' : '', btnType = 'button';
+            switch (type) {
+                case 'remove':
+                    if (!self.showRemove) {
+                        return '';
+                    }
+                    break;
+                case 'cancel':
+                    if (!self.showCancel) {
+                        return '';
+                    }
+                    css += ' kv-hidden';
+                    break;
+                case 'upload':
+                    if (!self.showUpload) {
+                        return '';
+                    }
+                    if (self.isAjaxUpload && !self.isDisabled) {
+                        tmplt = self._getLayoutTemplate('btnLink').replace('{href}', self.uploadUrl);
+                    } else {
+                        btnType = 'submit';
+                    }
+                    break;
+                case 'browse':
+                    if (!self.showBrowse) {
+                        return '';
+                    }
+                    tmplt = self._getLayoutTemplate('btnBrowse');
+                    break;
+                default:
+                    return '';
+            }
+
+            css += type === 'browse' ? ' btn-file' : ' fileinput-' + type + ' fileinput-' + type + '-button';
+            if (!$h.isEmpty(label)) {
+                label = ' <span class="' + self.buttonLabelClass + '">' + label + '</span>';
+            }
+            return tmplt.setTokens({
+                'type': btnType, 'css': css, 'title': title, 'status': status, 'icon': icon, 'label': label
+            });
+        },
+        _renderThumbProgress: function () {
+            var self = this;
+            return '<div class="file-thumb-progress kv-hidden">' +
+                self.progressTemplate.setTokens({'percent': '0', 'status': self.msgUploadBegin}) +
+                '</div>';
+        },
+        _renderFileFooter: function (caption, size, width, isError) {
+            var self = this, config = self.fileActionSettings, rem = config.showRemove, drg = config.showDrag,
+                upl = config.showUpload, zoom = config.showZoom, out,
+                template = self._getLayoutTemplate('footer'), tInd = self._getLayoutTemplate('indicator'),
+                ind = isError ? config.indicatorError : config.indicatorNew,
+                title = isError ? config.indicatorErrorTitle : config.indicatorNewTitle,
+                indicator = tInd.setTokens({'indicator': ind, 'indicatorTitle': title});
+            size = self._getSize(size);
+            if (self.isAjaxUpload) {
+                out = template.setTokens({
+                    'actions': self._renderFileActions(upl, false, rem, zoom, drg, false, false, false),
+                    'caption': caption,
+                    'size': size,
+                    'width': width,
+                    'progress': self._renderThumbProgress(),
+                    'indicator': indicator
+                });
+            } else {
+                out = template.setTokens({
+                    'actions': self._renderFileActions(false, false, false, zoom, drg, false, false, false),
+                    'caption': caption,
+                    'size': size,
+                    'width': width,
+                    'progress': '',
+                    'indicator': indicator
+                });
+            }
+            out = $h.replaceTags(out, self.previewThumbTags);
+            return out;
+        },
+        _renderFileActions: function (showUpl, showDwn, showDel, showZoom, showDrag, disabled, url, key, isInit, dUrl, dFile) {
+            if (!showUpl && !showDwn && !showDel && !showZoom && !showDrag) {
+                return '';
+            }
+            var self = this, vUrl = url === false ? '' : ' data-url="' + url + '"',
+                vKey = key === false ? '' : ' data-key="' + key + '"', btnDelete = '', btnUpload = '', btnDownload = '',
+                btnZoom = '', btnDrag = '', css, template = self._getLayoutTemplate('actions'),
+                config = self.fileActionSettings,
+                otherButtons = self.otherActionButtons.setTokens({'dataKey': vKey, 'key': key}),
+                removeClass = disabled ? config.removeClass + ' disabled' : config.removeClass;
+            if (showDel) {
+                btnDelete = self._getLayoutTemplate('actionDelete').setTokens({
+                    'removeClass': removeClass,
+                    'removeIcon': config.removeIcon,
+                    'removeTitle': config.removeTitle,
+                    'dataUrl': vUrl,
+                    'dataKey': vKey,
+                    'key': key
+                });
+            }
+            if (showUpl) {
+                btnUpload = self._getLayoutTemplate('actionUpload').setTokens({
+                    'uploadClass': config.uploadClass,
+                    'uploadIcon': config.uploadIcon,
+                    'uploadTitle': config.uploadTitle
+                });
+            }
+            if (showDwn) {
+                btnDownload = self._getLayoutTemplate('actionDownload').setTokens({
+                    'downloadClass': config.downloadClass,
+                    'downloadIcon': config.downloadIcon,
+                    'downloadTitle': config.downloadTitle,
+                    'downloadUrl': dUrl || self.initialPreviewDownloadUrl
+                });
+                btnDownload = btnDownload.setTokens({'filename': dFile, 'key': key});
+            }
+            if (showZoom) {
+                btnZoom = self._getLayoutTemplate('actionZoom').setTokens({
+                    'zoomClass': config.zoomClass,
+                    'zoomIcon': config.zoomIcon,
+                    'zoomTitle': config.zoomTitle
+                });
+            }
+            if (showDrag && isInit) {
+                css = 'drag-handle-init ' + config.dragClass;
+                btnDrag = self._getLayoutTemplate('actionDrag').setTokens({
+                    'dragClass': css,
+                    'dragTitle': config.dragTitle,
+                    'dragIcon': config.dragIcon
+                });
+            }
+            return template.setTokens({
+                'delete': btnDelete,
+                'upload': btnUpload,
+                'download': btnDownload,
+                'zoom': btnZoom,
+                'drag': btnDrag,
+                'other': otherButtons
+            });
+        },
+        _browse: function (e) {
+            var self = this;
+            self._raise('filebrowse');
+            if (e && e.isDefaultPrevented()) {
+                return;
+            }
+            if (self.isError && !self.isAjaxUpload) {
+                self.clear();
+            }
+            self.$captionContainer.focus();
+        },
+        _filterDuplicate: function (file, files, fileIds) {
+            var self = this, fileId = self._getFileId(file);
+
+            if (fileId && fileIds && fileIds.indexOf(fileId) > -1) {
+                return;
+            }
+            if (!fileIds) {
+                fileIds = [];
+            }
+            files.push(file);
+            fileIds.push(fileId);
+        },
+        _change: function (e) {
+            var self = this;
+            if (self.changeTriggered) {
+                return;
+            }
+            var $el = self.$element, isDragDrop = arguments.length > 1, isAjaxUpload = self.isAjaxUpload,
+                tfiles = [], files = isDragDrop ? arguments[1] : $el.get(0).files, total,
+                maxCount = !isAjaxUpload && $h.isEmpty($el.attr('multiple')) ? 1 : self.maxFileCount,
+                len, ctr = self.filestack.length, isSingleUpload = $h.isEmpty($el.attr('multiple')),
+                flagSingle = (isSingleUpload && ctr > 0), fileIds = self._getFileIds(),
+                throwError = function (mesg, file, previewId, index) {
+                    var p1 = $.extend(true, {}, self._getOutData({}, {}, files), {id: previewId, index: index}),
+                        p2 = {id: previewId, index: index, file: file, files: files};
+                    return isAjaxUpload ? self._showUploadError(mesg, p1) : self._showError(mesg, p2);
+                },
+                maxCountCheck = function (n, m) {
+                    var msg = self.msgFilesTooMany.replace('{m}', m).replace('{n}', n);
+                    self.isError = throwError(msg, null, null, null);
+                    self.$captionContainer.removeClass('icon-visible');
+                    self._setCaption('', true);
+                    self.$container.removeClass('file-input-new file-input-ajax-new');
+                };
+            self.reader = null;
+            self._resetUpload();
+            self._hideFileIcon();
+            if (self.dropZoneEnabled) {
+                self.$container.find('.file-drop-zone .' + self.dropZoneTitleClass).remove();
+            }
+            if (isAjaxUpload) {
+                $.each(files, function (vKey, vFile) {
+                    self._filterDuplicate(vFile, tfiles, fileIds);
+                });
+            } else {
+                if (e.target && e.target.files === undefined) {
+                    files = e.target.value ? [{name: e.target.value.replace(/^.+\\/, '')}] : [];
+                } else {
+                    files = e.target.files || {};
+                }
+                tfiles = files;
+            }
+            if ($h.isEmpty(tfiles) || tfiles.length === 0) {
+                if (!isAjaxUpload) {
+                    self.clear();
+                }
+                self._raise('fileselectnone');
+                return;
+            }
+            self._resetErrors();
+            len = tfiles.length;
+            total = self._getFileCount(isAjaxUpload ? (self.getFileStack().length + len) : len);
+            if (maxCount > 0 && total > maxCount) {
+                if (!self.autoReplace || len > maxCount) {
+                    maxCountCheck((self.autoReplace && len > maxCount ? len : total), maxCount);
+                    return;
+                }
+                if (total > maxCount) {
+                    self._resetPreviewThumbs(isAjaxUpload);
+                }
+            } else {
+                if (!isAjaxUpload || flagSingle) {
+                    self._resetPreviewThumbs(false);
+                    if (flagSingle) {
+                        self.clearStack();
+                    }
+                } else {
+                    if (isAjaxUpload && ctr === 0 && (!self.previewCache.count() || self.overwriteInitial)) {
+                        self._resetPreviewThumbs(true);
+                    }
+                }
+            }
+            if (self.isPreviewable) {
+                self.readFiles(tfiles);
+            } else {
+                self._updateFileDetails(1);
+            }
+        },
+        _abort: function (params) {
+            var self = this, data;
+            if (self.ajaxAborted && typeof self.ajaxAborted === "object" && self.ajaxAborted.message !== undefined) {
+                data = $.extend(true, {}, self._getOutData(), params);
+                data.abortData = self.ajaxAborted.data || {};
+                data.abortMessage = self.ajaxAborted.message;
+                self._setProgress(101, self.$progress, self.msgCancelled);
+                self._showUploadError(self.ajaxAborted.message, data, 'filecustomerror');
+                self.cancel();
+                return true;
+            }
+            return !!self.ajaxAborted;
+        },
+        _resetFileStack: function () {
+            var self = this, i = 0, newstack = [], newnames = [], newids = [];
+            self._getThumbs().each(function () {
+                var $thumb = $(this), ind = $thumb.attr('data-fileindex'), file = self.filestack[ind],
+                    pid = $thumb.attr('id');
+                if (ind === '-1' || ind === -1) {
+                    return;
+                }
+                if (file !== undefined) {
+                    newstack[i] = file;
+                    newnames[i] = self._getFileName(file);
+                    newids[i] = self._getFileId(file);
+                    $thumb.attr({'id': self.previewInitId + '-' + i, 'data-fileindex': i});
+                    i++;
+                } else {
+                    $thumb.attr({'id': 'uploaded-' + $h.uniqId(), 'data-fileindex': '-1'});
+                }
+                self.$preview.find('#zoom-' + pid).attr({
+                    'id': 'zoom-' + $thumb.attr('id'),
+                    'data-fileindex': $thumb.attr('data-fileindex')
+                });
+            });
+            self.filestack = newstack;
+            self.filenames = newnames;
+            self.fileids = newids;
+        },
+        _isFileSelectionValid: function (cnt) {
+            var self = this;
+            cnt = cnt || 0;
+            if (self.required && !self.getFilesCount()) {
+                self.$errorContainer.html('');
+                self._showUploadError(self.msgFileRequired);
+                return false;
+            }
+            if (self.minFileCount > 0 && self._getFileCount(cnt) < self.minFileCount) {
+                self._noFilesError({});
+                return false;
+            }
+            return true;
+        },
+        clearStack: function () {
+            var self = this;
+            self.filestack = [];
+            self.filenames = [];
+            self.fileids = [];
+            return self.$element;
+        },
+        updateStack: function (i, file) {
+            var self = this;
+            self.filestack[i] = file;
+            self.filenames[i] = self._getFileName(file);
+            self.fileids[i] = file && self._getFileId(file) || null;
+            return self.$element;
+        },
+        addToStack: function (file) {
+            var self = this;
+            self.filestack.push(file);
+            self.filenames.push(self._getFileName(file));
+            self.fileids.push(self._getFileId(file));
+            return self.$element;
+        },
+        getFileStack: function (skipNull) {
+            var self = this;
+            return self.filestack.filter(function (n) {
+                return (skipNull ? n !== undefined : n !== undefined && n !== null);
+            });
+        },
+        getFilesCount: function () {
+            var self = this, len = self.isAjaxUpload ? self.getFileStack().length : self.$element.get(0).files.length;
+            return self._getFileCount(len);
+        },
+        readFiles: function (files) {
+            this.reader = new FileReader();
+            var self = this, $el = self.$element, $preview = self.$preview, reader = self.reader,
+                $container = self.$previewContainer, $status = self.$previewStatus, msgLoading = self.msgLoading,
+                msgProgress = self.msgProgress, previewInitId = self.previewInitId, numFiles = files.length,
+                settings = self.fileTypeSettings, ctr = self.filestack.length, readFile,
+                fileTypes = self.allowedFileTypes, typLen = fileTypes ? fileTypes.length : 0,
+                fileExt = self.allowedFileExtensions, strExt = $h.isEmpty(fileExt) ? '' : fileExt.join(', '),
+                maxPreviewSize = self.maxFilePreviewSize && parseFloat(self.maxFilePreviewSize),
+                canPreview = $preview.length && (!maxPreviewSize || isNaN(maxPreviewSize)),
+                throwError = function (msg, file, previewId, index) {
+                    var p1 = $.extend(true, {}, self._getOutData({}, {}, files), {id: previewId, index: index}),
+                        p2 = {id: previewId, index: index, file: file, files: files}, $thumb;
+                    self._previewDefault(file, previewId, true);
+                    if (self.isAjaxUpload) {
+                        self.addToStack(undefined);
+                        setTimeout(function () {
+                            readFile(index + 1);
+                        }, 100);
+                    } else {
+                        numFiles = 0;
+                    }
+                    self._initFileActions();
+                    $thumb = $('#' + previewId);
+                    $thumb.find('.kv-file-upload').hide();
+                    if (self.removeFromPreviewOnError) {
+                        $thumb.remove();
+                    }
+                    self.isError = self.isAjaxUpload ? self._showUploadError(msg, p1) : self._showError(msg, p2);
+                    self._updateFileDetails(numFiles);
+                };
+
+            self.loadedImages = [];
+            self.totalImagesCount = 0;
+
+            $.each(files, function (key, file) {
+                var func = self.fileTypeSettings.image;
+                if (func && func(file.type)) {
+                    self.totalImagesCount++;
+                }
+            });
+            readFile = function (i) {
+                if ($h.isEmpty($el.attr('multiple'))) {
+                    numFiles = 1;
+                }
+                if (i >= numFiles) {
+                    if (self.isAjaxUpload && self.filestack.length > 0) {
+                        self._raise('filebatchselected', [self.getFileStack()]);
+                    } else {
+                        self._raise('filebatchselected', [files]);
+                    }
+                    $container.removeClass('file-thumb-loading');
+                    $status.html('');
+                    return;
+                }
+                var node = ctr + i, previewId = previewInitId + "-" + node, file = files[i], fSizeKB, j, msg,
+                    fnText = settings.text, fnImage = settings.image, fnHtml = settings.html, typ, chk, typ1, typ2,
+                    caption = file.name ? self.slug(file.name) : '', fileSize = (file.size || 0) / 1000,
+                    fileExtExpr = '', previewData = $h.objUrl.createObjectURL(file), fileCount = 0, strTypes = '',
+                    func, knownTypes = 0, isText, isHtml, isImage, txtFlag, processFileLoaded = function () {
+                        var msg = msgProgress.setTokens({
+                            'index': i + 1,
+                            'files': numFiles,
+                            'percent': 50,
+                            'name': caption
+                        });
+                        setTimeout(function () {
+                            $status.html(msg);
+                            self._updateFileDetails(numFiles);
+                            readFile(i + 1);
+                        }, 100);
+                        self._raise('fileloaded', [file, previewId, i, reader]);
+                    };
+                if (typLen > 0) {
+                    for (j = 0; j < typLen; j++) {
+                        typ1 = fileTypes[j];
+                        typ2 = self.msgFileTypes[typ1] || typ1;
+                        strTypes += j === 0 ? typ2 : ', ' + typ2;
+                    }
+                }
+                if (caption === false) {
+                    readFile(i + 1);
+                    return;
+                }
+                if (caption.length === 0) {
+                    msg = self.msgInvalidFileName.replace('{name}', $h.htmlEncode(file.name));
+                    throwError(msg, file, previewId, i);
+                    return;
+                }
+                if (!$h.isEmpty(fileExt)) {
+                    fileExtExpr = new RegExp('\\.(' + fileExt.join('|') + ')$', 'i');
+                }
+                fSizeKB = fileSize.toFixed(2);
+                if (self.maxFileSize > 0 && fileSize > self.maxFileSize) {
+                    msg = self.msgSizeTooLarge.setTokens({
+                        'name': caption,
+                        'size': fSizeKB,
+                        'maxSize': self.maxFileSize
+                    });
+                    throwError(msg, file, previewId, i);
+                    return;
+                }
+                if (self.minFileSize !== null && fileSize <= $h.getNum(self.minFileSize)) {
+                    msg = self.msgSizeTooSmall.setTokens({
+                        'name': caption,
+                        'size': fSizeKB,
+                        'minSize': self.minFileSize
+                    });
+                    throwError(msg, file, previewId, i);
+                    return;
+                }
+                if (!$h.isEmpty(fileTypes) && $h.isArray(fileTypes)) {
+                    for (j = 0; j < fileTypes.length; j += 1) {
+                        typ = fileTypes[j];
+                        func = settings[typ];
+                        fileCount += !func || (typeof func !== 'function') ? 0 : (func(file.type, file.name) ? 1 : 0);
+                    }
+                    if (fileCount === 0) {
+                        msg = self.msgInvalidFileType.setTokens({'name': caption, 'types': strTypes});
+                        throwError(msg, file, previewId, i);
+                        return;
+                    }
+                }
+                if (fileCount === 0 && !$h.isEmpty(fileExt) && $h.isArray(fileExt) && !$h.isEmpty(fileExtExpr)) {
+                    chk = $h.compare(caption, fileExtExpr);
+                    fileCount += $h.isEmpty(chk) ? 0 : chk.length;
+                    if (fileCount === 0) {
+                        msg = self.msgInvalidFileExtension.setTokens({'name': caption, 'extensions': strExt});
+                        throwError(msg, file, previewId, i);
+                        return;
+                    }
+                }
+                if (!self.showPreview) {
+                    if (self.isAjaxUpload) {
+                        self.addToStack(file);
+                    }
+                    setTimeout(function () {
+                        readFile(i + 1);
+                        self._updateFileDetails(numFiles);
+                    }, 100);
+                    self._raise('fileloaded', [file, previewId, i, reader]);
+                    return;
+                }
+                if (!canPreview && fileSize > maxPreviewSize) {
+                    self.addToStack(file);
+                    $container.addClass('file-thumb-loading');
+                    self._previewDefault(file, previewId);
+                    self._initFileActions();
+                    self._updateFileDetails(numFiles);
+                    readFile(i + 1);
+                    return;
+                }
+                if ($preview.length && FileReader !== undefined) {
+                    isText = fnText(file.type, caption);
+                    isHtml = fnHtml(file.type, caption);
+                    isImage = fnImage(file.type, caption);
+                    $status.html(msgLoading.replace('{index}', i + 1).replace('{files}', numFiles));
+                    $container.addClass('file-thumb-loading');
+                    reader.onerror = function (evt) {
+                        self._errorHandler(evt, caption);
+                    };
+                    reader.onload = function (theFile) {
+                        var hex, fileInfo, uint, byte, bytes = [], contents, mime, readTextImage = function (textFlag) {
+                            var newReader = new FileReader();
+                            newReader.onerror = function (theFileNew) {
+                                self._errorHandler(theFileNew, caption);
+                            };
+                            newReader.onload = function (theFileNew) {
+                                self._previewFile(i, file, theFileNew, previewId, previewData, fileInfo);
+                                self._initFileActions();
+                                processFileLoaded();
+                            };
+                            if (textFlag) {
+                                newReader.readAsText(file, self.textEncoding);
+                            } else {
+                                newReader.readAsDataURL(file);
+                            }
+                        };
+                        fileInfo = {'name': caption, 'type': file.type};
+                        $.each(settings, function (key, func) {
+                            if (key !== 'object' && key !== 'other' && func(file.type, caption)) {
+                                knownTypes++;
+                            }
+                        });
+                        if (knownTypes === 0) {// auto detect mime types from content if no known file types detected
+                            uint = new Uint8Array(theFile.target.result);
+                            for (j = 0; j < uint.length; j++) {
+                                byte = uint[j].toString(16);
+                                bytes.push(byte);
+                            }
+                            hex = bytes.join('').toLowerCase().substring(0, 8);
+                            mime = $h.getMimeType(hex, '', '');
+                            if ($h.isEmpty(mime)) { // look for ascii text content
+                                contents = $h.arrayBuffer2String(reader.result);
+                                mime = $h.isSvg(contents) ? 'image/svg+xml' : $h.getMimeType(hex, contents, file.type);
+                            }
+                            fileInfo = {'name': caption, 'type': mime};
+                            isText = fnText(mime, '');
+                            isHtml = fnHtml(mime, '');
+                            isImage = fnImage(mime, '');
+                            txtFlag = isText || isHtml;
+                            if (txtFlag || isImage) {
+                                readTextImage(txtFlag);
+                                return;
+                            }
+                        }
+                        self._previewFile(i, file, theFile, previewId, previewData, fileInfo);
+                        self._initFileActions();
+                        processFileLoaded();
+                    };
+                    reader.onprogress = function (data) {
+                        if (data.lengthComputable) {
+                            var fact = (data.loaded / data.total) * 100, progress = Math.ceil(fact);
+                            msg = msgProgress.setTokens({
+                                'index': i + 1,
+                                'files': numFiles,
+                                'percent': progress,
+                                'name': caption
+                            });
+                            setTimeout(function () {
+                                $status.html(msg);
+                            }, 100);
+                        }
+                    };
+
+                    if (isText || isHtml) {
+                        reader.readAsText(file, self.textEncoding);
+                    } else {
+                        if (isImage) {
+                            reader.readAsDataURL(file);
+                        } else {
+                            reader.readAsArrayBuffer(file);
+                        }
+                    }
+                } else {
+                    self._previewDefault(file, previewId);
+                    setTimeout(function () {
+                        readFile(i + 1);
+                        self._updateFileDetails(numFiles);
+                    }, 100);
+                    self._raise('fileloaded', [file, previewId, i, reader]);
+                }
+                self.addToStack(file);
+            };
+
+            readFile(0);
+            self._updateFileDetails(numFiles, false);
+        },
+        lock: function () {
+            var self = this;
+            self._resetErrors();
+            self.disable();
+            if (self.showRemove) {
+                self.$container.find('.fileinput-remove').hide();
+            }
+            if (self.showCancel) {
+                self.$container.find('.fileinput-cancel').show();
+            }
+            self._raise('filelock', [self.filestack, self._getExtraData()]);
+            return self.$element;
+        },
+        unlock: function (reset) {
+            var self = this;
+            if (reset === undefined) {
+                reset = true;
+            }
+            self.enable();
+            if (self.showCancel) {
+                self.$container.find('.fileinput-cancel').hide();
+            }
+            if (self.showRemove) {
+                self.$container.find('.fileinput-remove').show();
+            }
+            if (reset) {
+                self._resetFileStack();
+            }
+            self._raise('fileunlock', [self.filestack, self._getExtraData()]);
+            return self.$element;
+        },
+        cancel: function () {
+            var self = this, xhr = self.ajaxRequests, len = xhr.length, i;
+            if (len > 0) {
+                for (i = 0; i < len; i += 1) {
+                    self.cancelling = true;
+                    xhr[i].abort();
+                }
+            }
+            self._setProgressCancelled();
+            self._getThumbs().each(function () {
+                var $thumb = $(this), ind = $thumb.attr('data-fileindex');
+                $thumb.removeClass('file-uploading');
+                if (self.filestack[ind] !== undefined) {
+                    $thumb.find('.kv-file-upload').removeClass('disabled').removeAttr('disabled');
+                    $thumb.find('.kv-file-remove').removeClass('disabled').removeAttr('disabled');
+                }
+                self.unlock();
+            });
+            return self.$element;
+        },
+        clear: function () {
+            var self = this, cap;
+            if (!self._raise('fileclear')) {
+                return;
+            }
+            self.$btnUpload.removeAttr('disabled');
+            self._getThumbs().find('video,audio,img').each(function () {
+                $h.cleanMemory($(this));
+            });
+            self._resetUpload();
+            self.clearStack();
+            self._clearFileInput();
+            self._resetErrors(true);
+            if (self._hasInitialPreview()) {
+                self._showFileIcon();
+                self._resetPreview();
+                self._initPreviewActions();
+                self.$container.removeClass('file-input-new');
+            } else {
+                self._getThumbs().each(function () {
+                    self._clearObjects($(this));
+                });
+                if (self.isAjaxUpload) {
+                    self.previewCache.data = {};
+                }
+                self.$preview.html('');
+                cap = (!self.overwriteInitial && self.initialCaption.length > 0) ? self.initialCaption : '';
+                self.$caption.attr('title', '').val(cap);
+                $h.addCss(self.$container, 'file-input-new');
+                self._validateDefaultPreview();
+            }
+            if (self.$container.find($h.FRAMES).length === 0) {
+                if (!self._initCaption()) {
+                    self.$captionContainer.removeClass('icon-visible');
+                }
+            }
+            self._hideFileIcon();
+            self._raise('filecleared');
+            self.$captionContainer.focus();
+            self._setFileDropZoneTitle();
+            return self.$element;
+        },
+        reset: function () {
+            var self = this;
+            if (!self._raise('filereset')) {
+                return;
+            }
+            self._resetPreview();
+            self.$container.find('.fileinput-filename').text('');
+            $h.addCss(self.$container, 'file-input-new');
+            if (self.getFrames().length || self.dropZoneEnabled) {
+                self.$container.removeClass('file-input-new');
+            }
+            self.clearStack();
+            self.formdata = {};
+            self._setFileDropZoneTitle();
+            return self.$element;
+        },
+        disable: function () {
+            var self = this;
+            self.isDisabled = true;
+            self._raise('filedisabled');
+            self.$element.attr('disabled', 'disabled');
+            self.$container.find(".kv-fileinput-caption").addClass("file-caption-disabled");
+            self.$container.find(".fileinput-remove, .fileinput-upload, .file-preview-frame button")
+                .attr("disabled", true);
+            $h.addCss(self.$container.find('.btn-file'), 'disabled');
+            self._initDragDrop();
+            return self.$element;
+        },
+        enable: function () {
+            var self = this;
+            self.isDisabled = false;
+            self._raise('fileenabled');
+            self.$element.removeAttr('disabled');
+            self.$container.find(".kv-fileinput-caption").removeClass("file-caption-disabled");
+            self.$container.find(".fileinput-remove, .fileinput-upload, .file-preview-frame button")
+                .removeAttr("disabled");
+            self.$container.find('.btn-file').removeClass('disabled');
+            self._initDragDrop();
+            return self.$element;
+        },
+        upload: function () {
+            var self = this, totLen = self.getFileStack().length, i, outData, len,
+                hasExtraData = !$.isEmptyObject(self._getExtraData());
+            if (!self.isAjaxUpload || self.isDisabled || !self._isFileSelectionValid(totLen)) {
+                return;
+            }
+            self._resetUpload();
+            if (totLen === 0 && !hasExtraData) {
+                self._showUploadError(self.msgUploadEmpty);
+                return;
+            }
+            self.$progress.show();
+            self.uploadCount = 0;
+            self.uploadStatus = {};
+            self.uploadLog = [];
+            self.lock();
+            self._setProgress(2);
+            if (totLen === 0 && hasExtraData) {
+                self._uploadExtraOnly();
+                return;
+            }
+            len = self.filestack.length;
+            self.hasInitData = false;
+            if (self.uploadAsync) {
+                outData = self._getOutData();
+                self._raise('filebatchpreupload', [outData]);
+                self.fileBatchCompleted = false;
+                self.uploadCache = {content: [], config: [], tags: [], append: true};
+                self.uploadAsyncCount = self.getFileStack().length;
+                for (i = 0; i < len; i++) {
+                    self.uploadCache.content[i] = null;
+                    self.uploadCache.config[i] = null;
+                    self.uploadCache.tags[i] = null;
+                }
+                self.$preview.find('.file-preview-initial').removeClass($h.SORT_CSS);
+                self._initSortable();
+                self.cacheInitialPreview = self.getPreview();
+
+                for (i = 0; i < len; i++) {
+                    if (self.filestack[i]) {
+                        self._uploadSingle(i, true);
+                    }
+                }
+                return;
+            }
+            self._uploadBatch();
+            return self.$element;
+        },
+        destroy: function () {
+            var self = this, $form = self.$form, $cont = self.$container, $el = self.$element, ns = self.namespace;
+            $(document).off(ns);
+            $(window).off(ns);
+            if ($form && $form.length) {
+                $form.off(ns);
+            }
+            if (self.isAjaxUpload) {
+                self._clearFileInput();
+            }
+            self._cleanup();
+            self._initPreviewCache();
+            $el.insertBefore($cont).off(ns).removeData();
+            $cont.off().remove();
+            return $el;
+        },
+        refresh: function (options, triggerChange) {
+            var self = this, $el = self.$element;
+            if (typeof options !== 'object' || $h.isEmpty(options)) {
+                options = self.options;
+            } else {
+                options = $.extend(true, {}, self.options, options);
+            }
+            self._init(options, true);
+            self._listen();
+            if (triggerChange) {
+                $el.trigger('change' + self.namespace);
+            }
+            return $el;
+        },
+        zoom: function (frameId) {
+            var self = this, $frame = self._getFrame(frameId), $modal = self.$modal;
+            if (!$frame) {
+                return;
+            }
+            $h.initModal($modal);
+            $modal.html(self._getModalContent());
+            self._setZoomContent($frame);
+            $modal.modal('show');
+            self._initZoomButtons();
+        },
+        getExif: function (frameId) {
+            var self = this, $frame = self._getFrame(frameId);
+            return $frame && $frame.data('exif') || null;
+        },
+        getFrames: function (cssFilter) {
+            var self = this, $frames;
+            cssFilter = cssFilter || '';
+            $frames = self.$preview.find($h.FRAMES + cssFilter);
+            if (self.reversePreviewOrder) {
+                $frames = $($frames.get().reverse());
+            }
+            return $frames;
+        },
+        getPreview: function () {
+            var self = this;
+            return {
+                content: self.initialPreview,
+                config: self.initialPreviewConfig,
+                tags: self.initialPreviewThumbTags
+            };
+        }
+    };
+
+    $.fn.fileinput = function (option) {
+        if (!$h.hasFileAPISupport() && !$h.isIE(9)) {
+            return;
+        }
+        var args = Array.apply(null, arguments), retvals = [];
+        args.shift();
+        this.each(function () {
+            var self = $(this), data = self.data('fileinput'), options = typeof option === 'object' && option,
+                theme = options.theme || self.data('theme'), l = {}, t = {},
+                lang = options.language || self.data('language') || $.fn.fileinput.defaults.language || 'en', opt;
+            if (!data) {
+                if (theme) {
+                    t = $.fn.fileinputThemes[theme] || {};
+                }
+                if (lang !== 'en' && !$h.isEmpty($.fn.fileinputLocales[lang])) {
+                    l = $.fn.fileinputLocales[lang] || {};
+                }
+                opt = $.extend(true, {}, $.fn.fileinput.defaults, t, $.fn.fileinputLocales.en, l, options, self.data());
+                data = new FileInput(this, opt);
+                self.data('fileinput', data);
+            }
+
+            if (typeof option === 'string') {
+                retvals.push(data[option].apply(data, args));
+            }
+        });
+        switch (retvals.length) {
+            case 0:
+                return this;
+            case 1:
+                return retvals[0];
+            default:
+                return retvals;
+        }
+    };
+
+    $.fn.fileinput.defaults = {
+        language: 'en',
+        showCaption: true,
+        showBrowse: true,
+        showPreview: true,
+        showRemove: true,
+        showUpload: true,
+        showCancel: true,
+        showClose: true,
+        showUploadedThumbs: true,
+        browseOnZoneClick: false,
+        autoReplace: false,
+        autoOrientImage: true, // for JPEG images based on EXIF orientation tag
+        required: false,
+        rtl: false,
+        hideThumbnailContent: false,
+        generateFileId: null,
+        previewClass: '',
+        captionClass: '',
+        frameClass: 'krajee-default',
+        mainClass: 'file-caption-main',
+        mainTemplate: null,
+        purifyHtml: true,
+        fileSizeGetter: null,
+        initialCaption: '',
+        initialPreview: [],
+        initialPreviewDelimiter: '*$$*',
+        initialPreviewAsData: false,
+        initialPreviewFileType: 'image',
+        initialPreviewConfig: [],
+        initialPreviewThumbTags: [],
+        previewThumbTags: {},
+        initialPreviewShowDelete: true,
+        initialPreviewDownloadUrl: '',
+        removeFromPreviewOnError: false,
+        deleteUrl: '',
+        deleteExtraData: {},
+        overwriteInitial: true,
+        previewZoomButtonIcons: {
+            prev: '<i class="glyphicon glyphicon-triangle-left"></i>',
+            next: '<i class="glyphicon glyphicon-triangle-right"></i>',
+            toggleheader: '<i class="glyphicon glyphicon-resize-vertical"></i>',
+            fullscreen: '<i class="glyphicon glyphicon-fullscreen"></i>',
+            borderless: '<i class="glyphicon glyphicon-resize-full"></i>',
+            close: '<i class="glyphicon glyphicon-remove"></i>'
+        },
+        previewZoomButtonClasses: {
+            prev: 'btn btn-navigate',
+            next: 'btn btn-navigate',
+            toggleheader: 'btn btn-sm btn-kv btn-default btn-outline-secondary',
+            fullscreen: 'btn btn-sm btn-kv btn-default btn-outline-secondary',
+            borderless: 'btn btn-sm btn-kv btn-default btn-outline-secondary',
+            close: 'btn btn-sm btn-kv btn-default btn-outline-secondary'
+        },
+        preferIconicPreview: false,
+        preferIconicZoomPreview: false,
+        allowedPreviewTypes: undefined,
+        allowedPreviewMimeTypes: null,
+        allowedFileTypes: null,
+        allowedFileExtensions: null,
+        defaultPreviewContent: null,
+        customLayoutTags: {},
+        customPreviewTags: {},
+        previewFileIcon: '<i class="glyphicon glyphicon-file"></i>',
+        previewFileIconClass: 'file-other-icon',
+        previewFileIconSettings: {},
+        previewFileExtSettings: {},
+        buttonLabelClass: 'hidden-xs',
+        browseIcon: '<i class="glyphicon glyphicon-folder-open"></i>&nbsp;',
+        browseClass: 'btn btn-primary',
+        removeIcon: '<i class="glyphicon glyphicon-trash"></i>',
+        removeClass: 'btn btn-default btn-secondary',
+        cancelIcon: '<i class="glyphicon glyphicon-ban-circle"></i>',
+        cancelClass: 'btn btn-default btn-secondary',
+        uploadIcon: '<i class="glyphicon glyphicon-upload"></i>',
+        uploadClass: 'btn btn-default btn-secondary',
+        uploadUrl: null,
+        uploadUrlThumb: null,
+        uploadAsync: true,
+        uploadExtraData: {},
+        zoomModalHeight: 480,
+        minImageWidth: null,
+        minImageHeight: null,
+        maxImageWidth: null,
+        maxImageHeight: null,
+        resizeImage: false,
+        resizePreference: 'width',
+        resizeQuality: 0.92,
+        resizeDefaultImageType: 'image/jpeg',
+        resizeIfSizeMoreThan: 0, // in KB
+        minFileSize: 0,
+        maxFileSize: 0,
+        maxFilePreviewSize: 25600, // 25 MB
+        minFileCount: 0,
+        maxFileCount: 0,
+        validateInitialCount: false,
+        msgValidationErrorClass: 'text-danger',
+        msgValidationErrorIcon: '<i class="glyphicon glyphicon-exclamation-sign"></i> ',
+        msgErrorClass: 'file-error-message',
+        progressThumbClass: "progress-bar bg-success progress-bar-success progress-bar-striped active",
+        progressClass: "progress-bar bg-success progress-bar-success progress-bar-striped active",
+        progressCompleteClass: "progress-bar bg-success progress-bar-success",
+        progressErrorClass: "progress-bar bg-danger progress-bar-danger",
+        progressUploadThreshold: 99,
+        previewFileType: 'image',
+        elCaptionContainer: null,
+        elCaptionText: null,
+        elPreviewContainer: null,
+        elPreviewImage: null,
+        elPreviewStatus: null,
+        elErrorContainer: null,
+        errorCloseButton: $h.closeButton('kv-error-close'),
+        slugCallback: null,
+        dropZoneEnabled: true,
+        dropZoneTitleClass: 'file-drop-zone-title',
+        fileActionSettings: {},
+        otherActionButtons: '',
+        textEncoding: 'UTF-8',
+        ajaxSettings: {},
+        ajaxDeleteSettings: {},
+        showAjaxErrorDetails: true,
+        mergeAjaxCallbacks: false,
+        mergeAjaxDeleteCallbacks: false,
+        retryErrorUploads: true,
+        reversePreviewOrder: false
+    };
+
+    $.fn.fileinputLocales.en = {
+        fileSingle: 'file',
+        filePlural: 'files',
+        browseLabel: 'Browse &hellip;',
+        removeLabel: 'Remove',
+        removeTitle: 'Clear selected files',
+        cancelLabel: 'Cancel',
+        cancelTitle: 'Abort ongoing upload',
+        uploadLabel: 'Upload',
+        uploadTitle: 'Upload selected files',
+        msgNo: 'No',
+        msgNoFilesSelected: 'No files selected',
+        msgCancelled: 'Cancelled',
+        msgPlaceholder: 'Select {files}...',
+        msgZoomModalHeading: 'Detailed Preview',
+        msgFileRequired: 'You must select a file to upload.',
+        msgSizeTooSmall: 'File "{name}" (<b>{size} KB</b>) is too small and must be larger than <b>{minSize} KB</b>.',
+        msgSizeTooLarge: 'File "{name}" (<b>{size} KB</b>) exceeds maximum allowed upload size of <b>{maxSize} KB</b>.',
+        msgFilesTooLess: 'You must select at least <b>{n}</b> {files} to upload.',
+        msgFilesTooMany: 'Number of files selected for upload <b>({n})</b> exceeds maximum allowed limit of <b>{m}</b>.',
+        msgFileNotFound: 'File "{name}" not found!',
+        msgFileSecured: 'Security restrictions prevent reading the file "{name}".',
+        msgFileNotReadable: 'File "{name}" is not readable.',
+        msgFilePreviewAborted: 'File preview aborted for "{name}".',
+        msgFilePreviewError: 'An error occurred while reading the file "{name}".',
+        msgInvalidFileName: 'Invalid or unsupported characters in file name "{name}".',
+        msgInvalidFileType: 'Invalid type for file "{name}". Only "{types}" files are supported.',
+        msgInvalidFileExtension: 'Invalid extension for file "{name}". Only "{extensions}" files are supported.',
+        msgFileTypes: {
+            'image': 'image',
+            'html': 'HTML',
+            'text': 'text',
+            'video': 'video',
+            'audio': 'audio',
+            'flash': 'flash',
+            'pdf': 'PDF',
+            'object': 'object'
+        },
+        msgUploadAborted: 'The file upload was aborted',
+        msgUploadThreshold: 'Processing...',
+        msgUploadBegin: 'Initializing...',
+        msgUploadEnd: 'Done',
+        msgUploadEmpty: 'No valid data available for upload.',
+        msgUploadError: 'Error',
+        msgValidationError: 'Validation Error',
+        msgLoading: 'Loading file {index} of {files} &hellip;',
+        msgProgress: 'Loading file {index} of {files} - {name} - {percent}% completed.',
+        msgSelected: '{n} {files} selected',
+        msgFoldersNotAllowed: 'Drag & drop files only! {n} folder(s) dropped were skipped.',
+        msgImageWidthSmall: 'Width of image file "{name}" must be at least {size} px.',
+        msgImageHeightSmall: 'Height of image file "{name}" must be at least {size} px.',
+        msgImageWidthLarge: 'Width of image file "{name}" cannot exceed {size} px.',
+        msgImageHeightLarge: 'Height of image file "{name}" cannot exceed {size} px.',
+        msgImageResizeError: 'Could not get the image dimensions to resize.',
+        msgImageResizeException: 'Error while resizing the image.<pre>{errors}</pre>',
+        msgAjaxError: 'Something went wrong with the {operation} operation. Please try again later!',
+        msgAjaxProgressError: '{operation} failed',
+        ajaxOperations: {
+            deleteThumb: 'file delete',
+            uploadThumb: 'file upload',
+            uploadBatch: 'batch file upload',
+            uploadExtra: 'form data upload'
+        },
+        dropZoneTitle: 'Drag & drop files here &hellip;',
+        dropZoneClickTitle: '<br>(or click to select {files})',
+        previewZoomButtonTitles: {
+            prev: 'View previous file',
+            next: 'View next file',
+            toggleheader: 'Toggle header',
+            fullscreen: 'Toggle full screen',
+            borderless: 'Toggle borderless mode',
+            close: 'Close detailed preview'
+        }
+    };
+
+    $.fn.fileinput.Constructor = FileInput;
+
+    /**
+     * Convert automatically file inputs with class 'file' into a bootstrap fileinput control.
+     */
+    $(document).ready(function () {
+        var $input = $('input.file[type=file]');
+        if ($input.length) {
+            $input.fileinput();
+        }
+    });
+}));
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports) {
+
+/*!
+ * bootstrap-fileinput v4.4.8
+ * http://plugins.krajee.com/file-input
+ *
+ * Font Awesome 5 icon theme configuration for bootstrap-fileinput. Requires font awesome 5 assets to be loaded.
+ *
+ * Author: Kartik Visweswaran
+ * Copyright: 2014 - 2018, Kartik Visweswaran, Krajee.com
+ *
+ * Licensed under the BSD 3-Clause
+ * https://github.com/kartik-v/bootstrap-fileinput/blob/master/LICENSE.md
+ */
+(function ($) {
+    "use strict";
+
+    $.fn.fileinputThemes.fas = {
+        fileActionSettings: {
+            removeIcon: '<i class="fas fa-trash-alt"></i>',
+            uploadIcon: '<i class="fas fa-upload"></i>',
+            uploadRetryIcon: '<i class="fas fa-redo-alt"></i>',
+            downloadIcon: '<i class="fas fa-download"></i>',
+            zoomIcon: '<i class="fas fa-search-plus"></i>',
+            dragIcon: '<i class="fas fa-arrows-alt"></i>',
+            indicatorNew: '<i class="fas fa-plus-circle text-warning"></i>',
+            indicatorSuccess: '<i class="fas fa-check-circle text-success"></i>',
+            indicatorError: '<i class="fas fa-exclamation-circle text-danger"></i>',
+            indicatorLoading: '<i class="fas fa-hourglass text-muted"></i>'
+        },
+        layoutTemplates: {
+            fileIcon: '<i class="fas fa-file kv-caption-icon"></i> '
+        },
+        previewZoomButtonIcons: {
+            prev: '<i class="fas fa-caret-left fa-lg"></i>',
+            next: '<i class="fas fa-caret-right fa-lg"></i>',
+            toggleheader: '<i class="fas fa-fw fa-arrows-v"></i>',
+            fullscreen: '<i class="fas fa-fw fa-arrows-alt"></i>',
+            borderless: '<i class="fas fa-fw fa-external-link"></i>',
+            close: '<i class="fas fa-fw fa-times"></i>'
+        },
+        previewFileIcon: '<i class="fas fa-file"></i>',
+        browseIcon: '<i class="fas fa-folder-open"></i>',
+        removeIcon: '<i class="fas fa-trash-alt"></i>',
+        cancelIcon: '<i class="fas fa-ban"></i>',
+        uploadIcon: '<i class="fas fa-upload"></i>',
+        msgValidationErrorIcon: '<i class="fas fa-exclamation-circle"></i> '
+    };
+})(window.jQuery);
+
+
+/***/ }),
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, setImmediate) {var require;var require;/*!
@@ -22286,8468 +30045,696 @@ _mejs2.default.Utils.convertSMPTEtoSeconds = convertSMPTEtoSeconds;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(10).setImmediate))
 
 /***/ }),
-
-/***/ 5:
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
-window.Popper = __webpack_require__(2).default;
+/* WEBPACK VAR INJECTION */(function(global) {var scope = (typeof global !== "undefined" && global) ||
+            (typeof self !== "undefined" && self) ||
+            window;
+var apply = Function.prototype.apply;
 
-/**
- * We'll load jQuery and the Bootstrap jQuery plugin which provides support
- * for JavaScript based Bootstrap features such as modals and tabs. This
- * code may be modified to fit the specific needs of your application.
- */
+// DOM APIs, for completeness
 
-try {
-  window.$ = window.jQuery = __webpack_require__(0);
+exports.setTimeout = function() {
+  return new Timeout(apply.call(setTimeout, scope, arguments), clearTimeout);
+};
+exports.setInterval = function() {
+  return new Timeout(apply.call(setInterval, scope, arguments), clearInterval);
+};
+exports.clearTimeout =
+exports.clearInterval = function(timeout) {
+  if (timeout) {
+    timeout.close();
+  }
+};
 
-  __webpack_require__(6);
-  __webpack_require__(7);
-  __webpack_require__(8);
-  __webpack_require__(404);
-} catch (e) {}
+function Timeout(id, clearFn) {
+  this._id = id;
+  this._clearFn = clearFn;
+}
+Timeout.prototype.unref = Timeout.prototype.ref = function() {};
+Timeout.prototype.close = function() {
+  this._clearFn.call(scope, this._id);
+};
 
-/**
- * Echo exposes an expressive API for subscribing to channels and listening
- * for events that are broadcast by Laravel. Echo and event broadcasting
- * allows your team to easily build robust real-time web applications.
- */
+// Does not start the time, just sets up the members needed.
+exports.enroll = function(item, msecs) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = msecs;
+};
 
-// import Echo from 'laravel-echo'
+exports.unenroll = function(item) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = -1;
+};
 
-// window.Pusher = require('pusher-js');
+exports._unrefActive = exports.active = function(item) {
+  clearTimeout(item._idleTimeoutId);
 
-// window.Echo = new Echo({
-//     broadcaster: 'pusher',
-//     key: process.env.MIX_PUSHER_APP_KEY,
-//     cluster: process.env.MIX_PUSHER_APP_CLUSTER,
-//     encrypted: true
-// });
+  var msecs = item._idleTimeout;
+  if (msecs >= 0) {
+    item._idleTimeoutId = setTimeout(function onTimeout() {
+      if (item._onTimeout)
+        item._onTimeout();
+    }, msecs);
+  }
+};
+
+// setimmediate attaches itself to the global object
+__webpack_require__(11);
+// On some exotic environments, it's not clear which object `setimmediate` was
+// able to install onto.  Search each possibility in the same order as the
+// `setimmediate` library.
+exports.setImmediate = (typeof self !== "undefined" && self.setImmediate) ||
+                       (typeof global !== "undefined" && global.setImmediate) ||
+                       (this && this.setImmediate);
+exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
+                         (typeof global !== "undefined" && global.clearImmediate) ||
+                         (this && this.clearImmediate);
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-
-/***/ 6:
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/*!
-  * Bootstrap v4.1.1 (https://getbootstrap.com/)
-  * Copyright 2011-2018 The Bootstrap Authors (https://github.com/twbs/bootstrap/graphs/contributors)
-  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
-  */
-(function (global, factory) {
-   true ? factory(exports, __webpack_require__(0), __webpack_require__(2)) :
-  typeof define === 'function' && define.amd ? define(['exports', 'jquery', 'popper.js'], factory) :
-  (factory((global.bootstrap = {}),global.jQuery,global.Popper));
-}(this, (function (exports,$,Popper) { 'use strict';
-
-  $ = $ && $.hasOwnProperty('default') ? $['default'] : $;
-  Popper = Popper && Popper.hasOwnProperty('default') ? Popper['default'] : Popper;
-
-  function _defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  function _createClass(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties(Constructor, staticProps);
-    return Constructor;
-  }
-
-  function _defineProperty(obj, key, value) {
-    if (key in obj) {
-      Object.defineProperty(obj, key, {
-        value: value,
-        enumerable: true,
-        configurable: true,
-        writable: true
-      });
-    } else {
-      obj[key] = value;
-    }
-
-    return obj;
-  }
-
-  function _objectSpread(target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i] != null ? arguments[i] : {};
-      var ownKeys = Object.keys(source);
-
-      if (typeof Object.getOwnPropertySymbols === 'function') {
-        ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
-          return Object.getOwnPropertyDescriptor(source, sym).enumerable;
-        }));
-      }
-
-      ownKeys.forEach(function (key) {
-        _defineProperty(target, key, source[key]);
-      });
-    }
-
-    return target;
-  }
-
-  function _inheritsLoose(subClass, superClass) {
-    subClass.prototype = Object.create(superClass.prototype);
-    subClass.prototype.constructor = subClass;
-    subClass.__proto__ = superClass;
-  }
-
-  /**
-   * --------------------------------------------------------------------------
-   * Bootstrap (v4.1.1): util.js
-   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
-   * --------------------------------------------------------------------------
-   */
-
-  var Util = function ($$$1) {
-    /**
-     * ------------------------------------------------------------------------
-     * Private TransitionEnd Helpers
-     * ------------------------------------------------------------------------
-     */
-    var TRANSITION_END = 'transitionend';
-    var MAX_UID = 1000000;
-    var MILLISECONDS_MULTIPLIER = 1000; // Shoutout AngusCroll (https://goo.gl/pxwQGp)
-
-    function toType(obj) {
-      return {}.toString.call(obj).match(/\s([a-z]+)/i)[1].toLowerCase();
-    }
-
-    function getSpecialTransitionEndEvent() {
-      return {
-        bindType: TRANSITION_END,
-        delegateType: TRANSITION_END,
-        handle: function handle(event) {
-          if ($$$1(event.target).is(this)) {
-            return event.handleObj.handler.apply(this, arguments); // eslint-disable-line prefer-rest-params
-          }
-
-          return undefined; // eslint-disable-line no-undefined
-        }
-      };
-    }
-
-    function transitionEndEmulator(duration) {
-      var _this = this;
-
-      var called = false;
-      $$$1(this).one(Util.TRANSITION_END, function () {
-        called = true;
-      });
-      setTimeout(function () {
-        if (!called) {
-          Util.triggerTransitionEnd(_this);
-        }
-      }, duration);
-      return this;
-    }
-
-    function setTransitionEndSupport() {
-      $$$1.fn.emulateTransitionEnd = transitionEndEmulator;
-      $$$1.event.special[Util.TRANSITION_END] = getSpecialTransitionEndEvent();
-    }
-    /**
-     * --------------------------------------------------------------------------
-     * Public Util Api
-     * --------------------------------------------------------------------------
-     */
-
-
-    var Util = {
-      TRANSITION_END: 'bsTransitionEnd',
-      getUID: function getUID(prefix) {
-        do {
-          // eslint-disable-next-line no-bitwise
-          prefix += ~~(Math.random() * MAX_UID); // "~~" acts like a faster Math.floor() here
-        } while (document.getElementById(prefix));
-
-        return prefix;
-      },
-      getSelectorFromElement: function getSelectorFromElement(element) {
-        var selector = element.getAttribute('data-target');
-
-        if (!selector || selector === '#') {
-          selector = element.getAttribute('href') || '';
-        }
-
-        try {
-          var $selector = $$$1(document).find(selector);
-          return $selector.length > 0 ? selector : null;
-        } catch (err) {
-          return null;
-        }
-      },
-      getTransitionDurationFromElement: function getTransitionDurationFromElement(element) {
-        if (!element) {
-          return 0;
-        } // Get transition-duration of the element
-
-
-        var transitionDuration = $$$1(element).css('transition-duration');
-        var floatTransitionDuration = parseFloat(transitionDuration); // Return 0 if element or transition duration is not found
-
-        if (!floatTransitionDuration) {
-          return 0;
-        } // If multiple durations are defined, take the first
-
-
-        transitionDuration = transitionDuration.split(',')[0];
-        return parseFloat(transitionDuration) * MILLISECONDS_MULTIPLIER;
-      },
-      reflow: function reflow(element) {
-        return element.offsetHeight;
-      },
-      triggerTransitionEnd: function triggerTransitionEnd(element) {
-        $$$1(element).trigger(TRANSITION_END);
-      },
-      // TODO: Remove in v5
-      supportsTransitionEnd: function supportsTransitionEnd() {
-        return Boolean(TRANSITION_END);
-      },
-      isElement: function isElement(obj) {
-        return (obj[0] || obj).nodeType;
-      },
-      typeCheckConfig: function typeCheckConfig(componentName, config, configTypes) {
-        for (var property in configTypes) {
-          if (Object.prototype.hasOwnProperty.call(configTypes, property)) {
-            var expectedTypes = configTypes[property];
-            var value = config[property];
-            var valueType = value && Util.isElement(value) ? 'element' : toType(value);
-
-            if (!new RegExp(expectedTypes).test(valueType)) {
-              throw new Error(componentName.toUpperCase() + ": " + ("Option \"" + property + "\" provided type \"" + valueType + "\" ") + ("but expected type \"" + expectedTypes + "\"."));
-            }
-          }
-        }
-      }
-    };
-    setTransitionEndSupport();
-    return Util;
-  }($);
-
-  /**
-   * --------------------------------------------------------------------------
-   * Bootstrap (v4.1.1): alert.js
-   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
-   * --------------------------------------------------------------------------
-   */
-
-  var Alert = function ($$$1) {
-    /**
-     * ------------------------------------------------------------------------
-     * Constants
-     * ------------------------------------------------------------------------
-     */
-    var NAME = 'alert';
-    var VERSION = '4.1.1';
-    var DATA_KEY = 'bs.alert';
-    var EVENT_KEY = "." + DATA_KEY;
-    var DATA_API_KEY = '.data-api';
-    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
-    var Selector = {
-      DISMISS: '[data-dismiss="alert"]'
-    };
-    var Event = {
-      CLOSE: "close" + EVENT_KEY,
-      CLOSED: "closed" + EVENT_KEY,
-      CLICK_DATA_API: "click" + EVENT_KEY + DATA_API_KEY
-    };
-    var ClassName = {
-      ALERT: 'alert',
-      FADE: 'fade',
-      SHOW: 'show'
-      /**
-       * ------------------------------------------------------------------------
-       * Class Definition
-       * ------------------------------------------------------------------------
-       */
-
-    };
-
-    var Alert =
-    /*#__PURE__*/
-    function () {
-      function Alert(element) {
-        this._element = element;
-      } // Getters
-
-
-      var _proto = Alert.prototype;
-
-      // Public
-      _proto.close = function close(element) {
-        var rootElement = this._element;
-
-        if (element) {
-          rootElement = this._getRootElement(element);
-        }
-
-        var customEvent = this._triggerCloseEvent(rootElement);
-
-        if (customEvent.isDefaultPrevented()) {
-          return;
-        }
-
-        this._removeElement(rootElement);
-      };
-
-      _proto.dispose = function dispose() {
-        $$$1.removeData(this._element, DATA_KEY);
-        this._element = null;
-      }; // Private
-
-
-      _proto._getRootElement = function _getRootElement(element) {
-        var selector = Util.getSelectorFromElement(element);
-        var parent = false;
-
-        if (selector) {
-          parent = $$$1(selector)[0];
-        }
-
-        if (!parent) {
-          parent = $$$1(element).closest("." + ClassName.ALERT)[0];
-        }
-
-        return parent;
-      };
-
-      _proto._triggerCloseEvent = function _triggerCloseEvent(element) {
-        var closeEvent = $$$1.Event(Event.CLOSE);
-        $$$1(element).trigger(closeEvent);
-        return closeEvent;
-      };
-
-      _proto._removeElement = function _removeElement(element) {
-        var _this = this;
-
-        $$$1(element).removeClass(ClassName.SHOW);
-
-        if (!$$$1(element).hasClass(ClassName.FADE)) {
-          this._destroyElement(element);
-
-          return;
-        }
-
-        var transitionDuration = Util.getTransitionDurationFromElement(element);
-        $$$1(element).one(Util.TRANSITION_END, function (event) {
-          return _this._destroyElement(element, event);
-        }).emulateTransitionEnd(transitionDuration);
-      };
-
-      _proto._destroyElement = function _destroyElement(element) {
-        $$$1(element).detach().trigger(Event.CLOSED).remove();
-      }; // Static
-
-
-      Alert._jQueryInterface = function _jQueryInterface(config) {
-        return this.each(function () {
-          var $element = $$$1(this);
-          var data = $element.data(DATA_KEY);
-
-          if (!data) {
-            data = new Alert(this);
-            $element.data(DATA_KEY, data);
-          }
-
-          if (config === 'close') {
-            data[config](this);
-          }
-        });
-      };
-
-      Alert._handleDismiss = function _handleDismiss(alertInstance) {
-        return function (event) {
-          if (event) {
-            event.preventDefault();
-          }
-
-          alertInstance.close(this);
-        };
-      };
-
-      _createClass(Alert, null, [{
-        key: "VERSION",
-        get: function get() {
-          return VERSION;
-        }
-      }]);
-
-      return Alert;
-    }();
-    /**
-     * ------------------------------------------------------------------------
-     * Data Api implementation
-     * ------------------------------------------------------------------------
-     */
-
-
-    $$$1(document).on(Event.CLICK_DATA_API, Selector.DISMISS, Alert._handleDismiss(new Alert()));
-    /**
-     * ------------------------------------------------------------------------
-     * jQuery
-     * ------------------------------------------------------------------------
-     */
-
-    $$$1.fn[NAME] = Alert._jQueryInterface;
-    $$$1.fn[NAME].Constructor = Alert;
-
-    $$$1.fn[NAME].noConflict = function () {
-      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
-      return Alert._jQueryInterface;
-    };
-
-    return Alert;
-  }($);
-
-  /**
-   * --------------------------------------------------------------------------
-   * Bootstrap (v4.1.1): button.js
-   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
-   * --------------------------------------------------------------------------
-   */
-
-  var Button = function ($$$1) {
-    /**
-     * ------------------------------------------------------------------------
-     * Constants
-     * ------------------------------------------------------------------------
-     */
-    var NAME = 'button';
-    var VERSION = '4.1.1';
-    var DATA_KEY = 'bs.button';
-    var EVENT_KEY = "." + DATA_KEY;
-    var DATA_API_KEY = '.data-api';
-    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
-    var ClassName = {
-      ACTIVE: 'active',
-      BUTTON: 'btn',
-      FOCUS: 'focus'
-    };
-    var Selector = {
-      DATA_TOGGLE_CARROT: '[data-toggle^="button"]',
-      DATA_TOGGLE: '[data-toggle="buttons"]',
-      INPUT: 'input',
-      ACTIVE: '.active',
-      BUTTON: '.btn'
-    };
-    var Event = {
-      CLICK_DATA_API: "click" + EVENT_KEY + DATA_API_KEY,
-      FOCUS_BLUR_DATA_API: "focus" + EVENT_KEY + DATA_API_KEY + " " + ("blur" + EVENT_KEY + DATA_API_KEY)
-      /**
-       * ------------------------------------------------------------------------
-       * Class Definition
-       * ------------------------------------------------------------------------
-       */
-
-    };
-
-    var Button =
-    /*#__PURE__*/
-    function () {
-      function Button(element) {
-        this._element = element;
-      } // Getters
-
-
-      var _proto = Button.prototype;
-
-      // Public
-      _proto.toggle = function toggle() {
-        var triggerChangeEvent = true;
-        var addAriaPressed = true;
-        var rootElement = $$$1(this._element).closest(Selector.DATA_TOGGLE)[0];
-
-        if (rootElement) {
-          var input = $$$1(this._element).find(Selector.INPUT)[0];
-
-          if (input) {
-            if (input.type === 'radio') {
-              if (input.checked && $$$1(this._element).hasClass(ClassName.ACTIVE)) {
-                triggerChangeEvent = false;
-              } else {
-                var activeElement = $$$1(rootElement).find(Selector.ACTIVE)[0];
-
-                if (activeElement) {
-                  $$$1(activeElement).removeClass(ClassName.ACTIVE);
-                }
-              }
-            }
-
-            if (triggerChangeEvent) {
-              if (input.hasAttribute('disabled') || rootElement.hasAttribute('disabled') || input.classList.contains('disabled') || rootElement.classList.contains('disabled')) {
-                return;
-              }
-
-              input.checked = !$$$1(this._element).hasClass(ClassName.ACTIVE);
-              $$$1(input).trigger('change');
-            }
-
-            input.focus();
-            addAriaPressed = false;
-          }
-        }
-
-        if (addAriaPressed) {
-          this._element.setAttribute('aria-pressed', !$$$1(this._element).hasClass(ClassName.ACTIVE));
-        }
-
-        if (triggerChangeEvent) {
-          $$$1(this._element).toggleClass(ClassName.ACTIVE);
-        }
-      };
-
-      _proto.dispose = function dispose() {
-        $$$1.removeData(this._element, DATA_KEY);
-        this._element = null;
-      }; // Static
-
-
-      Button._jQueryInterface = function _jQueryInterface(config) {
-        return this.each(function () {
-          var data = $$$1(this).data(DATA_KEY);
-
-          if (!data) {
-            data = new Button(this);
-            $$$1(this).data(DATA_KEY, data);
-          }
-
-          if (config === 'toggle') {
-            data[config]();
-          }
-        });
-      };
-
-      _createClass(Button, null, [{
-        key: "VERSION",
-        get: function get() {
-          return VERSION;
-        }
-      }]);
-
-      return Button;
-    }();
-    /**
-     * ------------------------------------------------------------------------
-     * Data Api implementation
-     * ------------------------------------------------------------------------
-     */
-
-
-    $$$1(document).on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE_CARROT, function (event) {
-      event.preventDefault();
-      var button = event.target;
-
-      if (!$$$1(button).hasClass(ClassName.BUTTON)) {
-        button = $$$1(button).closest(Selector.BUTTON);
-      }
-
-      Button._jQueryInterface.call($$$1(button), 'toggle');
-    }).on(Event.FOCUS_BLUR_DATA_API, Selector.DATA_TOGGLE_CARROT, function (event) {
-      var button = $$$1(event.target).closest(Selector.BUTTON)[0];
-      $$$1(button).toggleClass(ClassName.FOCUS, /^focus(in)?$/.test(event.type));
-    });
-    /**
-     * ------------------------------------------------------------------------
-     * jQuery
-     * ------------------------------------------------------------------------
-     */
-
-    $$$1.fn[NAME] = Button._jQueryInterface;
-    $$$1.fn[NAME].Constructor = Button;
-
-    $$$1.fn[NAME].noConflict = function () {
-      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
-      return Button._jQueryInterface;
-    };
-
-    return Button;
-  }($);
-
-  /**
-   * --------------------------------------------------------------------------
-   * Bootstrap (v4.1.1): carousel.js
-   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
-   * --------------------------------------------------------------------------
-   */
-
-  var Carousel = function ($$$1) {
-    /**
-     * ------------------------------------------------------------------------
-     * Constants
-     * ------------------------------------------------------------------------
-     */
-    var NAME = 'carousel';
-    var VERSION = '4.1.1';
-    var DATA_KEY = 'bs.carousel';
-    var EVENT_KEY = "." + DATA_KEY;
-    var DATA_API_KEY = '.data-api';
-    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
-    var ARROW_LEFT_KEYCODE = 37; // KeyboardEvent.which value for left arrow key
-
-    var ARROW_RIGHT_KEYCODE = 39; // KeyboardEvent.which value for right arrow key
-
-    var TOUCHEVENT_COMPAT_WAIT = 500; // Time for mouse compat events to fire after touch
-
-    var Default = {
-      interval: 5000,
-      keyboard: true,
-      slide: false,
-      pause: 'hover',
-      wrap: true
-    };
-    var DefaultType = {
-      interval: '(number|boolean)',
-      keyboard: 'boolean',
-      slide: '(boolean|string)',
-      pause: '(string|boolean)',
-      wrap: 'boolean'
-    };
-    var Direction = {
-      NEXT: 'next',
-      PREV: 'prev',
-      LEFT: 'left',
-      RIGHT: 'right'
-    };
-    var Event = {
-      SLIDE: "slide" + EVENT_KEY,
-      SLID: "slid" + EVENT_KEY,
-      KEYDOWN: "keydown" + EVENT_KEY,
-      MOUSEENTER: "mouseenter" + EVENT_KEY,
-      MOUSELEAVE: "mouseleave" + EVENT_KEY,
-      TOUCHEND: "touchend" + EVENT_KEY,
-      LOAD_DATA_API: "load" + EVENT_KEY + DATA_API_KEY,
-      CLICK_DATA_API: "click" + EVENT_KEY + DATA_API_KEY
-    };
-    var ClassName = {
-      CAROUSEL: 'carousel',
-      ACTIVE: 'active',
-      SLIDE: 'slide',
-      RIGHT: 'carousel-item-right',
-      LEFT: 'carousel-item-left',
-      NEXT: 'carousel-item-next',
-      PREV: 'carousel-item-prev',
-      ITEM: 'carousel-item'
-    };
-    var Selector = {
-      ACTIVE: '.active',
-      ACTIVE_ITEM: '.active.carousel-item',
-      ITEM: '.carousel-item',
-      NEXT_PREV: '.carousel-item-next, .carousel-item-prev',
-      INDICATORS: '.carousel-indicators',
-      DATA_SLIDE: '[data-slide], [data-slide-to]',
-      DATA_RIDE: '[data-ride="carousel"]'
-      /**
-       * ------------------------------------------------------------------------
-       * Class Definition
-       * ------------------------------------------------------------------------
-       */
-
-    };
-
-    var Carousel =
-    /*#__PURE__*/
-    function () {
-      function Carousel(element, config) {
-        this._items = null;
-        this._interval = null;
-        this._activeElement = null;
-        this._isPaused = false;
-        this._isSliding = false;
-        this.touchTimeout = null;
-        this._config = this._getConfig(config);
-        this._element = $$$1(element)[0];
-        this._indicatorsElement = $$$1(this._element).find(Selector.INDICATORS)[0];
-
-        this._addEventListeners();
-      } // Getters
-
-
-      var _proto = Carousel.prototype;
-
-      // Public
-      _proto.next = function next() {
-        if (!this._isSliding) {
-          this._slide(Direction.NEXT);
-        }
-      };
-
-      _proto.nextWhenVisible = function nextWhenVisible() {
-        // Don't call next when the page isn't visible
-        // or the carousel or its parent isn't visible
-        if (!document.hidden && $$$1(this._element).is(':visible') && $$$1(this._element).css('visibility') !== 'hidden') {
-          this.next();
-        }
-      };
-
-      _proto.prev = function prev() {
-        if (!this._isSliding) {
-          this._slide(Direction.PREV);
-        }
-      };
-
-      _proto.pause = function pause(event) {
-        if (!event) {
-          this._isPaused = true;
-        }
-
-        if ($$$1(this._element).find(Selector.NEXT_PREV)[0]) {
-          Util.triggerTransitionEnd(this._element);
-          this.cycle(true);
-        }
-
-        clearInterval(this._interval);
-        this._interval = null;
-      };
-
-      _proto.cycle = function cycle(event) {
-        if (!event) {
-          this._isPaused = false;
-        }
-
-        if (this._interval) {
-          clearInterval(this._interval);
-          this._interval = null;
-        }
-
-        if (this._config.interval && !this._isPaused) {
-          this._interval = setInterval((document.visibilityState ? this.nextWhenVisible : this.next).bind(this), this._config.interval);
-        }
-      };
-
-      _proto.to = function to(index) {
-        var _this = this;
-
-        this._activeElement = $$$1(this._element).find(Selector.ACTIVE_ITEM)[0];
-
-        var activeIndex = this._getItemIndex(this._activeElement);
-
-        if (index > this._items.length - 1 || index < 0) {
-          return;
-        }
-
-        if (this._isSliding) {
-          $$$1(this._element).one(Event.SLID, function () {
-            return _this.to(index);
-          });
-          return;
-        }
-
-        if (activeIndex === index) {
-          this.pause();
-          this.cycle();
-          return;
-        }
-
-        var direction = index > activeIndex ? Direction.NEXT : Direction.PREV;
-
-        this._slide(direction, this._items[index]);
-      };
-
-      _proto.dispose = function dispose() {
-        $$$1(this._element).off(EVENT_KEY);
-        $$$1.removeData(this._element, DATA_KEY);
-        this._items = null;
-        this._config = null;
-        this._element = null;
-        this._interval = null;
-        this._isPaused = null;
-        this._isSliding = null;
-        this._activeElement = null;
-        this._indicatorsElement = null;
-      }; // Private
-
-
-      _proto._getConfig = function _getConfig(config) {
-        config = _objectSpread({}, Default, config);
-        Util.typeCheckConfig(NAME, config, DefaultType);
-        return config;
-      };
-
-      _proto._addEventListeners = function _addEventListeners() {
-        var _this2 = this;
-
-        if (this._config.keyboard) {
-          $$$1(this._element).on(Event.KEYDOWN, function (event) {
-            return _this2._keydown(event);
-          });
-        }
-
-        if (this._config.pause === 'hover') {
-          $$$1(this._element).on(Event.MOUSEENTER, function (event) {
-            return _this2.pause(event);
-          }).on(Event.MOUSELEAVE, function (event) {
-            return _this2.cycle(event);
-          });
-
-          if ('ontouchstart' in document.documentElement) {
-            // If it's a touch-enabled device, mouseenter/leave are fired as
-            // part of the mouse compatibility events on first tap - the carousel
-            // would stop cycling until user tapped out of it;
-            // here, we listen for touchend, explicitly pause the carousel
-            // (as if it's the second time we tap on it, mouseenter compat event
-            // is NOT fired) and after a timeout (to allow for mouse compatibility
-            // events to fire) we explicitly restart cycling
-            $$$1(this._element).on(Event.TOUCHEND, function () {
-              _this2.pause();
-
-              if (_this2.touchTimeout) {
-                clearTimeout(_this2.touchTimeout);
-              }
-
-              _this2.touchTimeout = setTimeout(function (event) {
-                return _this2.cycle(event);
-              }, TOUCHEVENT_COMPAT_WAIT + _this2._config.interval);
-            });
-          }
-        }
-      };
-
-      _proto._keydown = function _keydown(event) {
-        if (/input|textarea/i.test(event.target.tagName)) {
-          return;
-        }
-
-        switch (event.which) {
-          case ARROW_LEFT_KEYCODE:
-            event.preventDefault();
-            this.prev();
-            break;
-
-          case ARROW_RIGHT_KEYCODE:
-            event.preventDefault();
-            this.next();
-            break;
-
-          default:
-        }
-      };
-
-      _proto._getItemIndex = function _getItemIndex(element) {
-        this._items = $$$1.makeArray($$$1(element).parent().find(Selector.ITEM));
-        return this._items.indexOf(element);
-      };
-
-      _proto._getItemByDirection = function _getItemByDirection(direction, activeElement) {
-        var isNextDirection = direction === Direction.NEXT;
-        var isPrevDirection = direction === Direction.PREV;
-
-        var activeIndex = this._getItemIndex(activeElement);
-
-        var lastItemIndex = this._items.length - 1;
-        var isGoingToWrap = isPrevDirection && activeIndex === 0 || isNextDirection && activeIndex === lastItemIndex;
-
-        if (isGoingToWrap && !this._config.wrap) {
-          return activeElement;
-        }
-
-        var delta = direction === Direction.PREV ? -1 : 1;
-        var itemIndex = (activeIndex + delta) % this._items.length;
-        return itemIndex === -1 ? this._items[this._items.length - 1] : this._items[itemIndex];
-      };
-
-      _proto._triggerSlideEvent = function _triggerSlideEvent(relatedTarget, eventDirectionName) {
-        var targetIndex = this._getItemIndex(relatedTarget);
-
-        var fromIndex = this._getItemIndex($$$1(this._element).find(Selector.ACTIVE_ITEM)[0]);
-
-        var slideEvent = $$$1.Event(Event.SLIDE, {
-          relatedTarget: relatedTarget,
-          direction: eventDirectionName,
-          from: fromIndex,
-          to: targetIndex
-        });
-        $$$1(this._element).trigger(slideEvent);
-        return slideEvent;
-      };
-
-      _proto._setActiveIndicatorElement = function _setActiveIndicatorElement(element) {
-        if (this._indicatorsElement) {
-          $$$1(this._indicatorsElement).find(Selector.ACTIVE).removeClass(ClassName.ACTIVE);
-
-          var nextIndicator = this._indicatorsElement.children[this._getItemIndex(element)];
-
-          if (nextIndicator) {
-            $$$1(nextIndicator).addClass(ClassName.ACTIVE);
-          }
-        }
-      };
-
-      _proto._slide = function _slide(direction, element) {
-        var _this3 = this;
-
-        var activeElement = $$$1(this._element).find(Selector.ACTIVE_ITEM)[0];
-
-        var activeElementIndex = this._getItemIndex(activeElement);
-
-        var nextElement = element || activeElement && this._getItemByDirection(direction, activeElement);
-
-        var nextElementIndex = this._getItemIndex(nextElement);
-
-        var isCycling = Boolean(this._interval);
-        var directionalClassName;
-        var orderClassName;
-        var eventDirectionName;
-
-        if (direction === Direction.NEXT) {
-          directionalClassName = ClassName.LEFT;
-          orderClassName = ClassName.NEXT;
-          eventDirectionName = Direction.LEFT;
-        } else {
-          directionalClassName = ClassName.RIGHT;
-          orderClassName = ClassName.PREV;
-          eventDirectionName = Direction.RIGHT;
-        }
-
-        if (nextElement && $$$1(nextElement).hasClass(ClassName.ACTIVE)) {
-          this._isSliding = false;
-          return;
-        }
-
-        var slideEvent = this._triggerSlideEvent(nextElement, eventDirectionName);
-
-        if (slideEvent.isDefaultPrevented()) {
-          return;
-        }
-
-        if (!activeElement || !nextElement) {
-          // Some weirdness is happening, so we bail
-          return;
-        }
-
-        this._isSliding = true;
-
-        if (isCycling) {
-          this.pause();
-        }
-
-        this._setActiveIndicatorElement(nextElement);
-
-        var slidEvent = $$$1.Event(Event.SLID, {
-          relatedTarget: nextElement,
-          direction: eventDirectionName,
-          from: activeElementIndex,
-          to: nextElementIndex
-        });
-
-        if ($$$1(this._element).hasClass(ClassName.SLIDE)) {
-          $$$1(nextElement).addClass(orderClassName);
-          Util.reflow(nextElement);
-          $$$1(activeElement).addClass(directionalClassName);
-          $$$1(nextElement).addClass(directionalClassName);
-          var transitionDuration = Util.getTransitionDurationFromElement(activeElement);
-          $$$1(activeElement).one(Util.TRANSITION_END, function () {
-            $$$1(nextElement).removeClass(directionalClassName + " " + orderClassName).addClass(ClassName.ACTIVE);
-            $$$1(activeElement).removeClass(ClassName.ACTIVE + " " + orderClassName + " " + directionalClassName);
-            _this3._isSliding = false;
-            setTimeout(function () {
-              return $$$1(_this3._element).trigger(slidEvent);
-            }, 0);
-          }).emulateTransitionEnd(transitionDuration);
-        } else {
-          $$$1(activeElement).removeClass(ClassName.ACTIVE);
-          $$$1(nextElement).addClass(ClassName.ACTIVE);
-          this._isSliding = false;
-          $$$1(this._element).trigger(slidEvent);
-        }
-
-        if (isCycling) {
-          this.cycle();
-        }
-      }; // Static
-
-
-      Carousel._jQueryInterface = function _jQueryInterface(config) {
-        return this.each(function () {
-          var data = $$$1(this).data(DATA_KEY);
-
-          var _config = _objectSpread({}, Default, $$$1(this).data());
-
-          if (typeof config === 'object') {
-            _config = _objectSpread({}, _config, config);
-          }
-
-          var action = typeof config === 'string' ? config : _config.slide;
-
-          if (!data) {
-            data = new Carousel(this, _config);
-            $$$1(this).data(DATA_KEY, data);
-          }
-
-          if (typeof config === 'number') {
-            data.to(config);
-          } else if (typeof action === 'string') {
-            if (typeof data[action] === 'undefined') {
-              throw new TypeError("No method named \"" + action + "\"");
-            }
-
-            data[action]();
-          } else if (_config.interval) {
-            data.pause();
-            data.cycle();
-          }
-        });
-      };
-
-      Carousel._dataApiClickHandler = function _dataApiClickHandler(event) {
-        var selector = Util.getSelectorFromElement(this);
-
-        if (!selector) {
-          return;
-        }
-
-        var target = $$$1(selector)[0];
-
-        if (!target || !$$$1(target).hasClass(ClassName.CAROUSEL)) {
-          return;
-        }
-
-        var config = _objectSpread({}, $$$1(target).data(), $$$1(this).data());
-
-        var slideIndex = this.getAttribute('data-slide-to');
-
-        if (slideIndex) {
-          config.interval = false;
-        }
-
-        Carousel._jQueryInterface.call($$$1(target), config);
-
-        if (slideIndex) {
-          $$$1(target).data(DATA_KEY).to(slideIndex);
-        }
-
-        event.preventDefault();
-      };
-
-      _createClass(Carousel, null, [{
-        key: "VERSION",
-        get: function get() {
-          return VERSION;
-        }
-      }, {
-        key: "Default",
-        get: function get() {
-          return Default;
-        }
-      }]);
-
-      return Carousel;
-    }();
-    /**
-     * ------------------------------------------------------------------------
-     * Data Api implementation
-     * ------------------------------------------------------------------------
-     */
-
-
-    $$$1(document).on(Event.CLICK_DATA_API, Selector.DATA_SLIDE, Carousel._dataApiClickHandler);
-    $$$1(window).on(Event.LOAD_DATA_API, function () {
-      $$$1(Selector.DATA_RIDE).each(function () {
-        var $carousel = $$$1(this);
-
-        Carousel._jQueryInterface.call($carousel, $carousel.data());
-      });
-    });
-    /**
-     * ------------------------------------------------------------------------
-     * jQuery
-     * ------------------------------------------------------------------------
-     */
-
-    $$$1.fn[NAME] = Carousel._jQueryInterface;
-    $$$1.fn[NAME].Constructor = Carousel;
-
-    $$$1.fn[NAME].noConflict = function () {
-      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
-      return Carousel._jQueryInterface;
-    };
-
-    return Carousel;
-  }($);
-
-  /**
-   * --------------------------------------------------------------------------
-   * Bootstrap (v4.1.1): collapse.js
-   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
-   * --------------------------------------------------------------------------
-   */
-
-  var Collapse = function ($$$1) {
-    /**
-     * ------------------------------------------------------------------------
-     * Constants
-     * ------------------------------------------------------------------------
-     */
-    var NAME = 'collapse';
-    var VERSION = '4.1.1';
-    var DATA_KEY = 'bs.collapse';
-    var EVENT_KEY = "." + DATA_KEY;
-    var DATA_API_KEY = '.data-api';
-    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
-    var Default = {
-      toggle: true,
-      parent: ''
-    };
-    var DefaultType = {
-      toggle: 'boolean',
-      parent: '(string|element)'
-    };
-    var Event = {
-      SHOW: "show" + EVENT_KEY,
-      SHOWN: "shown" + EVENT_KEY,
-      HIDE: "hide" + EVENT_KEY,
-      HIDDEN: "hidden" + EVENT_KEY,
-      CLICK_DATA_API: "click" + EVENT_KEY + DATA_API_KEY
-    };
-    var ClassName = {
-      SHOW: 'show',
-      COLLAPSE: 'collapse',
-      COLLAPSING: 'collapsing',
-      COLLAPSED: 'collapsed'
-    };
-    var Dimension = {
-      WIDTH: 'width',
-      HEIGHT: 'height'
-    };
-    var Selector = {
-      ACTIVES: '.show, .collapsing',
-      DATA_TOGGLE: '[data-toggle="collapse"]'
-      /**
-       * ------------------------------------------------------------------------
-       * Class Definition
-       * ------------------------------------------------------------------------
-       */
-
-    };
-
-    var Collapse =
-    /*#__PURE__*/
-    function () {
-      function Collapse(element, config) {
-        this._isTransitioning = false;
-        this._element = element;
-        this._config = this._getConfig(config);
-        this._triggerArray = $$$1.makeArray($$$1("[data-toggle=\"collapse\"][href=\"#" + element.id + "\"]," + ("[data-toggle=\"collapse\"][data-target=\"#" + element.id + "\"]")));
-        var tabToggles = $$$1(Selector.DATA_TOGGLE);
-
-        for (var i = 0; i < tabToggles.length; i++) {
-          var elem = tabToggles[i];
-          var selector = Util.getSelectorFromElement(elem);
-
-          if (selector !== null && $$$1(selector).filter(element).length > 0) {
-            this._selector = selector;
-
-            this._triggerArray.push(elem);
-          }
-        }
-
-        this._parent = this._config.parent ? this._getParent() : null;
-
-        if (!this._config.parent) {
-          this._addAriaAndCollapsedClass(this._element, this._triggerArray);
-        }
-
-        if (this._config.toggle) {
-          this.toggle();
-        }
-      } // Getters
-
-
-      var _proto = Collapse.prototype;
-
-      // Public
-      _proto.toggle = function toggle() {
-        if ($$$1(this._element).hasClass(ClassName.SHOW)) {
-          this.hide();
-        } else {
-          this.show();
-        }
-      };
-
-      _proto.show = function show() {
-        var _this = this;
-
-        if (this._isTransitioning || $$$1(this._element).hasClass(ClassName.SHOW)) {
-          return;
-        }
-
-        var actives;
-        var activesData;
-
-        if (this._parent) {
-          actives = $$$1.makeArray($$$1(this._parent).find(Selector.ACTIVES).filter("[data-parent=\"" + this._config.parent + "\"]"));
-
-          if (actives.length === 0) {
-            actives = null;
-          }
-        }
-
-        if (actives) {
-          activesData = $$$1(actives).not(this._selector).data(DATA_KEY);
-
-          if (activesData && activesData._isTransitioning) {
-            return;
-          }
-        }
-
-        var startEvent = $$$1.Event(Event.SHOW);
-        $$$1(this._element).trigger(startEvent);
-
-        if (startEvent.isDefaultPrevented()) {
-          return;
-        }
-
-        if (actives) {
-          Collapse._jQueryInterface.call($$$1(actives).not(this._selector), 'hide');
-
-          if (!activesData) {
-            $$$1(actives).data(DATA_KEY, null);
-          }
-        }
-
-        var dimension = this._getDimension();
-
-        $$$1(this._element).removeClass(ClassName.COLLAPSE).addClass(ClassName.COLLAPSING);
-        this._element.style[dimension] = 0;
-
-        if (this._triggerArray.length > 0) {
-          $$$1(this._triggerArray).removeClass(ClassName.COLLAPSED).attr('aria-expanded', true);
-        }
-
-        this.setTransitioning(true);
-
-        var complete = function complete() {
-          $$$1(_this._element).removeClass(ClassName.COLLAPSING).addClass(ClassName.COLLAPSE).addClass(ClassName.SHOW);
-          _this._element.style[dimension] = '';
-
-          _this.setTransitioning(false);
-
-          $$$1(_this._element).trigger(Event.SHOWN);
-        };
-
-        var capitalizedDimension = dimension[0].toUpperCase() + dimension.slice(1);
-        var scrollSize = "scroll" + capitalizedDimension;
-        var transitionDuration = Util.getTransitionDurationFromElement(this._element);
-        $$$1(this._element).one(Util.TRANSITION_END, complete).emulateTransitionEnd(transitionDuration);
-        this._element.style[dimension] = this._element[scrollSize] + "px";
-      };
-
-      _proto.hide = function hide() {
-        var _this2 = this;
-
-        if (this._isTransitioning || !$$$1(this._element).hasClass(ClassName.SHOW)) {
-          return;
-        }
-
-        var startEvent = $$$1.Event(Event.HIDE);
-        $$$1(this._element).trigger(startEvent);
-
-        if (startEvent.isDefaultPrevented()) {
-          return;
-        }
-
-        var dimension = this._getDimension();
-
-        this._element.style[dimension] = this._element.getBoundingClientRect()[dimension] + "px";
-        Util.reflow(this._element);
-        $$$1(this._element).addClass(ClassName.COLLAPSING).removeClass(ClassName.COLLAPSE).removeClass(ClassName.SHOW);
-
-        if (this._triggerArray.length > 0) {
-          for (var i = 0; i < this._triggerArray.length; i++) {
-            var trigger = this._triggerArray[i];
-            var selector = Util.getSelectorFromElement(trigger);
-
-            if (selector !== null) {
-              var $elem = $$$1(selector);
-
-              if (!$elem.hasClass(ClassName.SHOW)) {
-                $$$1(trigger).addClass(ClassName.COLLAPSED).attr('aria-expanded', false);
-              }
-            }
-          }
-        }
-
-        this.setTransitioning(true);
-
-        var complete = function complete() {
-          _this2.setTransitioning(false);
-
-          $$$1(_this2._element).removeClass(ClassName.COLLAPSING).addClass(ClassName.COLLAPSE).trigger(Event.HIDDEN);
-        };
-
-        this._element.style[dimension] = '';
-        var transitionDuration = Util.getTransitionDurationFromElement(this._element);
-        $$$1(this._element).one(Util.TRANSITION_END, complete).emulateTransitionEnd(transitionDuration);
-      };
-
-      _proto.setTransitioning = function setTransitioning(isTransitioning) {
-        this._isTransitioning = isTransitioning;
-      };
-
-      _proto.dispose = function dispose() {
-        $$$1.removeData(this._element, DATA_KEY);
-        this._config = null;
-        this._parent = null;
-        this._element = null;
-        this._triggerArray = null;
-        this._isTransitioning = null;
-      }; // Private
-
-
-      _proto._getConfig = function _getConfig(config) {
-        config = _objectSpread({}, Default, config);
-        config.toggle = Boolean(config.toggle); // Coerce string values
-
-        Util.typeCheckConfig(NAME, config, DefaultType);
-        return config;
-      };
-
-      _proto._getDimension = function _getDimension() {
-        var hasWidth = $$$1(this._element).hasClass(Dimension.WIDTH);
-        return hasWidth ? Dimension.WIDTH : Dimension.HEIGHT;
-      };
-
-      _proto._getParent = function _getParent() {
-        var _this3 = this;
-
-        var parent = null;
-
-        if (Util.isElement(this._config.parent)) {
-          parent = this._config.parent; // It's a jQuery object
-
-          if (typeof this._config.parent.jquery !== 'undefined') {
-            parent = this._config.parent[0];
-          }
-        } else {
-          parent = $$$1(this._config.parent)[0];
-        }
-
-        var selector = "[data-toggle=\"collapse\"][data-parent=\"" + this._config.parent + "\"]";
-        $$$1(parent).find(selector).each(function (i, element) {
-          _this3._addAriaAndCollapsedClass(Collapse._getTargetFromElement(element), [element]);
-        });
-        return parent;
-      };
-
-      _proto._addAriaAndCollapsedClass = function _addAriaAndCollapsedClass(element, triggerArray) {
-        if (element) {
-          var isOpen = $$$1(element).hasClass(ClassName.SHOW);
-
-          if (triggerArray.length > 0) {
-            $$$1(triggerArray).toggleClass(ClassName.COLLAPSED, !isOpen).attr('aria-expanded', isOpen);
-          }
-        }
-      }; // Static
-
-
-      Collapse._getTargetFromElement = function _getTargetFromElement(element) {
-        var selector = Util.getSelectorFromElement(element);
-        return selector ? $$$1(selector)[0] : null;
-      };
-
-      Collapse._jQueryInterface = function _jQueryInterface(config) {
-        return this.each(function () {
-          var $this = $$$1(this);
-          var data = $this.data(DATA_KEY);
-
-          var _config = _objectSpread({}, Default, $this.data(), typeof config === 'object' && config ? config : {});
-
-          if (!data && _config.toggle && /show|hide/.test(config)) {
-            _config.toggle = false;
-          }
-
-          if (!data) {
-            data = new Collapse(this, _config);
-            $this.data(DATA_KEY, data);
-          }
-
-          if (typeof config === 'string') {
-            if (typeof data[config] === 'undefined') {
-              throw new TypeError("No method named \"" + config + "\"");
-            }
-
-            data[config]();
-          }
-        });
-      };
-
-      _createClass(Collapse, null, [{
-        key: "VERSION",
-        get: function get() {
-          return VERSION;
-        }
-      }, {
-        key: "Default",
-        get: function get() {
-          return Default;
-        }
-      }]);
-
-      return Collapse;
-    }();
-    /**
-     * ------------------------------------------------------------------------
-     * Data Api implementation
-     * ------------------------------------------------------------------------
-     */
-
-
-    $$$1(document).on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE, function (event) {
-      // preventDefault only for <a> elements (which change the URL) not inside the collapsible element
-      if (event.currentTarget.tagName === 'A') {
-        event.preventDefault();
-      }
-
-      var $trigger = $$$1(this);
-      var selector = Util.getSelectorFromElement(this);
-      $$$1(selector).each(function () {
-        var $target = $$$1(this);
-        var data = $target.data(DATA_KEY);
-        var config = data ? 'toggle' : $trigger.data();
-
-        Collapse._jQueryInterface.call($target, config);
-      });
-    });
-    /**
-     * ------------------------------------------------------------------------
-     * jQuery
-     * ------------------------------------------------------------------------
-     */
-
-    $$$1.fn[NAME] = Collapse._jQueryInterface;
-    $$$1.fn[NAME].Constructor = Collapse;
-
-    $$$1.fn[NAME].noConflict = function () {
-      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
-      return Collapse._jQueryInterface;
-    };
-
-    return Collapse;
-  }($);
-
-  /**
-   * --------------------------------------------------------------------------
-   * Bootstrap (v4.1.1): dropdown.js
-   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
-   * --------------------------------------------------------------------------
-   */
-
-  var Dropdown = function ($$$1) {
-    /**
-     * ------------------------------------------------------------------------
-     * Constants
-     * ------------------------------------------------------------------------
-     */
-    var NAME = 'dropdown';
-    var VERSION = '4.1.1';
-    var DATA_KEY = 'bs.dropdown';
-    var EVENT_KEY = "." + DATA_KEY;
-    var DATA_API_KEY = '.data-api';
-    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
-    var ESCAPE_KEYCODE = 27; // KeyboardEvent.which value for Escape (Esc) key
-
-    var SPACE_KEYCODE = 32; // KeyboardEvent.which value for space key
-
-    var TAB_KEYCODE = 9; // KeyboardEvent.which value for tab key
-
-    var ARROW_UP_KEYCODE = 38; // KeyboardEvent.which value for up arrow key
-
-    var ARROW_DOWN_KEYCODE = 40; // KeyboardEvent.which value for down arrow key
-
-    var RIGHT_MOUSE_BUTTON_WHICH = 3; // MouseEvent.which value for the right button (assuming a right-handed mouse)
-
-    var REGEXP_KEYDOWN = new RegExp(ARROW_UP_KEYCODE + "|" + ARROW_DOWN_KEYCODE + "|" + ESCAPE_KEYCODE);
-    var Event = {
-      HIDE: "hide" + EVENT_KEY,
-      HIDDEN: "hidden" + EVENT_KEY,
-      SHOW: "show" + EVENT_KEY,
-      SHOWN: "shown" + EVENT_KEY,
-      CLICK: "click" + EVENT_KEY,
-      CLICK_DATA_API: "click" + EVENT_KEY + DATA_API_KEY,
-      KEYDOWN_DATA_API: "keydown" + EVENT_KEY + DATA_API_KEY,
-      KEYUP_DATA_API: "keyup" + EVENT_KEY + DATA_API_KEY
-    };
-    var ClassName = {
-      DISABLED: 'disabled',
-      SHOW: 'show',
-      DROPUP: 'dropup',
-      DROPRIGHT: 'dropright',
-      DROPLEFT: 'dropleft',
-      MENURIGHT: 'dropdown-menu-right',
-      MENULEFT: 'dropdown-menu-left',
-      POSITION_STATIC: 'position-static'
-    };
-    var Selector = {
-      DATA_TOGGLE: '[data-toggle="dropdown"]',
-      FORM_CHILD: '.dropdown form',
-      MENU: '.dropdown-menu',
-      NAVBAR_NAV: '.navbar-nav',
-      VISIBLE_ITEMS: '.dropdown-menu .dropdown-item:not(.disabled):not(:disabled)'
-    };
-    var AttachmentMap = {
-      TOP: 'top-start',
-      TOPEND: 'top-end',
-      BOTTOM: 'bottom-start',
-      BOTTOMEND: 'bottom-end',
-      RIGHT: 'right-start',
-      RIGHTEND: 'right-end',
-      LEFT: 'left-start',
-      LEFTEND: 'left-end'
-    };
-    var Default = {
-      offset: 0,
-      flip: true,
-      boundary: 'scrollParent',
-      reference: 'toggle',
-      display: 'dynamic'
-    };
-    var DefaultType = {
-      offset: '(number|string|function)',
-      flip: 'boolean',
-      boundary: '(string|element)',
-      reference: '(string|element)',
-      display: 'string'
-      /**
-       * ------------------------------------------------------------------------
-       * Class Definition
-       * ------------------------------------------------------------------------
-       */
-
-    };
-
-    var Dropdown =
-    /*#__PURE__*/
-    function () {
-      function Dropdown(element, config) {
-        this._element = element;
-        this._popper = null;
-        this._config = this._getConfig(config);
-        this._menu = this._getMenuElement();
-        this._inNavbar = this._detectNavbar();
-
-        this._addEventListeners();
-      } // Getters
-
-
-      var _proto = Dropdown.prototype;
-
-      // Public
-      _proto.toggle = function toggle() {
-        if (this._element.disabled || $$$1(this._element).hasClass(ClassName.DISABLED)) {
-          return;
-        }
-
-        var parent = Dropdown._getParentFromElement(this._element);
-
-        var isActive = $$$1(this._menu).hasClass(ClassName.SHOW);
-
-        Dropdown._clearMenus();
-
-        if (isActive) {
-          return;
-        }
-
-        var relatedTarget = {
-          relatedTarget: this._element
-        };
-        var showEvent = $$$1.Event(Event.SHOW, relatedTarget);
-        $$$1(parent).trigger(showEvent);
-
-        if (showEvent.isDefaultPrevented()) {
-          return;
-        } // Disable totally Popper.js for Dropdown in Navbar
-
-
-        if (!this._inNavbar) {
-          /**
-           * Check for Popper dependency
-           * Popper - https://popper.js.org
-           */
-          if (typeof Popper === 'undefined') {
-            throw new TypeError('Bootstrap dropdown require Popper.js (https://popper.js.org)');
-          }
-
-          var referenceElement = this._element;
-
-          if (this._config.reference === 'parent') {
-            referenceElement = parent;
-          } else if (Util.isElement(this._config.reference)) {
-            referenceElement = this._config.reference; // Check if it's jQuery element
-
-            if (typeof this._config.reference.jquery !== 'undefined') {
-              referenceElement = this._config.reference[0];
-            }
-          } // If boundary is not `scrollParent`, then set position to `static`
-          // to allow the menu to "escape" the scroll parent's boundaries
-          // https://github.com/twbs/bootstrap/issues/24251
-
-
-          if (this._config.boundary !== 'scrollParent') {
-            $$$1(parent).addClass(ClassName.POSITION_STATIC);
-          }
-
-          this._popper = new Popper(referenceElement, this._menu, this._getPopperConfig());
-        } // If this is a touch-enabled device we add extra
-        // empty mouseover listeners to the body's immediate children;
-        // only needed because of broken event delegation on iOS
-        // https://www.quirksmode.org/blog/archives/2014/02/mouse_event_bub.html
-
-
-        if ('ontouchstart' in document.documentElement && $$$1(parent).closest(Selector.NAVBAR_NAV).length === 0) {
-          $$$1(document.body).children().on('mouseover', null, $$$1.noop);
-        }
-
-        this._element.focus();
-
-        this._element.setAttribute('aria-expanded', true);
-
-        $$$1(this._menu).toggleClass(ClassName.SHOW);
-        $$$1(parent).toggleClass(ClassName.SHOW).trigger($$$1.Event(Event.SHOWN, relatedTarget));
-      };
-
-      _proto.dispose = function dispose() {
-        $$$1.removeData(this._element, DATA_KEY);
-        $$$1(this._element).off(EVENT_KEY);
-        this._element = null;
-        this._menu = null;
-
-        if (this._popper !== null) {
-          this._popper.destroy();
-
-          this._popper = null;
-        }
-      };
-
-      _proto.update = function update() {
-        this._inNavbar = this._detectNavbar();
-
-        if (this._popper !== null) {
-          this._popper.scheduleUpdate();
-        }
-      }; // Private
-
-
-      _proto._addEventListeners = function _addEventListeners() {
-        var _this = this;
-
-        $$$1(this._element).on(Event.CLICK, function (event) {
-          event.preventDefault();
-          event.stopPropagation();
-
-          _this.toggle();
-        });
-      };
-
-      _proto._getConfig = function _getConfig(config) {
-        config = _objectSpread({}, this.constructor.Default, $$$1(this._element).data(), config);
-        Util.typeCheckConfig(NAME, config, this.constructor.DefaultType);
-        return config;
-      };
-
-      _proto._getMenuElement = function _getMenuElement() {
-        if (!this._menu) {
-          var parent = Dropdown._getParentFromElement(this._element);
-
-          this._menu = $$$1(parent).find(Selector.MENU)[0];
-        }
-
-        return this._menu;
-      };
-
-      _proto._getPlacement = function _getPlacement() {
-        var $parentDropdown = $$$1(this._element).parent();
-        var placement = AttachmentMap.BOTTOM; // Handle dropup
-
-        if ($parentDropdown.hasClass(ClassName.DROPUP)) {
-          placement = AttachmentMap.TOP;
-
-          if ($$$1(this._menu).hasClass(ClassName.MENURIGHT)) {
-            placement = AttachmentMap.TOPEND;
-          }
-        } else if ($parentDropdown.hasClass(ClassName.DROPRIGHT)) {
-          placement = AttachmentMap.RIGHT;
-        } else if ($parentDropdown.hasClass(ClassName.DROPLEFT)) {
-          placement = AttachmentMap.LEFT;
-        } else if ($$$1(this._menu).hasClass(ClassName.MENURIGHT)) {
-          placement = AttachmentMap.BOTTOMEND;
-        }
-
-        return placement;
-      };
-
-      _proto._detectNavbar = function _detectNavbar() {
-        return $$$1(this._element).closest('.navbar').length > 0;
-      };
-
-      _proto._getPopperConfig = function _getPopperConfig() {
-        var _this2 = this;
-
-        var offsetConf = {};
-
-        if (typeof this._config.offset === 'function') {
-          offsetConf.fn = function (data) {
-            data.offsets = _objectSpread({}, data.offsets, _this2._config.offset(data.offsets) || {});
-            return data;
-          };
-        } else {
-          offsetConf.offset = this._config.offset;
-        }
-
-        var popperConfig = {
-          placement: this._getPlacement(),
-          modifiers: {
-            offset: offsetConf,
-            flip: {
-              enabled: this._config.flip
-            },
-            preventOverflow: {
-              boundariesElement: this._config.boundary
-            }
-          } // Disable Popper.js if we have a static display
-
-        };
-
-        if (this._config.display === 'static') {
-          popperConfig.modifiers.applyStyle = {
-            enabled: false
-          };
-        }
-
-        return popperConfig;
-      }; // Static
-
-
-      Dropdown._jQueryInterface = function _jQueryInterface(config) {
-        return this.each(function () {
-          var data = $$$1(this).data(DATA_KEY);
-
-          var _config = typeof config === 'object' ? config : null;
-
-          if (!data) {
-            data = new Dropdown(this, _config);
-            $$$1(this).data(DATA_KEY, data);
-          }
-
-          if (typeof config === 'string') {
-            if (typeof data[config] === 'undefined') {
-              throw new TypeError("No method named \"" + config + "\"");
-            }
-
-            data[config]();
-          }
-        });
-      };
-
-      Dropdown._clearMenus = function _clearMenus(event) {
-        if (event && (event.which === RIGHT_MOUSE_BUTTON_WHICH || event.type === 'keyup' && event.which !== TAB_KEYCODE)) {
-          return;
-        }
-
-        var toggles = $$$1.makeArray($$$1(Selector.DATA_TOGGLE));
-
-        for (var i = 0; i < toggles.length; i++) {
-          var parent = Dropdown._getParentFromElement(toggles[i]);
-
-          var context = $$$1(toggles[i]).data(DATA_KEY);
-          var relatedTarget = {
-            relatedTarget: toggles[i]
-          };
-
-          if (!context) {
-            continue;
-          }
-
-          var dropdownMenu = context._menu;
-
-          if (!$$$1(parent).hasClass(ClassName.SHOW)) {
-            continue;
-          }
-
-          if (event && (event.type === 'click' && /input|textarea/i.test(event.target.tagName) || event.type === 'keyup' && event.which === TAB_KEYCODE) && $$$1.contains(parent, event.target)) {
-            continue;
-          }
-
-          var hideEvent = $$$1.Event(Event.HIDE, relatedTarget);
-          $$$1(parent).trigger(hideEvent);
-
-          if (hideEvent.isDefaultPrevented()) {
-            continue;
-          } // If this is a touch-enabled device we remove the extra
-          // empty mouseover listeners we added for iOS support
-
-
-          if ('ontouchstart' in document.documentElement) {
-            $$$1(document.body).children().off('mouseover', null, $$$1.noop);
-          }
-
-          toggles[i].setAttribute('aria-expanded', 'false');
-          $$$1(dropdownMenu).removeClass(ClassName.SHOW);
-          $$$1(parent).removeClass(ClassName.SHOW).trigger($$$1.Event(Event.HIDDEN, relatedTarget));
-        }
-      };
-
-      Dropdown._getParentFromElement = function _getParentFromElement(element) {
-        var parent;
-        var selector = Util.getSelectorFromElement(element);
-
-        if (selector) {
-          parent = $$$1(selector)[0];
-        }
-
-        return parent || element.parentNode;
-      }; // eslint-disable-next-line complexity
-
-
-      Dropdown._dataApiKeydownHandler = function _dataApiKeydownHandler(event) {
-        // If not input/textarea:
-        //  - And not a key in REGEXP_KEYDOWN => not a dropdown command
-        // If input/textarea:
-        //  - If space key => not a dropdown command
-        //  - If key is other than escape
-        //    - If key is not up or down => not a dropdown command
-        //    - If trigger inside the menu => not a dropdown command
-        if (/input|textarea/i.test(event.target.tagName) ? event.which === SPACE_KEYCODE || event.which !== ESCAPE_KEYCODE && (event.which !== ARROW_DOWN_KEYCODE && event.which !== ARROW_UP_KEYCODE || $$$1(event.target).closest(Selector.MENU).length) : !REGEXP_KEYDOWN.test(event.which)) {
-          return;
-        }
-
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (this.disabled || $$$1(this).hasClass(ClassName.DISABLED)) {
-          return;
-        }
-
-        var parent = Dropdown._getParentFromElement(this);
-
-        var isActive = $$$1(parent).hasClass(ClassName.SHOW);
-
-        if (!isActive && (event.which !== ESCAPE_KEYCODE || event.which !== SPACE_KEYCODE) || isActive && (event.which === ESCAPE_KEYCODE || event.which === SPACE_KEYCODE)) {
-          if (event.which === ESCAPE_KEYCODE) {
-            var toggle = $$$1(parent).find(Selector.DATA_TOGGLE)[0];
-            $$$1(toggle).trigger('focus');
-          }
-
-          $$$1(this).trigger('click');
-          return;
-        }
-
-        var items = $$$1(parent).find(Selector.VISIBLE_ITEMS).get();
-
-        if (items.length === 0) {
-          return;
-        }
-
-        var index = items.indexOf(event.target);
-
-        if (event.which === ARROW_UP_KEYCODE && index > 0) {
-          // Up
-          index--;
-        }
-
-        if (event.which === ARROW_DOWN_KEYCODE && index < items.length - 1) {
-          // Down
-          index++;
-        }
-
-        if (index < 0) {
-          index = 0;
-        }
-
-        items[index].focus();
-      };
-
-      _createClass(Dropdown, null, [{
-        key: "VERSION",
-        get: function get() {
-          return VERSION;
-        }
-      }, {
-        key: "Default",
-        get: function get() {
-          return Default;
-        }
-      }, {
-        key: "DefaultType",
-        get: function get() {
-          return DefaultType;
-        }
-      }]);
-
-      return Dropdown;
-    }();
-    /**
-     * ------------------------------------------------------------------------
-     * Data Api implementation
-     * ------------------------------------------------------------------------
-     */
-
-
-    $$$1(document).on(Event.KEYDOWN_DATA_API, Selector.DATA_TOGGLE, Dropdown._dataApiKeydownHandler).on(Event.KEYDOWN_DATA_API, Selector.MENU, Dropdown._dataApiKeydownHandler).on(Event.CLICK_DATA_API + " " + Event.KEYUP_DATA_API, Dropdown._clearMenus).on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE, function (event) {
-      event.preventDefault();
-      event.stopPropagation();
-
-      Dropdown._jQueryInterface.call($$$1(this), 'toggle');
-    }).on(Event.CLICK_DATA_API, Selector.FORM_CHILD, function (e) {
-      e.stopPropagation();
-    });
-    /**
-     * ------------------------------------------------------------------------
-     * jQuery
-     * ------------------------------------------------------------------------
-     */
-
-    $$$1.fn[NAME] = Dropdown._jQueryInterface;
-    $$$1.fn[NAME].Constructor = Dropdown;
-
-    $$$1.fn[NAME].noConflict = function () {
-      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
-      return Dropdown._jQueryInterface;
-    };
-
-    return Dropdown;
-  }($, Popper);
-
-  /**
-   * --------------------------------------------------------------------------
-   * Bootstrap (v4.1.1): modal.js
-   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
-   * --------------------------------------------------------------------------
-   */
-
-  var Modal = function ($$$1) {
-    /**
-     * ------------------------------------------------------------------------
-     * Constants
-     * ------------------------------------------------------------------------
-     */
-    var NAME = 'modal';
-    var VERSION = '4.1.1';
-    var DATA_KEY = 'bs.modal';
-    var EVENT_KEY = "." + DATA_KEY;
-    var DATA_API_KEY = '.data-api';
-    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
-    var ESCAPE_KEYCODE = 27; // KeyboardEvent.which value for Escape (Esc) key
-
-    var Default = {
-      backdrop: true,
-      keyboard: true,
-      focus: true,
-      show: true
-    };
-    var DefaultType = {
-      backdrop: '(boolean|string)',
-      keyboard: 'boolean',
-      focus: 'boolean',
-      show: 'boolean'
-    };
-    var Event = {
-      HIDE: "hide" + EVENT_KEY,
-      HIDDEN: "hidden" + EVENT_KEY,
-      SHOW: "show" + EVENT_KEY,
-      SHOWN: "shown" + EVENT_KEY,
-      FOCUSIN: "focusin" + EVENT_KEY,
-      RESIZE: "resize" + EVENT_KEY,
-      CLICK_DISMISS: "click.dismiss" + EVENT_KEY,
-      KEYDOWN_DISMISS: "keydown.dismiss" + EVENT_KEY,
-      MOUSEUP_DISMISS: "mouseup.dismiss" + EVENT_KEY,
-      MOUSEDOWN_DISMISS: "mousedown.dismiss" + EVENT_KEY,
-      CLICK_DATA_API: "click" + EVENT_KEY + DATA_API_KEY
-    };
-    var ClassName = {
-      SCROLLBAR_MEASURER: 'modal-scrollbar-measure',
-      BACKDROP: 'modal-backdrop',
-      OPEN: 'modal-open',
-      FADE: 'fade',
-      SHOW: 'show'
-    };
-    var Selector = {
-      DIALOG: '.modal-dialog',
-      DATA_TOGGLE: '[data-toggle="modal"]',
-      DATA_DISMISS: '[data-dismiss="modal"]',
-      FIXED_CONTENT: '.fixed-top, .fixed-bottom, .is-fixed, .sticky-top',
-      STICKY_CONTENT: '.sticky-top',
-      NAVBAR_TOGGLER: '.navbar-toggler'
-      /**
-       * ------------------------------------------------------------------------
-       * Class Definition
-       * ------------------------------------------------------------------------
-       */
-
-    };
-
-    var Modal =
-    /*#__PURE__*/
-    function () {
-      function Modal(element, config) {
-        this._config = this._getConfig(config);
-        this._element = element;
-        this._dialog = $$$1(element).find(Selector.DIALOG)[0];
-        this._backdrop = null;
-        this._isShown = false;
-        this._isBodyOverflowing = false;
-        this._ignoreBackdropClick = false;
-        this._scrollbarWidth = 0;
-      } // Getters
-
-
-      var _proto = Modal.prototype;
-
-      // Public
-      _proto.toggle = function toggle(relatedTarget) {
-        return this._isShown ? this.hide() : this.show(relatedTarget);
-      };
-
-      _proto.show = function show(relatedTarget) {
-        var _this = this;
-
-        if (this._isTransitioning || this._isShown) {
-          return;
-        }
-
-        if ($$$1(this._element).hasClass(ClassName.FADE)) {
-          this._isTransitioning = true;
-        }
-
-        var showEvent = $$$1.Event(Event.SHOW, {
-          relatedTarget: relatedTarget
-        });
-        $$$1(this._element).trigger(showEvent);
-
-        if (this._isShown || showEvent.isDefaultPrevented()) {
-          return;
-        }
-
-        this._isShown = true;
-
-        this._checkScrollbar();
-
-        this._setScrollbar();
-
-        this._adjustDialog();
-
-        $$$1(document.body).addClass(ClassName.OPEN);
-
-        this._setEscapeEvent();
-
-        this._setResizeEvent();
-
-        $$$1(this._element).on(Event.CLICK_DISMISS, Selector.DATA_DISMISS, function (event) {
-          return _this.hide(event);
-        });
-        $$$1(this._dialog).on(Event.MOUSEDOWN_DISMISS, function () {
-          $$$1(_this._element).one(Event.MOUSEUP_DISMISS, function (event) {
-            if ($$$1(event.target).is(_this._element)) {
-              _this._ignoreBackdropClick = true;
-            }
-          });
-        });
-
-        this._showBackdrop(function () {
-          return _this._showElement(relatedTarget);
-        });
-      };
-
-      _proto.hide = function hide(event) {
-        var _this2 = this;
-
-        if (event) {
-          event.preventDefault();
-        }
-
-        if (this._isTransitioning || !this._isShown) {
-          return;
-        }
-
-        var hideEvent = $$$1.Event(Event.HIDE);
-        $$$1(this._element).trigger(hideEvent);
-
-        if (!this._isShown || hideEvent.isDefaultPrevented()) {
-          return;
-        }
-
-        this._isShown = false;
-        var transition = $$$1(this._element).hasClass(ClassName.FADE);
-
-        if (transition) {
-          this._isTransitioning = true;
-        }
-
-        this._setEscapeEvent();
-
-        this._setResizeEvent();
-
-        $$$1(document).off(Event.FOCUSIN);
-        $$$1(this._element).removeClass(ClassName.SHOW);
-        $$$1(this._element).off(Event.CLICK_DISMISS);
-        $$$1(this._dialog).off(Event.MOUSEDOWN_DISMISS);
-
-        if (transition) {
-          var transitionDuration = Util.getTransitionDurationFromElement(this._element);
-          $$$1(this._element).one(Util.TRANSITION_END, function (event) {
-            return _this2._hideModal(event);
-          }).emulateTransitionEnd(transitionDuration);
-        } else {
-          this._hideModal();
-        }
-      };
-
-      _proto.dispose = function dispose() {
-        $$$1.removeData(this._element, DATA_KEY);
-        $$$1(window, document, this._element, this._backdrop).off(EVENT_KEY);
-        this._config = null;
-        this._element = null;
-        this._dialog = null;
-        this._backdrop = null;
-        this._isShown = null;
-        this._isBodyOverflowing = null;
-        this._ignoreBackdropClick = null;
-        this._scrollbarWidth = null;
-      };
-
-      _proto.handleUpdate = function handleUpdate() {
-        this._adjustDialog();
-      }; // Private
-
-
-      _proto._getConfig = function _getConfig(config) {
-        config = _objectSpread({}, Default, config);
-        Util.typeCheckConfig(NAME, config, DefaultType);
-        return config;
-      };
-
-      _proto._showElement = function _showElement(relatedTarget) {
-        var _this3 = this;
-
-        var transition = $$$1(this._element).hasClass(ClassName.FADE);
-
-        if (!this._element.parentNode || this._element.parentNode.nodeType !== Node.ELEMENT_NODE) {
-          // Don't move modal's DOM position
-          document.body.appendChild(this._element);
-        }
-
-        this._element.style.display = 'block';
-
-        this._element.removeAttribute('aria-hidden');
-
-        this._element.scrollTop = 0;
-
-        if (transition) {
-          Util.reflow(this._element);
-        }
-
-        $$$1(this._element).addClass(ClassName.SHOW);
-
-        if (this._config.focus) {
-          this._enforceFocus();
-        }
-
-        var shownEvent = $$$1.Event(Event.SHOWN, {
-          relatedTarget: relatedTarget
-        });
-
-        var transitionComplete = function transitionComplete() {
-          if (_this3._config.focus) {
-            _this3._element.focus();
-          }
-
-          _this3._isTransitioning = false;
-          $$$1(_this3._element).trigger(shownEvent);
-        };
-
-        if (transition) {
-          var transitionDuration = Util.getTransitionDurationFromElement(this._element);
-          $$$1(this._dialog).one(Util.TRANSITION_END, transitionComplete).emulateTransitionEnd(transitionDuration);
-        } else {
-          transitionComplete();
-        }
-      };
-
-      _proto._enforceFocus = function _enforceFocus() {
-        var _this4 = this;
-
-        $$$1(document).off(Event.FOCUSIN) // Guard against infinite focus loop
-        .on(Event.FOCUSIN, function (event) {
-          if (document !== event.target && _this4._element !== event.target && $$$1(_this4._element).has(event.target).length === 0) {
-            _this4._element.focus();
-          }
-        });
-      };
-
-      _proto._setEscapeEvent = function _setEscapeEvent() {
-        var _this5 = this;
-
-        if (this._isShown && this._config.keyboard) {
-          $$$1(this._element).on(Event.KEYDOWN_DISMISS, function (event) {
-            if (event.which === ESCAPE_KEYCODE) {
-              event.preventDefault();
-
-              _this5.hide();
-            }
-          });
-        } else if (!this._isShown) {
-          $$$1(this._element).off(Event.KEYDOWN_DISMISS);
-        }
-      };
-
-      _proto._setResizeEvent = function _setResizeEvent() {
-        var _this6 = this;
-
-        if (this._isShown) {
-          $$$1(window).on(Event.RESIZE, function (event) {
-            return _this6.handleUpdate(event);
-          });
-        } else {
-          $$$1(window).off(Event.RESIZE);
-        }
-      };
-
-      _proto._hideModal = function _hideModal() {
-        var _this7 = this;
-
-        this._element.style.display = 'none';
-
-        this._element.setAttribute('aria-hidden', true);
-
-        this._isTransitioning = false;
-
-        this._showBackdrop(function () {
-          $$$1(document.body).removeClass(ClassName.OPEN);
-
-          _this7._resetAdjustments();
-
-          _this7._resetScrollbar();
-
-          $$$1(_this7._element).trigger(Event.HIDDEN);
-        });
-      };
-
-      _proto._removeBackdrop = function _removeBackdrop() {
-        if (this._backdrop) {
-          $$$1(this._backdrop).remove();
-          this._backdrop = null;
-        }
-      };
-
-      _proto._showBackdrop = function _showBackdrop(callback) {
-        var _this8 = this;
-
-        var animate = $$$1(this._element).hasClass(ClassName.FADE) ? ClassName.FADE : '';
-
-        if (this._isShown && this._config.backdrop) {
-          this._backdrop = document.createElement('div');
-          this._backdrop.className = ClassName.BACKDROP;
-
-          if (animate) {
-            $$$1(this._backdrop).addClass(animate);
-          }
-
-          $$$1(this._backdrop).appendTo(document.body);
-          $$$1(this._element).on(Event.CLICK_DISMISS, function (event) {
-            if (_this8._ignoreBackdropClick) {
-              _this8._ignoreBackdropClick = false;
-              return;
-            }
-
-            if (event.target !== event.currentTarget) {
-              return;
-            }
-
-            if (_this8._config.backdrop === 'static') {
-              _this8._element.focus();
-            } else {
-              _this8.hide();
-            }
-          });
-
-          if (animate) {
-            Util.reflow(this._backdrop);
-          }
-
-          $$$1(this._backdrop).addClass(ClassName.SHOW);
-
-          if (!callback) {
-            return;
-          }
-
-          if (!animate) {
-            callback();
-            return;
-          }
-
-          var backdropTransitionDuration = Util.getTransitionDurationFromElement(this._backdrop);
-          $$$1(this._backdrop).one(Util.TRANSITION_END, callback).emulateTransitionEnd(backdropTransitionDuration);
-        } else if (!this._isShown && this._backdrop) {
-          $$$1(this._backdrop).removeClass(ClassName.SHOW);
-
-          var callbackRemove = function callbackRemove() {
-            _this8._removeBackdrop();
-
-            if (callback) {
-              callback();
-            }
-          };
-
-          if ($$$1(this._element).hasClass(ClassName.FADE)) {
-            var _backdropTransitionDuration = Util.getTransitionDurationFromElement(this._backdrop);
-
-            $$$1(this._backdrop).one(Util.TRANSITION_END, callbackRemove).emulateTransitionEnd(_backdropTransitionDuration);
-          } else {
-            callbackRemove();
-          }
-        } else if (callback) {
-          callback();
-        }
-      }; // ----------------------------------------------------------------------
-      // the following methods are used to handle overflowing modals
-      // todo (fat): these should probably be refactored out of modal.js
-      // ----------------------------------------------------------------------
-
-
-      _proto._adjustDialog = function _adjustDialog() {
-        var isModalOverflowing = this._element.scrollHeight > document.documentElement.clientHeight;
-
-        if (!this._isBodyOverflowing && isModalOverflowing) {
-          this._element.style.paddingLeft = this._scrollbarWidth + "px";
-        }
-
-        if (this._isBodyOverflowing && !isModalOverflowing) {
-          this._element.style.paddingRight = this._scrollbarWidth + "px";
-        }
-      };
-
-      _proto._resetAdjustments = function _resetAdjustments() {
-        this._element.style.paddingLeft = '';
-        this._element.style.paddingRight = '';
-      };
-
-      _proto._checkScrollbar = function _checkScrollbar() {
-        var rect = document.body.getBoundingClientRect();
-        this._isBodyOverflowing = rect.left + rect.right < window.innerWidth;
-        this._scrollbarWidth = this._getScrollbarWidth();
-      };
-
-      _proto._setScrollbar = function _setScrollbar() {
-        var _this9 = this;
-
-        if (this._isBodyOverflowing) {
-          // Note: DOMNode.style.paddingRight returns the actual value or '' if not set
-          //   while $(DOMNode).css('padding-right') returns the calculated value or 0 if not set
-          // Adjust fixed content padding
-          $$$1(Selector.FIXED_CONTENT).each(function (index, element) {
-            var actualPadding = $$$1(element)[0].style.paddingRight;
-            var calculatedPadding = $$$1(element).css('padding-right');
-            $$$1(element).data('padding-right', actualPadding).css('padding-right', parseFloat(calculatedPadding) + _this9._scrollbarWidth + "px");
-          }); // Adjust sticky content margin
-
-          $$$1(Selector.STICKY_CONTENT).each(function (index, element) {
-            var actualMargin = $$$1(element)[0].style.marginRight;
-            var calculatedMargin = $$$1(element).css('margin-right');
-            $$$1(element).data('margin-right', actualMargin).css('margin-right', parseFloat(calculatedMargin) - _this9._scrollbarWidth + "px");
-          }); // Adjust navbar-toggler margin
-
-          $$$1(Selector.NAVBAR_TOGGLER).each(function (index, element) {
-            var actualMargin = $$$1(element)[0].style.marginRight;
-            var calculatedMargin = $$$1(element).css('margin-right');
-            $$$1(element).data('margin-right', actualMargin).css('margin-right', parseFloat(calculatedMargin) + _this9._scrollbarWidth + "px");
-          }); // Adjust body padding
-
-          var actualPadding = document.body.style.paddingRight;
-          var calculatedPadding = $$$1(document.body).css('padding-right');
-          $$$1(document.body).data('padding-right', actualPadding).css('padding-right', parseFloat(calculatedPadding) + this._scrollbarWidth + "px");
-        }
-      };
-
-      _proto._resetScrollbar = function _resetScrollbar() {
-        // Restore fixed content padding
-        $$$1(Selector.FIXED_CONTENT).each(function (index, element) {
-          var padding = $$$1(element).data('padding-right');
-
-          if (typeof padding !== 'undefined') {
-            $$$1(element).css('padding-right', padding).removeData('padding-right');
-          }
-        }); // Restore sticky content and navbar-toggler margin
-
-        $$$1(Selector.STICKY_CONTENT + ", " + Selector.NAVBAR_TOGGLER).each(function (index, element) {
-          var margin = $$$1(element).data('margin-right');
-
-          if (typeof margin !== 'undefined') {
-            $$$1(element).css('margin-right', margin).removeData('margin-right');
-          }
-        }); // Restore body padding
-
-        var padding = $$$1(document.body).data('padding-right');
-
-        if (typeof padding !== 'undefined') {
-          $$$1(document.body).css('padding-right', padding).removeData('padding-right');
-        }
-      };
-
-      _proto._getScrollbarWidth = function _getScrollbarWidth() {
-        // thx d.walsh
-        var scrollDiv = document.createElement('div');
-        scrollDiv.className = ClassName.SCROLLBAR_MEASURER;
-        document.body.appendChild(scrollDiv);
-        var scrollbarWidth = scrollDiv.getBoundingClientRect().width - scrollDiv.clientWidth;
-        document.body.removeChild(scrollDiv);
-        return scrollbarWidth;
-      }; // Static
-
-
-      Modal._jQueryInterface = function _jQueryInterface(config, relatedTarget) {
-        return this.each(function () {
-          var data = $$$1(this).data(DATA_KEY);
-
-          var _config = _objectSpread({}, Default, $$$1(this).data(), typeof config === 'object' && config ? config : {});
-
-          if (!data) {
-            data = new Modal(this, _config);
-            $$$1(this).data(DATA_KEY, data);
-          }
-
-          if (typeof config === 'string') {
-            if (typeof data[config] === 'undefined') {
-              throw new TypeError("No method named \"" + config + "\"");
-            }
-
-            data[config](relatedTarget);
-          } else if (_config.show) {
-            data.show(relatedTarget);
-          }
-        });
-      };
-
-      _createClass(Modal, null, [{
-        key: "VERSION",
-        get: function get() {
-          return VERSION;
-        }
-      }, {
-        key: "Default",
-        get: function get() {
-          return Default;
-        }
-      }]);
-
-      return Modal;
-    }();
-    /**
-     * ------------------------------------------------------------------------
-     * Data Api implementation
-     * ------------------------------------------------------------------------
-     */
-
-
-    $$$1(document).on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE, function (event) {
-      var _this10 = this;
-
-      var target;
-      var selector = Util.getSelectorFromElement(this);
-
-      if (selector) {
-        target = $$$1(selector)[0];
-      }
-
-      var config = $$$1(target).data(DATA_KEY) ? 'toggle' : _objectSpread({}, $$$1(target).data(), $$$1(this).data());
-
-      if (this.tagName === 'A' || this.tagName === 'AREA') {
-        event.preventDefault();
-      }
-
-      var $target = $$$1(target).one(Event.SHOW, function (showEvent) {
-        if (showEvent.isDefaultPrevented()) {
-          // Only register focus restorer if modal will actually get shown
-          return;
-        }
-
-        $target.one(Event.HIDDEN, function () {
-          if ($$$1(_this10).is(':visible')) {
-            _this10.focus();
-          }
-        });
-      });
-
-      Modal._jQueryInterface.call($$$1(target), config, this);
-    });
-    /**
-     * ------------------------------------------------------------------------
-     * jQuery
-     * ------------------------------------------------------------------------
-     */
-
-    $$$1.fn[NAME] = Modal._jQueryInterface;
-    $$$1.fn[NAME].Constructor = Modal;
-
-    $$$1.fn[NAME].noConflict = function () {
-      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
-      return Modal._jQueryInterface;
-    };
-
-    return Modal;
-  }($);
-
-  /**
-   * --------------------------------------------------------------------------
-   * Bootstrap (v4.1.1): tooltip.js
-   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
-   * --------------------------------------------------------------------------
-   */
-
-  var Tooltip = function ($$$1) {
-    /**
-     * ------------------------------------------------------------------------
-     * Constants
-     * ------------------------------------------------------------------------
-     */
-    var NAME = 'tooltip';
-    var VERSION = '4.1.1';
-    var DATA_KEY = 'bs.tooltip';
-    var EVENT_KEY = "." + DATA_KEY;
-    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
-    var CLASS_PREFIX = 'bs-tooltip';
-    var BSCLS_PREFIX_REGEX = new RegExp("(^|\\s)" + CLASS_PREFIX + "\\S+", 'g');
-    var DefaultType = {
-      animation: 'boolean',
-      template: 'string',
-      title: '(string|element|function)',
-      trigger: 'string',
-      delay: '(number|object)',
-      html: 'boolean',
-      selector: '(string|boolean)',
-      placement: '(string|function)',
-      offset: '(number|string)',
-      container: '(string|element|boolean)',
-      fallbackPlacement: '(string|array)',
-      boundary: '(string|element)'
-    };
-    var AttachmentMap = {
-      AUTO: 'auto',
-      TOP: 'top',
-      RIGHT: 'right',
-      BOTTOM: 'bottom',
-      LEFT: 'left'
-    };
-    var Default = {
-      animation: true,
-      template: '<div class="tooltip" role="tooltip">' + '<div class="arrow"></div>' + '<div class="tooltip-inner"></div></div>',
-      trigger: 'hover focus',
-      title: '',
-      delay: 0,
-      html: false,
-      selector: false,
-      placement: 'top',
-      offset: 0,
-      container: false,
-      fallbackPlacement: 'flip',
-      boundary: 'scrollParent'
-    };
-    var HoverState = {
-      SHOW: 'show',
-      OUT: 'out'
-    };
-    var Event = {
-      HIDE: "hide" + EVENT_KEY,
-      HIDDEN: "hidden" + EVENT_KEY,
-      SHOW: "show" + EVENT_KEY,
-      SHOWN: "shown" + EVENT_KEY,
-      INSERTED: "inserted" + EVENT_KEY,
-      CLICK: "click" + EVENT_KEY,
-      FOCUSIN: "focusin" + EVENT_KEY,
-      FOCUSOUT: "focusout" + EVENT_KEY,
-      MOUSEENTER: "mouseenter" + EVENT_KEY,
-      MOUSELEAVE: "mouseleave" + EVENT_KEY
-    };
-    var ClassName = {
-      FADE: 'fade',
-      SHOW: 'show'
-    };
-    var Selector = {
-      TOOLTIP: '.tooltip',
-      TOOLTIP_INNER: '.tooltip-inner',
-      ARROW: '.arrow'
-    };
-    var Trigger = {
-      HOVER: 'hover',
-      FOCUS: 'focus',
-      CLICK: 'click',
-      MANUAL: 'manual'
-      /**
-       * ------------------------------------------------------------------------
-       * Class Definition
-       * ------------------------------------------------------------------------
-       */
-
-    };
-
-    var Tooltip =
-    /*#__PURE__*/
-    function () {
-      function Tooltip(element, config) {
-        /**
-         * Check for Popper dependency
-         * Popper - https://popper.js.org
-         */
-        if (typeof Popper === 'undefined') {
-          throw new TypeError('Bootstrap tooltips require Popper.js (https://popper.js.org)');
-        } // private
-
-
-        this._isEnabled = true;
-        this._timeout = 0;
-        this._hoverState = '';
-        this._activeTrigger = {};
-        this._popper = null; // Protected
-
-        this.element = element;
-        this.config = this._getConfig(config);
-        this.tip = null;
-
-        this._setListeners();
-      } // Getters
-
-
-      var _proto = Tooltip.prototype;
-
-      // Public
-      _proto.enable = function enable() {
-        this._isEnabled = true;
-      };
-
-      _proto.disable = function disable() {
-        this._isEnabled = false;
-      };
-
-      _proto.toggleEnabled = function toggleEnabled() {
-        this._isEnabled = !this._isEnabled;
-      };
-
-      _proto.toggle = function toggle(event) {
-        if (!this._isEnabled) {
-          return;
-        }
-
-        if (event) {
-          var dataKey = this.constructor.DATA_KEY;
-          var context = $$$1(event.currentTarget).data(dataKey);
-
-          if (!context) {
-            context = new this.constructor(event.currentTarget, this._getDelegateConfig());
-            $$$1(event.currentTarget).data(dataKey, context);
-          }
-
-          context._activeTrigger.click = !context._activeTrigger.click;
-
-          if (context._isWithActiveTrigger()) {
-            context._enter(null, context);
-          } else {
-            context._leave(null, context);
-          }
-        } else {
-          if ($$$1(this.getTipElement()).hasClass(ClassName.SHOW)) {
-            this._leave(null, this);
-
-            return;
-          }
-
-          this._enter(null, this);
-        }
-      };
-
-      _proto.dispose = function dispose() {
-        clearTimeout(this._timeout);
-        $$$1.removeData(this.element, this.constructor.DATA_KEY);
-        $$$1(this.element).off(this.constructor.EVENT_KEY);
-        $$$1(this.element).closest('.modal').off('hide.bs.modal');
-
-        if (this.tip) {
-          $$$1(this.tip).remove();
-        }
-
-        this._isEnabled = null;
-        this._timeout = null;
-        this._hoverState = null;
-        this._activeTrigger = null;
-
-        if (this._popper !== null) {
-          this._popper.destroy();
-        }
-
-        this._popper = null;
-        this.element = null;
-        this.config = null;
-        this.tip = null;
-      };
-
-      _proto.show = function show() {
-        var _this = this;
-
-        if ($$$1(this.element).css('display') === 'none') {
-          throw new Error('Please use show on visible elements');
-        }
-
-        var showEvent = $$$1.Event(this.constructor.Event.SHOW);
-
-        if (this.isWithContent() && this._isEnabled) {
-          $$$1(this.element).trigger(showEvent);
-          var isInTheDom = $$$1.contains(this.element.ownerDocument.documentElement, this.element);
-
-          if (showEvent.isDefaultPrevented() || !isInTheDom) {
-            return;
-          }
-
-          var tip = this.getTipElement();
-          var tipId = Util.getUID(this.constructor.NAME);
-          tip.setAttribute('id', tipId);
-          this.element.setAttribute('aria-describedby', tipId);
-          this.setContent();
-
-          if (this.config.animation) {
-            $$$1(tip).addClass(ClassName.FADE);
-          }
-
-          var placement = typeof this.config.placement === 'function' ? this.config.placement.call(this, tip, this.element) : this.config.placement;
-
-          var attachment = this._getAttachment(placement);
-
-          this.addAttachmentClass(attachment);
-          var container = this.config.container === false ? document.body : $$$1(this.config.container);
-          $$$1(tip).data(this.constructor.DATA_KEY, this);
-
-          if (!$$$1.contains(this.element.ownerDocument.documentElement, this.tip)) {
-            $$$1(tip).appendTo(container);
-          }
-
-          $$$1(this.element).trigger(this.constructor.Event.INSERTED);
-          this._popper = new Popper(this.element, tip, {
-            placement: attachment,
-            modifiers: {
-              offset: {
-                offset: this.config.offset
-              },
-              flip: {
-                behavior: this.config.fallbackPlacement
-              },
-              arrow: {
-                element: Selector.ARROW
-              },
-              preventOverflow: {
-                boundariesElement: this.config.boundary
-              }
-            },
-            onCreate: function onCreate(data) {
-              if (data.originalPlacement !== data.placement) {
-                _this._handlePopperPlacementChange(data);
-              }
-            },
-            onUpdate: function onUpdate(data) {
-              _this._handlePopperPlacementChange(data);
-            }
-          });
-          $$$1(tip).addClass(ClassName.SHOW); // If this is a touch-enabled device we add extra
-          // empty mouseover listeners to the body's immediate children;
-          // only needed because of broken event delegation on iOS
-          // https://www.quirksmode.org/blog/archives/2014/02/mouse_event_bub.html
-
-          if ('ontouchstart' in document.documentElement) {
-            $$$1(document.body).children().on('mouseover', null, $$$1.noop);
-          }
-
-          var complete = function complete() {
-            if (_this.config.animation) {
-              _this._fixTransition();
-            }
-
-            var prevHoverState = _this._hoverState;
-            _this._hoverState = null;
-            $$$1(_this.element).trigger(_this.constructor.Event.SHOWN);
-
-            if (prevHoverState === HoverState.OUT) {
-              _this._leave(null, _this);
-            }
-          };
-
-          if ($$$1(this.tip).hasClass(ClassName.FADE)) {
-            var transitionDuration = Util.getTransitionDurationFromElement(this.tip);
-            $$$1(this.tip).one(Util.TRANSITION_END, complete).emulateTransitionEnd(transitionDuration);
-          } else {
-            complete();
-          }
-        }
-      };
-
-      _proto.hide = function hide(callback) {
-        var _this2 = this;
-
-        var tip = this.getTipElement();
-        var hideEvent = $$$1.Event(this.constructor.Event.HIDE);
-
-        var complete = function complete() {
-          if (_this2._hoverState !== HoverState.SHOW && tip.parentNode) {
-            tip.parentNode.removeChild(tip);
-          }
-
-          _this2._cleanTipClass();
-
-          _this2.element.removeAttribute('aria-describedby');
-
-          $$$1(_this2.element).trigger(_this2.constructor.Event.HIDDEN);
-
-          if (_this2._popper !== null) {
-            _this2._popper.destroy();
-          }
-
-          if (callback) {
-            callback();
-          }
-        };
-
-        $$$1(this.element).trigger(hideEvent);
-
-        if (hideEvent.isDefaultPrevented()) {
-          return;
-        }
-
-        $$$1(tip).removeClass(ClassName.SHOW); // If this is a touch-enabled device we remove the extra
-        // empty mouseover listeners we added for iOS support
-
-        if ('ontouchstart' in document.documentElement) {
-          $$$1(document.body).children().off('mouseover', null, $$$1.noop);
-        }
-
-        this._activeTrigger[Trigger.CLICK] = false;
-        this._activeTrigger[Trigger.FOCUS] = false;
-        this._activeTrigger[Trigger.HOVER] = false;
-
-        if ($$$1(this.tip).hasClass(ClassName.FADE)) {
-          var transitionDuration = Util.getTransitionDurationFromElement(tip);
-          $$$1(tip).one(Util.TRANSITION_END, complete).emulateTransitionEnd(transitionDuration);
-        } else {
-          complete();
-        }
-
-        this._hoverState = '';
-      };
-
-      _proto.update = function update() {
-        if (this._popper !== null) {
-          this._popper.scheduleUpdate();
-        }
-      }; // Protected
-
-
-      _proto.isWithContent = function isWithContent() {
-        return Boolean(this.getTitle());
-      };
-
-      _proto.addAttachmentClass = function addAttachmentClass(attachment) {
-        $$$1(this.getTipElement()).addClass(CLASS_PREFIX + "-" + attachment);
-      };
-
-      _proto.getTipElement = function getTipElement() {
-        this.tip = this.tip || $$$1(this.config.template)[0];
-        return this.tip;
-      };
-
-      _proto.setContent = function setContent() {
-        var $tip = $$$1(this.getTipElement());
-        this.setElementContent($tip.find(Selector.TOOLTIP_INNER), this.getTitle());
-        $tip.removeClass(ClassName.FADE + " " + ClassName.SHOW);
-      };
-
-      _proto.setElementContent = function setElementContent($element, content) {
-        var html = this.config.html;
-
-        if (typeof content === 'object' && (content.nodeType || content.jquery)) {
-          // Content is a DOM node or a jQuery
-          if (html) {
-            if (!$$$1(content).parent().is($element)) {
-              $element.empty().append(content);
-            }
-          } else {
-            $element.text($$$1(content).text());
-          }
-        } else {
-          $element[html ? 'html' : 'text'](content);
-        }
-      };
-
-      _proto.getTitle = function getTitle() {
-        var title = this.element.getAttribute('data-original-title');
-
-        if (!title) {
-          title = typeof this.config.title === 'function' ? this.config.title.call(this.element) : this.config.title;
-        }
-
-        return title;
-      }; // Private
-
-
-      _proto._getAttachment = function _getAttachment(placement) {
-        return AttachmentMap[placement.toUpperCase()];
-      };
-
-      _proto._setListeners = function _setListeners() {
-        var _this3 = this;
-
-        var triggers = this.config.trigger.split(' ');
-        triggers.forEach(function (trigger) {
-          if (trigger === 'click') {
-            $$$1(_this3.element).on(_this3.constructor.Event.CLICK, _this3.config.selector, function (event) {
-              return _this3.toggle(event);
-            });
-          } else if (trigger !== Trigger.MANUAL) {
-            var eventIn = trigger === Trigger.HOVER ? _this3.constructor.Event.MOUSEENTER : _this3.constructor.Event.FOCUSIN;
-            var eventOut = trigger === Trigger.HOVER ? _this3.constructor.Event.MOUSELEAVE : _this3.constructor.Event.FOCUSOUT;
-            $$$1(_this3.element).on(eventIn, _this3.config.selector, function (event) {
-              return _this3._enter(event);
-            }).on(eventOut, _this3.config.selector, function (event) {
-              return _this3._leave(event);
-            });
-          }
-
-          $$$1(_this3.element).closest('.modal').on('hide.bs.modal', function () {
-            return _this3.hide();
-          });
-        });
-
-        if (this.config.selector) {
-          this.config = _objectSpread({}, this.config, {
-            trigger: 'manual',
-            selector: ''
-          });
-        } else {
-          this._fixTitle();
-        }
-      };
-
-      _proto._fixTitle = function _fixTitle() {
-        var titleType = typeof this.element.getAttribute('data-original-title');
-
-        if (this.element.getAttribute('title') || titleType !== 'string') {
-          this.element.setAttribute('data-original-title', this.element.getAttribute('title') || '');
-          this.element.setAttribute('title', '');
-        }
-      };
-
-      _proto._enter = function _enter(event, context) {
-        var dataKey = this.constructor.DATA_KEY;
-        context = context || $$$1(event.currentTarget).data(dataKey);
-
-        if (!context) {
-          context = new this.constructor(event.currentTarget, this._getDelegateConfig());
-          $$$1(event.currentTarget).data(dataKey, context);
-        }
-
-        if (event) {
-          context._activeTrigger[event.type === 'focusin' ? Trigger.FOCUS : Trigger.HOVER] = true;
-        }
-
-        if ($$$1(context.getTipElement()).hasClass(ClassName.SHOW) || context._hoverState === HoverState.SHOW) {
-          context._hoverState = HoverState.SHOW;
-          return;
-        }
-
-        clearTimeout(context._timeout);
-        context._hoverState = HoverState.SHOW;
-
-        if (!context.config.delay || !context.config.delay.show) {
-          context.show();
-          return;
-        }
-
-        context._timeout = setTimeout(function () {
-          if (context._hoverState === HoverState.SHOW) {
-            context.show();
-          }
-        }, context.config.delay.show);
-      };
-
-      _proto._leave = function _leave(event, context) {
-        var dataKey = this.constructor.DATA_KEY;
-        context = context || $$$1(event.currentTarget).data(dataKey);
-
-        if (!context) {
-          context = new this.constructor(event.currentTarget, this._getDelegateConfig());
-          $$$1(event.currentTarget).data(dataKey, context);
-        }
-
-        if (event) {
-          context._activeTrigger[event.type === 'focusout' ? Trigger.FOCUS : Trigger.HOVER] = false;
-        }
-
-        if (context._isWithActiveTrigger()) {
-          return;
-        }
-
-        clearTimeout(context._timeout);
-        context._hoverState = HoverState.OUT;
-
-        if (!context.config.delay || !context.config.delay.hide) {
-          context.hide();
-          return;
-        }
-
-        context._timeout = setTimeout(function () {
-          if (context._hoverState === HoverState.OUT) {
-            context.hide();
-          }
-        }, context.config.delay.hide);
-      };
-
-      _proto._isWithActiveTrigger = function _isWithActiveTrigger() {
-        for (var trigger in this._activeTrigger) {
-          if (this._activeTrigger[trigger]) {
-            return true;
-          }
-        }
-
-        return false;
-      };
-
-      _proto._getConfig = function _getConfig(config) {
-        config = _objectSpread({}, this.constructor.Default, $$$1(this.element).data(), typeof config === 'object' && config ? config : {});
-
-        if (typeof config.delay === 'number') {
-          config.delay = {
-            show: config.delay,
-            hide: config.delay
-          };
-        }
-
-        if (typeof config.title === 'number') {
-          config.title = config.title.toString();
-        }
-
-        if (typeof config.content === 'number') {
-          config.content = config.content.toString();
-        }
-
-        Util.typeCheckConfig(NAME, config, this.constructor.DefaultType);
-        return config;
-      };
-
-      _proto._getDelegateConfig = function _getDelegateConfig() {
-        var config = {};
-
-        if (this.config) {
-          for (var key in this.config) {
-            if (this.constructor.Default[key] !== this.config[key]) {
-              config[key] = this.config[key];
-            }
-          }
-        }
-
-        return config;
-      };
-
-      _proto._cleanTipClass = function _cleanTipClass() {
-        var $tip = $$$1(this.getTipElement());
-        var tabClass = $tip.attr('class').match(BSCLS_PREFIX_REGEX);
-
-        if (tabClass !== null && tabClass.length > 0) {
-          $tip.removeClass(tabClass.join(''));
-        }
-      };
-
-      _proto._handlePopperPlacementChange = function _handlePopperPlacementChange(data) {
-        this._cleanTipClass();
-
-        this.addAttachmentClass(this._getAttachment(data.placement));
-      };
-
-      _proto._fixTransition = function _fixTransition() {
-        var tip = this.getTipElement();
-        var initConfigAnimation = this.config.animation;
-
-        if (tip.getAttribute('x-placement') !== null) {
-          return;
-        }
-
-        $$$1(tip).removeClass(ClassName.FADE);
-        this.config.animation = false;
-        this.hide();
-        this.show();
-        this.config.animation = initConfigAnimation;
-      }; // Static
-
-
-      Tooltip._jQueryInterface = function _jQueryInterface(config) {
-        return this.each(function () {
-          var data = $$$1(this).data(DATA_KEY);
-
-          var _config = typeof config === 'object' && config;
-
-          if (!data && /dispose|hide/.test(config)) {
-            return;
-          }
-
-          if (!data) {
-            data = new Tooltip(this, _config);
-            $$$1(this).data(DATA_KEY, data);
-          }
-
-          if (typeof config === 'string') {
-            if (typeof data[config] === 'undefined') {
-              throw new TypeError("No method named \"" + config + "\"");
-            }
-
-            data[config]();
-          }
-        });
-      };
-
-      _createClass(Tooltip, null, [{
-        key: "VERSION",
-        get: function get() {
-          return VERSION;
-        }
-      }, {
-        key: "Default",
-        get: function get() {
-          return Default;
-        }
-      }, {
-        key: "NAME",
-        get: function get() {
-          return NAME;
-        }
-      }, {
-        key: "DATA_KEY",
-        get: function get() {
-          return DATA_KEY;
-        }
-      }, {
-        key: "Event",
-        get: function get() {
-          return Event;
-        }
-      }, {
-        key: "EVENT_KEY",
-        get: function get() {
-          return EVENT_KEY;
-        }
-      }, {
-        key: "DefaultType",
-        get: function get() {
-          return DefaultType;
-        }
-      }]);
-
-      return Tooltip;
-    }();
-    /**
-     * ------------------------------------------------------------------------
-     * jQuery
-     * ------------------------------------------------------------------------
-     */
-
-
-    $$$1.fn[NAME] = Tooltip._jQueryInterface;
-    $$$1.fn[NAME].Constructor = Tooltip;
-
-    $$$1.fn[NAME].noConflict = function () {
-      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
-      return Tooltip._jQueryInterface;
-    };
-
-    return Tooltip;
-  }($, Popper);
-
-  /**
-   * --------------------------------------------------------------------------
-   * Bootstrap (v4.1.1): popover.js
-   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
-   * --------------------------------------------------------------------------
-   */
-
-  var Popover = function ($$$1) {
-    /**
-     * ------------------------------------------------------------------------
-     * Constants
-     * ------------------------------------------------------------------------
-     */
-    var NAME = 'popover';
-    var VERSION = '4.1.1';
-    var DATA_KEY = 'bs.popover';
-    var EVENT_KEY = "." + DATA_KEY;
-    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
-    var CLASS_PREFIX = 'bs-popover';
-    var BSCLS_PREFIX_REGEX = new RegExp("(^|\\s)" + CLASS_PREFIX + "\\S+", 'g');
-
-    var Default = _objectSpread({}, Tooltip.Default, {
-      placement: 'right',
-      trigger: 'click',
-      content: '',
-      template: '<div class="popover" role="tooltip">' + '<div class="arrow"></div>' + '<h3 class="popover-header"></h3>' + '<div class="popover-body"></div></div>'
-    });
-
-    var DefaultType = _objectSpread({}, Tooltip.DefaultType, {
-      content: '(string|element|function)'
-    });
-
-    var ClassName = {
-      FADE: 'fade',
-      SHOW: 'show'
-    };
-    var Selector = {
-      TITLE: '.popover-header',
-      CONTENT: '.popover-body'
-    };
-    var Event = {
-      HIDE: "hide" + EVENT_KEY,
-      HIDDEN: "hidden" + EVENT_KEY,
-      SHOW: "show" + EVENT_KEY,
-      SHOWN: "shown" + EVENT_KEY,
-      INSERTED: "inserted" + EVENT_KEY,
-      CLICK: "click" + EVENT_KEY,
-      FOCUSIN: "focusin" + EVENT_KEY,
-      FOCUSOUT: "focusout" + EVENT_KEY,
-      MOUSEENTER: "mouseenter" + EVENT_KEY,
-      MOUSELEAVE: "mouseleave" + EVENT_KEY
-      /**
-       * ------------------------------------------------------------------------
-       * Class Definition
-       * ------------------------------------------------------------------------
-       */
-
-    };
-
-    var Popover =
-    /*#__PURE__*/
-    function (_Tooltip) {
-      _inheritsLoose(Popover, _Tooltip);
-
-      function Popover() {
-        return _Tooltip.apply(this, arguments) || this;
-      }
-
-      var _proto = Popover.prototype;
-
-      // Overrides
-      _proto.isWithContent = function isWithContent() {
-        return this.getTitle() || this._getContent();
-      };
-
-      _proto.addAttachmentClass = function addAttachmentClass(attachment) {
-        $$$1(this.getTipElement()).addClass(CLASS_PREFIX + "-" + attachment);
-      };
-
-      _proto.getTipElement = function getTipElement() {
-        this.tip = this.tip || $$$1(this.config.template)[0];
-        return this.tip;
-      };
-
-      _proto.setContent = function setContent() {
-        var $tip = $$$1(this.getTipElement()); // We use append for html objects to maintain js events
-
-        this.setElementContent($tip.find(Selector.TITLE), this.getTitle());
-
-        var content = this._getContent();
-
-        if (typeof content === 'function') {
-          content = content.call(this.element);
-        }
-
-        this.setElementContent($tip.find(Selector.CONTENT), content);
-        $tip.removeClass(ClassName.FADE + " " + ClassName.SHOW);
-      }; // Private
-
-
-      _proto._getContent = function _getContent() {
-        return this.element.getAttribute('data-content') || this.config.content;
-      };
-
-      _proto._cleanTipClass = function _cleanTipClass() {
-        var $tip = $$$1(this.getTipElement());
-        var tabClass = $tip.attr('class').match(BSCLS_PREFIX_REGEX);
-
-        if (tabClass !== null && tabClass.length > 0) {
-          $tip.removeClass(tabClass.join(''));
-        }
-      }; // Static
-
-
-      Popover._jQueryInterface = function _jQueryInterface(config) {
-        return this.each(function () {
-          var data = $$$1(this).data(DATA_KEY);
-
-          var _config = typeof config === 'object' ? config : null;
-
-          if (!data && /destroy|hide/.test(config)) {
-            return;
-          }
-
-          if (!data) {
-            data = new Popover(this, _config);
-            $$$1(this).data(DATA_KEY, data);
-          }
-
-          if (typeof config === 'string') {
-            if (typeof data[config] === 'undefined') {
-              throw new TypeError("No method named \"" + config + "\"");
-            }
-
-            data[config]();
-          }
-        });
-      };
-
-      _createClass(Popover, null, [{
-        key: "VERSION",
-        // Getters
-        get: function get() {
-          return VERSION;
-        }
-      }, {
-        key: "Default",
-        get: function get() {
-          return Default;
-        }
-      }, {
-        key: "NAME",
-        get: function get() {
-          return NAME;
-        }
-      }, {
-        key: "DATA_KEY",
-        get: function get() {
-          return DATA_KEY;
-        }
-      }, {
-        key: "Event",
-        get: function get() {
-          return Event;
-        }
-      }, {
-        key: "EVENT_KEY",
-        get: function get() {
-          return EVENT_KEY;
-        }
-      }, {
-        key: "DefaultType",
-        get: function get() {
-          return DefaultType;
-        }
-      }]);
-
-      return Popover;
-    }(Tooltip);
-    /**
-     * ------------------------------------------------------------------------
-     * jQuery
-     * ------------------------------------------------------------------------
-     */
-
-
-    $$$1.fn[NAME] = Popover._jQueryInterface;
-    $$$1.fn[NAME].Constructor = Popover;
-
-    $$$1.fn[NAME].noConflict = function () {
-      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
-      return Popover._jQueryInterface;
-    };
-
-    return Popover;
-  }($);
-
-  /**
-   * --------------------------------------------------------------------------
-   * Bootstrap (v4.1.1): scrollspy.js
-   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
-   * --------------------------------------------------------------------------
-   */
-
-  var ScrollSpy = function ($$$1) {
-    /**
-     * ------------------------------------------------------------------------
-     * Constants
-     * ------------------------------------------------------------------------
-     */
-    var NAME = 'scrollspy';
-    var VERSION = '4.1.1';
-    var DATA_KEY = 'bs.scrollspy';
-    var EVENT_KEY = "." + DATA_KEY;
-    var DATA_API_KEY = '.data-api';
-    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
-    var Default = {
-      offset: 10,
-      method: 'auto',
-      target: ''
-    };
-    var DefaultType = {
-      offset: 'number',
-      method: 'string',
-      target: '(string|element)'
-    };
-    var Event = {
-      ACTIVATE: "activate" + EVENT_KEY,
-      SCROLL: "scroll" + EVENT_KEY,
-      LOAD_DATA_API: "load" + EVENT_KEY + DATA_API_KEY
-    };
-    var ClassName = {
-      DROPDOWN_ITEM: 'dropdown-item',
-      DROPDOWN_MENU: 'dropdown-menu',
-      ACTIVE: 'active'
-    };
-    var Selector = {
-      DATA_SPY: '[data-spy="scroll"]',
-      ACTIVE: '.active',
-      NAV_LIST_GROUP: '.nav, .list-group',
-      NAV_LINKS: '.nav-link',
-      NAV_ITEMS: '.nav-item',
-      LIST_ITEMS: '.list-group-item',
-      DROPDOWN: '.dropdown',
-      DROPDOWN_ITEMS: '.dropdown-item',
-      DROPDOWN_TOGGLE: '.dropdown-toggle'
-    };
-    var OffsetMethod = {
-      OFFSET: 'offset',
-      POSITION: 'position'
-      /**
-       * ------------------------------------------------------------------------
-       * Class Definition
-       * ------------------------------------------------------------------------
-       */
-
-    };
-
-    var ScrollSpy =
-    /*#__PURE__*/
-    function () {
-      function ScrollSpy(element, config) {
-        var _this = this;
-
-        this._element = element;
-        this._scrollElement = element.tagName === 'BODY' ? window : element;
-        this._config = this._getConfig(config);
-        this._selector = this._config.target + " " + Selector.NAV_LINKS + "," + (this._config.target + " " + Selector.LIST_ITEMS + ",") + (this._config.target + " " + Selector.DROPDOWN_ITEMS);
-        this._offsets = [];
-        this._targets = [];
-        this._activeTarget = null;
-        this._scrollHeight = 0;
-        $$$1(this._scrollElement).on(Event.SCROLL, function (event) {
-          return _this._process(event);
-        });
-        this.refresh();
-
-        this._process();
-      } // Getters
-
-
-      var _proto = ScrollSpy.prototype;
-
-      // Public
-      _proto.refresh = function refresh() {
-        var _this2 = this;
-
-        var autoMethod = this._scrollElement === this._scrollElement.window ? OffsetMethod.OFFSET : OffsetMethod.POSITION;
-        var offsetMethod = this._config.method === 'auto' ? autoMethod : this._config.method;
-        var offsetBase = offsetMethod === OffsetMethod.POSITION ? this._getScrollTop() : 0;
-        this._offsets = [];
-        this._targets = [];
-        this._scrollHeight = this._getScrollHeight();
-        var targets = $$$1.makeArray($$$1(this._selector));
-        targets.map(function (element) {
-          var target;
-          var targetSelector = Util.getSelectorFromElement(element);
-
-          if (targetSelector) {
-            target = $$$1(targetSelector)[0];
-          }
-
-          if (target) {
-            var targetBCR = target.getBoundingClientRect();
-
-            if (targetBCR.width || targetBCR.height) {
-              // TODO (fat): remove sketch reliance on jQuery position/offset
-              return [$$$1(target)[offsetMethod]().top + offsetBase, targetSelector];
-            }
-          }
-
-          return null;
-        }).filter(function (item) {
-          return item;
-        }).sort(function (a, b) {
-          return a[0] - b[0];
-        }).forEach(function (item) {
-          _this2._offsets.push(item[0]);
-
-          _this2._targets.push(item[1]);
-        });
-      };
-
-      _proto.dispose = function dispose() {
-        $$$1.removeData(this._element, DATA_KEY);
-        $$$1(this._scrollElement).off(EVENT_KEY);
-        this._element = null;
-        this._scrollElement = null;
-        this._config = null;
-        this._selector = null;
-        this._offsets = null;
-        this._targets = null;
-        this._activeTarget = null;
-        this._scrollHeight = null;
-      }; // Private
-
-
-      _proto._getConfig = function _getConfig(config) {
-        config = _objectSpread({}, Default, typeof config === 'object' && config ? config : {});
-
-        if (typeof config.target !== 'string') {
-          var id = $$$1(config.target).attr('id');
-
-          if (!id) {
-            id = Util.getUID(NAME);
-            $$$1(config.target).attr('id', id);
-          }
-
-          config.target = "#" + id;
-        }
-
-        Util.typeCheckConfig(NAME, config, DefaultType);
-        return config;
-      };
-
-      _proto._getScrollTop = function _getScrollTop() {
-        return this._scrollElement === window ? this._scrollElement.pageYOffset : this._scrollElement.scrollTop;
-      };
-
-      _proto._getScrollHeight = function _getScrollHeight() {
-        return this._scrollElement.scrollHeight || Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
-      };
-
-      _proto._getOffsetHeight = function _getOffsetHeight() {
-        return this._scrollElement === window ? window.innerHeight : this._scrollElement.getBoundingClientRect().height;
-      };
-
-      _proto._process = function _process() {
-        var scrollTop = this._getScrollTop() + this._config.offset;
-
-        var scrollHeight = this._getScrollHeight();
-
-        var maxScroll = this._config.offset + scrollHeight - this._getOffsetHeight();
-
-        if (this._scrollHeight !== scrollHeight) {
-          this.refresh();
-        }
-
-        if (scrollTop >= maxScroll) {
-          var target = this._targets[this._targets.length - 1];
-
-          if (this._activeTarget !== target) {
-            this._activate(target);
-          }
-
-          return;
-        }
-
-        if (this._activeTarget && scrollTop < this._offsets[0] && this._offsets[0] > 0) {
-          this._activeTarget = null;
-
-          this._clear();
-
-          return;
-        }
-
-        for (var i = this._offsets.length; i--;) {
-          var isActiveTarget = this._activeTarget !== this._targets[i] && scrollTop >= this._offsets[i] && (typeof this._offsets[i + 1] === 'undefined' || scrollTop < this._offsets[i + 1]);
-
-          if (isActiveTarget) {
-            this._activate(this._targets[i]);
-          }
-        }
-      };
-
-      _proto._activate = function _activate(target) {
-        this._activeTarget = target;
-
-        this._clear();
-
-        var queries = this._selector.split(','); // eslint-disable-next-line arrow-body-style
-
-
-        queries = queries.map(function (selector) {
-          return selector + "[data-target=\"" + target + "\"]," + (selector + "[href=\"" + target + "\"]");
-        });
-        var $link = $$$1(queries.join(','));
-
-        if ($link.hasClass(ClassName.DROPDOWN_ITEM)) {
-          $link.closest(Selector.DROPDOWN).find(Selector.DROPDOWN_TOGGLE).addClass(ClassName.ACTIVE);
-          $link.addClass(ClassName.ACTIVE);
-        } else {
-          // Set triggered link as active
-          $link.addClass(ClassName.ACTIVE); // Set triggered links parents as active
-          // With both <ul> and <nav> markup a parent is the previous sibling of any nav ancestor
-
-          $link.parents(Selector.NAV_LIST_GROUP).prev(Selector.NAV_LINKS + ", " + Selector.LIST_ITEMS).addClass(ClassName.ACTIVE); // Handle special case when .nav-link is inside .nav-item
-
-          $link.parents(Selector.NAV_LIST_GROUP).prev(Selector.NAV_ITEMS).children(Selector.NAV_LINKS).addClass(ClassName.ACTIVE);
-        }
-
-        $$$1(this._scrollElement).trigger(Event.ACTIVATE, {
-          relatedTarget: target
-        });
-      };
-
-      _proto._clear = function _clear() {
-        $$$1(this._selector).filter(Selector.ACTIVE).removeClass(ClassName.ACTIVE);
-      }; // Static
-
-
-      ScrollSpy._jQueryInterface = function _jQueryInterface(config) {
-        return this.each(function () {
-          var data = $$$1(this).data(DATA_KEY);
-
-          var _config = typeof config === 'object' && config;
-
-          if (!data) {
-            data = new ScrollSpy(this, _config);
-            $$$1(this).data(DATA_KEY, data);
-          }
-
-          if (typeof config === 'string') {
-            if (typeof data[config] === 'undefined') {
-              throw new TypeError("No method named \"" + config + "\"");
-            }
-
-            data[config]();
-          }
-        });
-      };
-
-      _createClass(ScrollSpy, null, [{
-        key: "VERSION",
-        get: function get() {
-          return VERSION;
-        }
-      }, {
-        key: "Default",
-        get: function get() {
-          return Default;
-        }
-      }]);
-
-      return ScrollSpy;
-    }();
-    /**
-     * ------------------------------------------------------------------------
-     * Data Api implementation
-     * ------------------------------------------------------------------------
-     */
-
-
-    $$$1(window).on(Event.LOAD_DATA_API, function () {
-      var scrollSpys = $$$1.makeArray($$$1(Selector.DATA_SPY));
-
-      for (var i = scrollSpys.length; i--;) {
-        var $spy = $$$1(scrollSpys[i]);
-
-        ScrollSpy._jQueryInterface.call($spy, $spy.data());
-      }
-    });
-    /**
-     * ------------------------------------------------------------------------
-     * jQuery
-     * ------------------------------------------------------------------------
-     */
-
-    $$$1.fn[NAME] = ScrollSpy._jQueryInterface;
-    $$$1.fn[NAME].Constructor = ScrollSpy;
-
-    $$$1.fn[NAME].noConflict = function () {
-      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
-      return ScrollSpy._jQueryInterface;
-    };
-
-    return ScrollSpy;
-  }($);
-
-  /**
-   * --------------------------------------------------------------------------
-   * Bootstrap (v4.1.1): tab.js
-   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
-   * --------------------------------------------------------------------------
-   */
-
-  var Tab = function ($$$1) {
-    /**
-     * ------------------------------------------------------------------------
-     * Constants
-     * ------------------------------------------------------------------------
-     */
-    var NAME = 'tab';
-    var VERSION = '4.1.1';
-    var DATA_KEY = 'bs.tab';
-    var EVENT_KEY = "." + DATA_KEY;
-    var DATA_API_KEY = '.data-api';
-    var JQUERY_NO_CONFLICT = $$$1.fn[NAME];
-    var Event = {
-      HIDE: "hide" + EVENT_KEY,
-      HIDDEN: "hidden" + EVENT_KEY,
-      SHOW: "show" + EVENT_KEY,
-      SHOWN: "shown" + EVENT_KEY,
-      CLICK_DATA_API: "click" + EVENT_KEY + DATA_API_KEY
-    };
-    var ClassName = {
-      DROPDOWN_MENU: 'dropdown-menu',
-      ACTIVE: 'active',
-      DISABLED: 'disabled',
-      FADE: 'fade',
-      SHOW: 'show'
-    };
-    var Selector = {
-      DROPDOWN: '.dropdown',
-      NAV_LIST_GROUP: '.nav, .list-group',
-      ACTIVE: '.active',
-      ACTIVE_UL: '> li > .active',
-      DATA_TOGGLE: '[data-toggle="tab"], [data-toggle="pill"], [data-toggle="list"]',
-      DROPDOWN_TOGGLE: '.dropdown-toggle',
-      DROPDOWN_ACTIVE_CHILD: '> .dropdown-menu .active'
-      /**
-       * ------------------------------------------------------------------------
-       * Class Definition
-       * ------------------------------------------------------------------------
-       */
-
-    };
-
-    var Tab =
-    /*#__PURE__*/
-    function () {
-      function Tab(element) {
-        this._element = element;
-      } // Getters
-
-
-      var _proto = Tab.prototype;
-
-      // Public
-      _proto.show = function show() {
-        var _this = this;
-
-        if (this._element.parentNode && this._element.parentNode.nodeType === Node.ELEMENT_NODE && $$$1(this._element).hasClass(ClassName.ACTIVE) || $$$1(this._element).hasClass(ClassName.DISABLED)) {
-          return;
-        }
-
-        var target;
-        var previous;
-        var listElement = $$$1(this._element).closest(Selector.NAV_LIST_GROUP)[0];
-        var selector = Util.getSelectorFromElement(this._element);
-
-        if (listElement) {
-          var itemSelector = listElement.nodeName === 'UL' ? Selector.ACTIVE_UL : Selector.ACTIVE;
-          previous = $$$1.makeArray($$$1(listElement).find(itemSelector));
-          previous = previous[previous.length - 1];
-        }
-
-        var hideEvent = $$$1.Event(Event.HIDE, {
-          relatedTarget: this._element
-        });
-        var showEvent = $$$1.Event(Event.SHOW, {
-          relatedTarget: previous
-        });
-
-        if (previous) {
-          $$$1(previous).trigger(hideEvent);
-        }
-
-        $$$1(this._element).trigger(showEvent);
-
-        if (showEvent.isDefaultPrevented() || hideEvent.isDefaultPrevented()) {
-          return;
-        }
-
-        if (selector) {
-          target = $$$1(selector)[0];
-        }
-
-        this._activate(this._element, listElement);
-
-        var complete = function complete() {
-          var hiddenEvent = $$$1.Event(Event.HIDDEN, {
-            relatedTarget: _this._element
-          });
-          var shownEvent = $$$1.Event(Event.SHOWN, {
-            relatedTarget: previous
-          });
-          $$$1(previous).trigger(hiddenEvent);
-          $$$1(_this._element).trigger(shownEvent);
-        };
-
-        if (target) {
-          this._activate(target, target.parentNode, complete);
-        } else {
-          complete();
-        }
-      };
-
-      _proto.dispose = function dispose() {
-        $$$1.removeData(this._element, DATA_KEY);
-        this._element = null;
-      }; // Private
-
-
-      _proto._activate = function _activate(element, container, callback) {
-        var _this2 = this;
-
-        var activeElements;
-
-        if (container.nodeName === 'UL') {
-          activeElements = $$$1(container).find(Selector.ACTIVE_UL);
-        } else {
-          activeElements = $$$1(container).children(Selector.ACTIVE);
-        }
-
-        var active = activeElements[0];
-        var isTransitioning = callback && active && $$$1(active).hasClass(ClassName.FADE);
-
-        var complete = function complete() {
-          return _this2._transitionComplete(element, active, callback);
-        };
-
-        if (active && isTransitioning) {
-          var transitionDuration = Util.getTransitionDurationFromElement(active);
-          $$$1(active).one(Util.TRANSITION_END, complete).emulateTransitionEnd(transitionDuration);
-        } else {
-          complete();
-        }
-      };
-
-      _proto._transitionComplete = function _transitionComplete(element, active, callback) {
-        if (active) {
-          $$$1(active).removeClass(ClassName.SHOW + " " + ClassName.ACTIVE);
-          var dropdownChild = $$$1(active.parentNode).find(Selector.DROPDOWN_ACTIVE_CHILD)[0];
-
-          if (dropdownChild) {
-            $$$1(dropdownChild).removeClass(ClassName.ACTIVE);
-          }
-
-          if (active.getAttribute('role') === 'tab') {
-            active.setAttribute('aria-selected', false);
-          }
-        }
-
-        $$$1(element).addClass(ClassName.ACTIVE);
-
-        if (element.getAttribute('role') === 'tab') {
-          element.setAttribute('aria-selected', true);
-        }
-
-        Util.reflow(element);
-        $$$1(element).addClass(ClassName.SHOW);
-
-        if (element.parentNode && $$$1(element.parentNode).hasClass(ClassName.DROPDOWN_MENU)) {
-          var dropdownElement = $$$1(element).closest(Selector.DROPDOWN)[0];
-
-          if (dropdownElement) {
-            $$$1(dropdownElement).find(Selector.DROPDOWN_TOGGLE).addClass(ClassName.ACTIVE);
-          }
-
-          element.setAttribute('aria-expanded', true);
-        }
-
-        if (callback) {
-          callback();
-        }
-      }; // Static
-
-
-      Tab._jQueryInterface = function _jQueryInterface(config) {
-        return this.each(function () {
-          var $this = $$$1(this);
-          var data = $this.data(DATA_KEY);
-
-          if (!data) {
-            data = new Tab(this);
-            $this.data(DATA_KEY, data);
-          }
-
-          if (typeof config === 'string') {
-            if (typeof data[config] === 'undefined') {
-              throw new TypeError("No method named \"" + config + "\"");
-            }
-
-            data[config]();
-          }
-        });
-      };
-
-      _createClass(Tab, null, [{
-        key: "VERSION",
-        get: function get() {
-          return VERSION;
-        }
-      }]);
-
-      return Tab;
-    }();
-    /**
-     * ------------------------------------------------------------------------
-     * Data Api implementation
-     * ------------------------------------------------------------------------
-     */
-
-
-    $$$1(document).on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE, function (event) {
-      event.preventDefault();
-
-      Tab._jQueryInterface.call($$$1(this), 'show');
-    });
-    /**
-     * ------------------------------------------------------------------------
-     * jQuery
-     * ------------------------------------------------------------------------
-     */
-
-    $$$1.fn[NAME] = Tab._jQueryInterface;
-    $$$1.fn[NAME].Constructor = Tab;
-
-    $$$1.fn[NAME].noConflict = function () {
-      $$$1.fn[NAME] = JQUERY_NO_CONFLICT;
-      return Tab._jQueryInterface;
-    };
-
-    return Tab;
-  }($);
-
-  /**
-   * --------------------------------------------------------------------------
-   * Bootstrap (v4.1.1): index.js
-   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
-   * --------------------------------------------------------------------------
-   */
-
-  (function ($$$1) {
-    if (typeof $$$1 === 'undefined') {
-      throw new TypeError('Bootstrap\'s JavaScript requires jQuery. jQuery must be included before Bootstrap\'s JavaScript.');
-    }
-
-    var version = $$$1.fn.jquery.split(' ')[0].split('.');
-    var minMajor = 1;
-    var ltMajor = 2;
-    var minMinor = 9;
-    var minPatch = 1;
-    var maxMajor = 4;
-
-    if (version[0] < ltMajor && version[1] < minMinor || version[0] === minMajor && version[1] === minMinor && version[2] < minPatch || version[0] >= maxMajor) {
-      throw new Error('Bootstrap\'s JavaScript requires at least jQuery v1.9.1 but less than v4.0.0');
-    }
-  })($);
-
-  exports.Util = Util;
-  exports.Alert = Alert;
-  exports.Button = Button;
-  exports.Carousel = Carousel;
-  exports.Collapse = Collapse;
-  exports.Dropdown = Dropdown;
-  exports.Modal = Modal;
-  exports.Popover = Popover;
-  exports.Scrollspy = ScrollSpy;
-  exports.Tab = Tab;
-  exports.Tooltip = Tooltip;
-
-  Object.defineProperty(exports, '__esModule', { value: true });
-
-})));
-//# sourceMappingURL=bootstrap.js.map
-
-
-/***/ }),
-
-/***/ 7:
-/***/ (function(module, exports, __webpack_require__) {
-
-var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
- * bootstrap-fileinput v4.4.8
- * http://plugins.krajee.com/file-input
- *
- * Author: Kartik Visweswaran
- * Copyright: 2014 - 2018, Kartik Visweswaran, Krajee.com
- *
- * Licensed under the BSD 3-Clause
- * https://github.com/kartik-v/bootstrap-fileinput/blob/master/LICENSE.md
- */
-(function (factory) {
-    "use strict";
-    //noinspection JSUnresolvedVariable
-    if (true) { // jshint ignore:line
-        // AMD. Register as an anonymous module.
-        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(0)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
-				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
-				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__)); // jshint ignore:line
-    } else { // noinspection JSUnresolvedVariable
-        if (typeof module === 'object' && module.exports) { // jshint ignore:line
-            // Node/CommonJS
-            // noinspection JSUnresolvedVariable
-            module.exports = factory(require('jquery')); // jshint ignore:line
-        } else {
-            // Browser globals
-            factory(window.jQuery);
-        }
-    }
-}(function ($) {
+/* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
     "use strict";
 
-    $.fn.fileinputLocales = {};
-    $.fn.fileinputThemes = {};
+    if (global.setImmediate) {
+        return;
+    }
 
-    String.prototype.setTokens = function (replacePairs) {
-        var str = this.toString(), key, re;
-        for (key in replacePairs) {
-            if (replacePairs.hasOwnProperty(key)) {
-                re = new RegExp("\{" + key + "\}", "g");
-                str = str.replace(re, replacePairs[key]);
-            }
+    var nextHandle = 1; // Spec says greater than zero
+    var tasksByHandle = {};
+    var currentlyRunningATask = false;
+    var doc = global.document;
+    var registerImmediate;
+
+    function setImmediate(callback) {
+      // Callback can either be a function or a string
+      if (typeof callback !== "function") {
+        callback = new Function("" + callback);
+      }
+      // Copy function arguments
+      var args = new Array(arguments.length - 1);
+      for (var i = 0; i < args.length; i++) {
+          args[i] = arguments[i + 1];
+      }
+      // Store and register the task
+      var task = { callback: callback, args: args };
+      tasksByHandle[nextHandle] = task;
+      registerImmediate(nextHandle);
+      return nextHandle++;
+    }
+
+    function clearImmediate(handle) {
+        delete tasksByHandle[handle];
+    }
+
+    function run(task) {
+        var callback = task.callback;
+        var args = task.args;
+        switch (args.length) {
+        case 0:
+            callback();
+            break;
+        case 1:
+            callback(args[0]);
+            break;
+        case 2:
+            callback(args[0], args[1]);
+            break;
+        case 3:
+            callback(args[0], args[1], args[2]);
+            break;
+        default:
+            callback.apply(undefined, args);
+            break;
         }
-        return str;
-    };
+    }
 
-    var $h, FileInput;
-
-    // fileinput helper object for all global variables and internal helper methods
-    //noinspection JSUnresolvedVariable
-    $h = {
-        FRAMES: '.kv-preview-thumb',
-        SORT_CSS: 'file-sortable',
-        OBJECT_PARAMS: '<param name="controller" value="true" />\n' +
-        '<param name="allowFullScreen" value="true" />\n' +
-        '<param name="allowScriptAccess" value="always" />\n' +
-        '<param name="autoPlay" value="false" />\n' +
-        '<param name="autoStart" value="false" />\n' +
-        '<param name="quality" value="high" />\n',
-        DEFAULT_PREVIEW: '<div class="file-preview-other">\n' +
-        '<span class="{previewFileIconClass}">{previewFileIcon}</span>\n' +
-        '</div>',
-        MODAL_ID: 'kvFileinputModal',
-        MODAL_EVENTS: ['show', 'shown', 'hide', 'hidden', 'loaded'],
-        objUrl: window.URL || window.webkitURL,
-        compare: function (input, str, exact) {
-            return input !== undefined && (exact ? input === str : input.match(str));
-        },
-        isIE: function (ver) {
-            // check for IE versions < 11
-            if (navigator.appName !== 'Microsoft Internet Explorer') {
-                return false;
-            }
-            if (ver === 10) {
-                return new RegExp('msie\\s' + ver, 'i').test(navigator.userAgent);
-            }
-            var div = document.createElement("div"), status;
-            div.innerHTML = "<!--[if IE " + ver + "]> <i></i> <![endif]-->";
-            status = div.getElementsByTagName("i").length;
-            document.body.appendChild(div);
-            div.parentNode.removeChild(div);
-            return status;
-        },
-        canAssignFilesToInput: function () {
-            var input = document.createElement('input');
-            try {
-                input.type = "file";
-                input.files = null;
-                return true;
-            } catch (err) {
-                return false;
-            }
-        },
-        getDragDropFolders: function (items) {
-            var i, item, len = items.length, folders = 0;
-            if (len > 0 && items[0].webkitGetAsEntry()) {
-                for (i = 0; i < len; i++) {
-                    item = items[i].webkitGetAsEntry();
-                    if (item && item.isDirectory) {
-                        folders++;
-                    }
-                }
-            }
-            return folders;
-        },
-        initModal: function ($modal) {
-            var $body = $('body');
-            if ($body.length) {
-                $modal.appendTo($body);
-            }
-        },
-        isEmpty: function (value, trim) {
-            return value === undefined || value === null || value.length === 0 || (trim && $.trim(value) === '');
-        },
-        isArray: function (a) {
-            return Array.isArray(a) || Object.prototype.toString.call(a) === '[object Array]';
-        },
-        ifSet: function (needle, haystack, def) {
-            def = def || '';
-            return (haystack && typeof haystack === 'object' && needle in haystack) ? haystack[needle] : def;
-        },
-        cleanArray: function (arr) {
-            if (!(arr instanceof Array)) {
-                arr = [];
-            }
-            return arr.filter(function (e) {
-                return (e !== undefined && e !== null);
-            });
-        },
-        spliceArray: function (arr, index, reverseOrder) {
-            var i, j = 0, out = [], newArr;
-            if (!(arr instanceof Array)) {
-                return [];
-            }
-            newArr = $.extend(true, [], arr);
-            if (reverseOrder) {
-                newArr.reverse();
-            }
-            for (i = 0; i < newArr.length; i++) {
-                if (i !== index) {
-                    out[j] = newArr[i];
-                    j++;
-                }
-            }
-            if (reverseOrder) {
-                out.reverse();
-            }
-            return out;
-        },
-        getNum: function (num, def) {
-            def = def || 0;
-            if (typeof num === "number") {
-                return num;
-            }
-            if (typeof num === "string") {
-                num = parseFloat(num);
-            }
-            return isNaN(num) ? def : num;
-        },
-        hasFileAPISupport: function () {
-            return !!(window.File && window.FileReader);
-        },
-        hasDragDropSupport: function () {
-            var div = document.createElement('div');
-            /** @namespace div.draggable */
-            /** @namespace div.ondragstart */
-            /** @namespace div.ondrop */
-            return !$h.isIE(9) &&
-                (div.draggable !== undefined || (div.ondragstart !== undefined && div.ondrop !== undefined));
-        },
-        hasFileUploadSupport: function () {
-            return $h.hasFileAPISupport() && window.FormData;
-        },
-        hasBlobSupport: function () {
-            try {
-                return !!window.Blob && Boolean(new Blob());
-            } catch (e) {
-                return false;
-            }
-        },
-        hasArrayBufferViewSupport: function () {
-            try {
-                return new Blob([new Uint8Array(100)]).size === 100;
-            } catch (e) {
-                return false;
-            }
-        },
-        dataURI2Blob: function (dataURI) {
-            //noinspection JSUnresolvedVariable
-            var BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder ||
-                window.MSBlobBuilder, canBlob = $h.hasBlobSupport(), byteStr, arrayBuffer, intArray, i, mimeStr, bb,
-                canProceed = (canBlob || BlobBuilder) && window.atob && window.ArrayBuffer && window.Uint8Array;
-            if (!canProceed) {
-                return null;
-            }
-            if (dataURI.split(',')[0].indexOf('base64') >= 0) {
-                byteStr = atob(dataURI.split(',')[1]);
-            } else {
-                byteStr = decodeURIComponent(dataURI.split(',')[1]);
-            }
-            arrayBuffer = new ArrayBuffer(byteStr.length);
-            intArray = new Uint8Array(arrayBuffer);
-            for (i = 0; i < byteStr.length; i += 1) {
-                intArray[i] = byteStr.charCodeAt(i);
-            }
-            mimeStr = dataURI.split(',')[0].split(':')[1].split(';')[0];
-            if (canBlob) {
-                return new Blob([$h.hasArrayBufferViewSupport() ? intArray : arrayBuffer], {type: mimeStr});
-            }
-            bb = new BlobBuilder();
-            bb.append(arrayBuffer);
-            return bb.getBlob(mimeStr);
-        },
-        arrayBuffer2String: function (buffer) {
-            //noinspection JSUnresolvedVariable
-            if (window.TextDecoder) {
-                // noinspection JSUnresolvedFunction
-                return new TextDecoder("utf-8").decode(buffer);
-            }
-            var array = Array.prototype.slice.apply(new Uint8Array(buffer)), out = '', i = 0, len, c, char2, char3;
-            len = array.length;
-            while (i < len) {
-                c = array[i++];
-                switch (c >> 4) { // jshint ignore:line
-                    case 0:
-                    case 1:
-                    case 2:
-                    case 3:
-                    case 4:
-                    case 5:
-                    case 6:
-                    case 7:
-                        // 0xxxxxxx
-                        out += String.fromCharCode(c);
-                        break;
-                    case 12:
-                    case 13:
-                        // 110x xxxx   10xx xxxx
-                        char2 = array[i++];
-                        out += String.fromCharCode(((c & 0x1F) << 6) | (char2 & 0x3F)); // jshint ignore:line
-                        break;
-                    case 14:
-                        // 1110 xxxx  10xx xxxx  10xx xxxx
-                        char2 = array[i++];
-                        char3 = array[i++];
-                        out += String.fromCharCode(((c & 0x0F) << 12) | // jshint ignore:line
-                            ((char2 & 0x3F) << 6) |  // jshint ignore:line
-                            ((char3 & 0x3F) << 0)); // jshint ignore:line
-                        break;
-                }
-            }
-            return out;
-        },
-        isHtml: function (str) {
-            var a = document.createElement('div');
-            a.innerHTML = str;
-            for (var c = a.childNodes, i = c.length; i--;) {
-                if (c[i].nodeType === 1) {
-                    return true;
-                }
-            }
-            return false;
-        },
-        isSvg: function (str) {
-            return str.match(/^\s*<\?xml/i) && (str.match(/<!DOCTYPE svg/i) || str.match(/<svg/i));
-        },
-        getMimeType: function (signature, contents, type) {
-            switch (signature) {
-                case "ffd8ffe0":
-                case "ffd8ffe1":
-                case "ffd8ffe2":
-                    return 'image/jpeg';
-                case '89504E47':
-                    return 'image/png';
-                case '47494638':
-                    return 'image/gif';
-                case '49492a00':
-                    return 'image/tiff';
-                case '52494646':
-                    return 'image/webp';
-                case '66747970':
-                    return 'video/3gp';
-                case '4f676753':
-                    return 'video/ogg';
-                case '1a45dfa3':
-                    return 'video/mkv';
-                case '000001ba':
-                case '000001b3':
-                    return 'video/mpeg';
-                case '3026b275':
-                    return 'video/wmv';
-                case '25504446':
-                    return 'application/pdf';
-                case '25215053':
-                    return 'application/ps';
-                case '504b0304':
-                case '504b0506':
-                case '504b0508':
-                    return 'application/zip';
-                case '377abcaf':
-                    return 'application/7z';
-                case '75737461':
-                    return 'application/tar';
-                case '7801730d':
-                    return 'application/dmg';
-                default:
-                    switch (signature.substring(0, 6)) {
-                        case '435753':
-                            return 'application/x-shockwave-flash';
-                        case '494433':
-                            return 'audio/mp3';
-                        case '425a68':
-                            return 'application/bzip';
-                        default:
-                            switch (signature.substring(0, 4)) {
-                                case '424d':
-                                    return 'image/bmp';
-                                case 'fffb':
-                                    return 'audio/mp3';
-                                case '4d5a':
-                                    return 'application/exe';
-                                case '1f9d':
-                                case '1fa0':
-                                    return 'application/zip';
-                                case '1f8b':
-                                    return 'application/gzip';
-                                default:
-                                    return contents && !contents.match(/[^\u0000-\u007f]/) ? 'application/text-plain' : type;
-                            }
-                    }
-            }
-        },
-        addCss: function ($el, css) {
-            $el.removeClass(css).addClass(css);
-        },
-        getElement: function (options, param, value) {
-            return ($h.isEmpty(options) || $h.isEmpty(options[param])) ? value : $(options[param]);
-        },
-        uniqId: function () {
-            return Math.round(new Date().getTime()) + '_' + Math.round(Math.random() * 100);
-        },
-        htmlEncode: function (str) {
-            return str.replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&apos;');
-        },
-        replaceTags: function (str, tags) {
-            var out = str;
-            if (!tags) {
-                return out;
-            }
-            $.each(tags, function (key, value) {
-                if (typeof value === "function") {
-                    value = value();
-                }
-                out = out.split(key).join(value);
-            });
-            return out;
-        },
-        cleanMemory: function ($thumb) {
-            var data = $thumb.is('img') ? $thumb.attr('src') : $thumb.find('source').attr('src');
-            /** @namespace $h.objUrl.revokeObjectURL */
-            $h.objUrl.revokeObjectURL(data);
-        },
-        findFileName: function (filePath) {
-            var sepIndex = filePath.lastIndexOf('/');
-            if (sepIndex === -1) {
-                sepIndex = filePath.lastIndexOf('\\');
-            }
-            return filePath.split(filePath.substring(sepIndex, sepIndex + 1)).pop();
-        },
-        checkFullScreen: function () {
-            //noinspection JSUnresolvedVariable
-            return document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement ||
-                document.msFullscreenElement;
-        },
-        toggleFullScreen: function (maximize) {
-            var doc = document, de = doc.documentElement;
-            if (de && maximize && !$h.checkFullScreen()) {
-                /** @namespace document.requestFullscreen */
-                /** @namespace document.msRequestFullscreen */
-                /** @namespace document.mozRequestFullScreen */
-                /** @namespace document.webkitRequestFullscreen */
-                /** @namespace Element.ALLOW_KEYBOARD_INPUT */
-                if (de.requestFullscreen) {
-                    de.requestFullscreen();
-                } else if (de.msRequestFullscreen) {
-                    de.msRequestFullscreen();
-                } else if (de.mozRequestFullScreen) {
-                    de.mozRequestFullScreen();
-                } else if (de.webkitRequestFullscreen) {
-                    de.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-                }
-            } else {
-                /** @namespace document.exitFullscreen */
-                /** @namespace document.msExitFullscreen */
-                /** @namespace document.mozCancelFullScreen */
-                /** @namespace document.webkitExitFullscreen */
-                if (doc.exitFullscreen) {
-                    doc.exitFullscreen();
-                } else if (doc.msExitFullscreen) {
-                    doc.msExitFullscreen();
-                } else if (doc.mozCancelFullScreen) {
-                    doc.mozCancelFullScreen();
-                } else if (doc.webkitExitFullscreen) {
-                    doc.webkitExitFullscreen();
-                }
-            }
-        },
-        moveArray: function (arr, oldIndex, newIndex, reverseOrder) {
-            var newArr = $.extend(true, [], arr);
-            if (reverseOrder) {
-                newArr.reverse();
-            }
-            if (newIndex >= newArr.length) {
-                var k = newIndex - newArr.length;
-                while ((k--) + 1) {
-                    newArr.push(undefined);
-                }
-            }
-            newArr.splice(newIndex, 0, newArr.splice(oldIndex, 1)[0]);
-            if (reverseOrder) {
-                newArr.reverse();
-            }
-            return newArr;
-        },
-        cleanZoomCache: function ($el) {
-            var $cache = $el.closest('.kv-zoom-cache-theme');
-            if (!$cache.length) {
-                $cache = $el.closest('.kv-zoom-cache');
-            }
-            $cache.remove();
-        },
-        setOrientation: function (buffer, callback) {
-            var scanner = new DataView(buffer), idx = 0, value = 1, // Non-rotated is the default
-                maxBytes, uInt16, exifLength;
-            if (scanner.getUint16(idx) !== 0xFFD8 || buffer.length < 2) { // not a proper JPEG
-                if (callback) {
-                    callback();
-                }
-                return;
-            }
-            idx += 2;
-            maxBytes = scanner.byteLength;
-            while (idx < maxBytes - 2) {
-                uInt16 = scanner.getUint16(idx);
-                idx += 2;
-                switch (uInt16) {
-                    case 0xFFE1: // Start of EXIF
-                        exifLength = scanner.getUint16(idx);
-                        maxBytes = exifLength - idx;
-                        idx += 2;
-                        break;
-                    case 0x0112: // Orientation tag
-                        value = scanner.getUint16(idx + 6, false);
-                        maxBytes = 0; // Stop scanning
-                        break;
-                }
-            }
-            if (callback) {
-                callback(value);
-            }
-        },
-        validateOrientation: function (file, callback) {
-            if (!window.FileReader || !window.DataView) {
-                return; // skip orientation if pre-requisite libraries not supported by browser
-            }
-            var reader = new FileReader(), buffer;
-            reader.onloadend = function () {
-                buffer = reader.result;
-                $h.setOrientation(buffer, callback);
-            };
-            reader.readAsArrayBuffer(file);
-        },
-        adjustOrientedImage: function ($img, isZoom) {
-            var offsetContTop, offsetTop, newTop;
-            if (!$img.hasClass('is-portrait-gt4')) {
-                return;
-            }
-            if (isZoom) {
-                $img.css({width: $img.parent().height()});
-                return;
-            } else {
-                $img.css({height: 'auto', width: $img.height()});
-            }
-            offsetContTop = $img.parent().offset().top;
-            offsetTop = $img.offset().top;
-            newTop = offsetContTop - offsetTop;
-            $img.css('margin-top', newTop);
-        },
-        closeButton: function (css) {
-            css = css ? 'close ' + css : 'close';
-            return '<button type="button" class="' + css + '" aria-label="Close">\n' +
-                '  <span aria-hidden="true">&times;</span>\n' +
-                '</button>';
-        }
-    };
-    FileInput = function (element, options) {
-        var self = this;
-        self.$element = $(element);
-        self.$parent = self.$element.parent();
-        if (!self._validate()) {
-            return;
-        }
-        self.isPreviewable = $h.hasFileAPISupport();
-        self.isIE9 = $h.isIE(9);
-        self.isIE10 = $h.isIE(10);
-        if (self.isPreviewable || self.isIE9) {
-            self._init(options);
-            self._listen();
-        }
-        self.$element.removeClass('file-loading');
-    };
-    //noinspection JSUnusedGlobalSymbols
-    FileInput.prototype = {
-        constructor: FileInput,
-        _cleanup: function () {
-            var self = this;
-            self.reader = null;
-            self.formdata = {};
-            self.uploadCount = 0;
-            self.uploadStatus = {};
-            self.uploadLog = [];
-            self.uploadAsyncCount = 0;
-            self.loadedImages = [];
-            self.totalImagesCount = 0;
-            self.ajaxRequests = [];
-            self.clearStack();
-            self.fileBatchCompleted = true;
-            if (!self.isPreviewable) {
-                self.showPreview = false;
-            }
-            self.isError = false;
-            self.ajaxAborted = false;
-            self.cancelling = false;
-        },
-        _init: function (options, refreshMode) {
-            var self = this, f, $el = self.$element, $cont, t, tmp;
-            self.options = options;
-            $.each(options, function (key, value) {
-                switch (key) {
-                    case 'minFileCount':
-                    case 'maxFileCount':
-                    case 'minFileSize':
-                    case 'maxFileSize':
-                    case 'maxFilePreviewSize':
-                    case 'resizeImageQuality':
-                    case 'resizeIfSizeMoreThan':
-                    case 'progressUploadThreshold':
-                    case 'initialPreviewCount':
-                    case 'zoomModalHeight':
-                    case 'minImageHeight':
-                    case 'maxImageHeight':
-                    case 'minImageWidth':
-                    case 'maxImageWidth':
-                        self[key] = $h.getNum(value);
-                        break;
-                    default:
-                        self[key] = value;
-                        break;
-                }
-            });
-            if (self.rtl) { // swap buttons for rtl
-                tmp = self.previewZoomButtonIcons.prev;
-                self.previewZoomButtonIcons.prev = self.previewZoomButtonIcons.next;
-                self.previewZoomButtonIcons.next = tmp;
-            }
-            if (!refreshMode) {
-                self._cleanup();
-            }
-            self.$form = $el.closest('form');
-            self._initTemplateDefaults();
-            self.uploadFileAttr = !$h.isEmpty($el.attr('name')) ? $el.attr('name') : 'file_data';
-            t = self._getLayoutTemplate('progress');
-            self.progressTemplate = t.replace('{class}', self.progressClass);
-            self.progressCompleteTemplate = t.replace('{class}', self.progressCompleteClass);
-            self.progressErrorTemplate = t.replace('{class}', self.progressErrorClass);
-            self.dropZoneEnabled = $h.hasDragDropSupport() && self.dropZoneEnabled && $h.canAssignFilesToInput();
-            self.isDisabled = $el.attr('disabled') || $el.attr('readonly');
-            if (self.isDisabled) {
-                $el.attr('disabled', true);
-            }
-            self.isAjaxUpload = $h.hasFileUploadSupport() && !$h.isEmpty(self.uploadUrl);
-            self.isClickable = self.browseOnZoneClick && self.showPreview &&
-                (self.dropZoneEnabled || !$h.isEmpty(self.defaultPreviewContent));
-            self.slug = typeof options.slugCallback === "function" ? options.slugCallback : self._slugDefault;
-            self.mainTemplate = self.showCaption ? self._getLayoutTemplate('main1') : self._getLayoutTemplate('main2');
-            self.captionTemplate = self._getLayoutTemplate('caption');
-            self.previewGenericTemplate = self._getPreviewTemplate('generic');
-            if (!self.imageCanvas && self.resizeImage && (self.maxImageWidth || self.maxImageHeight)) {
-                self.imageCanvas = document.createElement('canvas');
-                self.imageCanvasContext = self.imageCanvas.getContext('2d');
-            }
-            if ($h.isEmpty($el.attr('id'))) {
-                $el.attr('id', $h.uniqId());
-            }
-            self.namespace = '.fileinput_' + $el.attr('id').replace(/-/g, '_');
-            if (self.$container === undefined) {
-                self.$container = self._createContainer();
-            } else {
-                self._refreshContainer();
-            }
-            $cont = self.$container;
-            self.$dropZone = $cont.find('.file-drop-zone');
-            self.$progress = $cont.find('.kv-upload-progress');
-            self.$btnUpload = $cont.find('.fileinput-upload');
-            self.$captionContainer = $h.getElement(options, 'elCaptionContainer', $cont.find('.file-caption'));
-            self.$caption = $h.getElement(options, 'elCaptionText', $cont.find('.file-caption-name'));
-            if (!$h.isEmpty(self.msgPlaceholder)) {
-                f = $el.attr('multiple') ? self.filePlural : self.fileSingle;
-                self.$caption.attr('placeholder', self.msgPlaceholder.replace('{files}', f));
-            }
-            self.$captionIcon = self.$captionContainer.find('.file-caption-icon');
-            self.$previewContainer = $h.getElement(options, 'elPreviewContainer', $cont.find('.file-preview'));
-            self.$preview = $h.getElement(options, 'elPreviewImage', $cont.find('.file-preview-thumbnails'));
-            self.$previewStatus = $h.getElement(options, 'elPreviewStatus', $cont.find('.file-preview-status'));
-            self.$errorContainer = $h.getElement(options, 'elErrorContainer', self.$previewContainer.find('.kv-fileinput-error'));
-            self._validateDisabled();
-            if (!$h.isEmpty(self.msgErrorClass)) {
-                $h.addCss(self.$errorContainer, self.msgErrorClass);
-            }
-            if (!refreshMode) {
-                self.$errorContainer.hide();
-                self.previewInitId = "preview-" + $h.uniqId();
-                self._initPreviewCache();
-                self._initPreview(true);
-                self._initPreviewActions();
-                if (self.$parent.hasClass('file-loading')) {
-                    self.$container.insertBefore(self.$parent);
-                    self.$parent.remove();
-                }
-            } else {
-                if (!self._errorsExist()) {
-                    self.$errorContainer.hide();
-                }
-            }
-            self._setFileDropZoneTitle();
-            if ($el.attr('disabled')) {
-                self.disable();
-            }
-            self._initZoom();
-            if (self.hideThumbnailContent) {
-                $h.addCss(self.$preview, 'hide-content');
-            }
-        },
-        _initTemplateDefaults: function () {
-            var self = this, tMain1, tMain2, tPreview, tFileIcon, tClose, tCaption, tBtnDefault, tBtnLink, tBtnBrowse,
-                tModalMain, tModal, tProgress, tSize, tFooter, tActions, tActionDelete, tActionUpload, tActionDownload,
-                tActionZoom, tActionDrag, tIndicator, tTagBef, tTagBef1, tTagBef2, tTagAft, tGeneric, tHtml, tImage,
-                tText, tOffice, tGdocs, tVideo, tAudio, tFlash, tObject, tPdf, tOther, tStyle, tZoomCache, vDefaultDim;
-            tMain1 = '{preview}\n' +
-                '<div class="kv-upload-progress kv-hidden"></div><div class="clearfix"></div>\n' +
-                '<div class="input-group {class}">\n' +
-                '  {caption}\n' +
-                '<div class="input-group-btn input-group-append">\n' +
-                '      {remove}\n' +
-                '      {cancel}\n' +
-                '      {upload}\n' +
-                '      {browse}\n' +
-                '    </div>\n' +
-                '</div>';
-            tMain2 = '{preview}\n<div class="kv-upload-progress kv-hidden"></div>\n<div class="clearfix"></div>\n{remove}\n{cancel}\n{upload}\n{browse}\n';
-            tPreview = '<div class="file-preview {class}">\n' +
-                '    {close}' +
-                '    <div class="{dropClass}">\n' +
-                '    <div class="file-preview-thumbnails">\n' +
-                '    </div>\n' +
-                '    <div class="clearfix"></div>' +
-                '    <div class="file-preview-status text-center text-success"></div>\n' +
-                '    <div class="kv-fileinput-error"></div>\n' +
-                '    </div>\n' +
-                '</div>';
-            tClose = $h.closeButton('fileinput-remove');
-            tFileIcon = '<i class="glyphicon glyphicon-file"></i>';
-            // noinspection HtmlUnknownAttribute
-            tCaption = '<div class="file-caption form-control {class}" tabindex="500">\n' +
-                '  <span class="file-caption-icon"></span>\n' +
-                '  <input class="file-caption-name" onkeydown="return false;" onpaste="return false;">\n' +
-                '</div>';
-            //noinspection HtmlUnknownAttribute
-            tBtnDefault = '<button type="{type}" tabindex="500" title="{title}" class="{css}" ' +
-                '{status}>{icon} {label}</button>';
-            //noinspection HtmlUnknownAttribute
-            tBtnLink = '<a href="{href}" tabindex="500" title="{title}" class="{css}" {status}>{icon} {label}</a>';
-            //noinspection HtmlUnknownAttribute
-            tBtnBrowse = '<div tabindex="500" class="{css}" {status}>{icon} {label}</div>';
-            tModalMain = '<div id="' + $h.MODAL_ID + '" class="file-zoom-dialog modal fade" ' +
-                'tabindex="-1" aria-labelledby="' + $h.MODAL_ID + 'Label"></div>';
-            tModal = '<div class="modal-dialog modal-lg{rtl}" role="document">\n' +
-                '  <div class="modal-content">\n' +
-                '    <div class="modal-header">\n' +
-                '      <h5 class="modal-title">{heading}</h5>\n' +
-                '      <span class="kv-zoom-title"></span>\n' +
-                '      <div class="kv-zoom-actions">{toggleheader}{fullscreen}{borderless}{close}</div>\n' +
-                '    </div>\n' +
-                '    <div class="modal-body">\n' +
-                '      <div class="floating-buttons"></div>\n' +
-                '      <div class="kv-zoom-body file-zoom-content {zoomFrameClass}"></div>\n' + '{prev} {next}\n' +
-                '    </div>\n' +
-                '  </div>\n' +
-                '</div>\n';
-            tProgress = '<div class="progress">\n' +
-                '    <div class="{class}" role="progressbar"' +
-                ' aria-valuenow="{percent}" aria-valuemin="0" aria-valuemax="100" style="width:{percent}%;">\n' +
-                '        {status}\n' +
-                '     </div>\n' +
-                '</div>';
-            tSize = ' <samp>({sizeText})</samp>';
-            tFooter = '<div class="file-thumbnail-footer">\n' +
-                '    <div class="file-footer-caption" title="{caption}">\n' +
-                '        <div class="file-caption-info">{caption}</div>\n' +
-                '        <div class="file-size-info">{size}</div>\n' +
-                '    </div>\n' +
-                '    {progress}\n{indicator}\n{actions}\n' +
-                '</div>';
-            tActions = '<div class="file-actions">\n' +
-                '    <div class="file-footer-buttons">\n' +
-                '        {download} {upload} {delete} {zoom} {other}' +
-                '    </div>\n' +
-                '</div>\n' +
-                '{drag}\n' +
-                '<div class="clearfix"></div>';
-            //noinspection HtmlUnknownAttribute
-            tActionDelete = '<button type="button" class="kv-file-remove {removeClass}" ' +
-                'title="{removeTitle}" {dataUrl}{dataKey}>{removeIcon}</button>\n';
-            tActionUpload = '<button type="button" class="kv-file-upload {uploadClass}" title="{uploadTitle}">' +
-                '{uploadIcon}</button>';
-            tActionDownload = '<a class="kv-file-download {downloadClass}" title="{downloadTitle}" ' +
-                'href="{downloadUrl}" download="{caption}" target="_blank">{downloadIcon}</a>';
-            tActionZoom = '<button type="button" class="kv-file-zoom {zoomClass}" ' +
-                'title="{zoomTitle}">{zoomIcon}</button>';
-            tActionDrag = '<span class="file-drag-handle {dragClass}" title="{dragTitle}">{dragIcon}</span>';
-            tIndicator = '<div class="file-upload-indicator" title="{indicatorTitle}">{indicator}</div>';
-            tTagBef = '<div class="file-preview-frame {frameClass}" id="{previewId}" data-fileindex="{fileindex}"' +
-                ' data-template="{template}"';
-            tTagBef1 = tTagBef + '><div class="kv-file-content">\n';
-            tTagBef2 = tTagBef + ' title="{caption}"><div class="kv-file-content">\n';
-            tTagAft = '</div>{footer}\n</div>\n';
-            tGeneric = '{content}\n';
-            tStyle = ' {style}';
-            tHtml = '<div class="kv-preview-data file-preview-html" title="{caption}"' + tStyle + '>{data}</div>\n';
-            tImage = '<img src="{data}" class="file-preview-image kv-preview-data" title="{caption}" ' +
-                'alt="{caption}"' + tStyle + '>\n';
-            tText = '<textarea class="kv-preview-data file-preview-text" title="{caption}" readonly' + tStyle + '>' +
-                '{data}</textarea>\n';
-            tOffice = '<iframe class="kv-preview-data file-preview-office" ' +
-                'src="https://view.officeapps.live.com/op/embed.aspx?src={data}"' + tStyle + '></iframe>';
-            tGdocs = '<iframe class="kv-preview-data file-preview-gdocs" ' +
-                'src="https://docs.google.com/gview?url={data}&embedded=true"' + tStyle + '></iframe>';
-            tVideo = '<video class="kv-preview-data file-preview-video" controls' + tStyle + '>\n' +
-                '<source src="{data}" type="{type}">\n' + $h.DEFAULT_PREVIEW + '\n</video>\n';
-            tAudio = '<!--suppress ALL --><audio class="kv-preview-data file-preview-audio" controls' + tStyle + '>\n<source src="{data}" ' +
-                'type="{type}">\n' + $h.DEFAULT_PREVIEW + '\n</audio>\n';
-            tFlash = '<embed class="kv-preview-data file-preview-flash" src="{data}" type="application/x-shockwave-flash"' + tStyle + '>\n';
-            tPdf = '<embed class="kv-preview-data file-preview-pdf" src="{data}" type="application/pdf"' + tStyle + '>\n';
-            tObject = '<object class="kv-preview-data file-preview-object file-object {typeCss}" ' +
-                'data="{data}" type="{type}"' + tStyle + '>\n' + '<param name="movie" value="{caption}" />\n' +
-                $h.OBJECT_PARAMS + ' ' + $h.DEFAULT_PREVIEW + '\n</object>\n';
-            tOther = '<div class="kv-preview-data file-preview-other-frame"' + tStyle + '>\n' + $h.DEFAULT_PREVIEW + '\n</div>\n';
-            tZoomCache = '<div class="kv-zoom-cache" style="display:none">{zoomContent}</div>';
-            vDefaultDim = {width: "100%", height: "100%", 'min-height': "480px"};
-            self.defaults = {
-                layoutTemplates: {
-                    main1: tMain1,
-                    main2: tMain2,
-                    preview: tPreview,
-                    close: tClose,
-                    fileIcon: tFileIcon,
-                    caption: tCaption,
-                    modalMain: tModalMain,
-                    modal: tModal,
-                    progress: tProgress,
-                    size: tSize,
-                    footer: tFooter,
-                    indicator: tIndicator,
-                    actions: tActions,
-                    actionDelete: tActionDelete,
-                    actionUpload: tActionUpload,
-                    actionDownload: tActionDownload,
-                    actionZoom: tActionZoom,
-                    actionDrag: tActionDrag,
-                    btnDefault: tBtnDefault,
-                    btnLink: tBtnLink,
-                    btnBrowse: tBtnBrowse,
-                    zoomCache: tZoomCache
-                },
-                previewMarkupTags: {
-                    tagBefore1: tTagBef1,
-                    tagBefore2: tTagBef2,
-                    tagAfter: tTagAft
-                },
-                previewContentTemplates: {
-                    generic: tGeneric,
-                    html: tHtml,
-                    image: tImage,
-                    text: tText,
-                    office: tOffice,
-                    gdocs: tGdocs,
-                    video: tVideo,
-                    audio: tAudio,
-                    flash: tFlash,
-                    object: tObject,
-                    pdf: tPdf,
-                    other: tOther
-                },
-                allowedPreviewTypes: ['image', 'html', 'text', 'video', 'audio', 'flash', 'pdf', 'object'],
-                previewTemplates: {},
-                previewSettings: {
-                    image: {width: "auto", height: "auto", 'max-width': "100%", 'max-height': "100%"},
-                    html: {width: "213px", height: "160px"},
-                    text: {width: "213px", height: "160px"},
-                    office: {width: "213px", height: "160px"},
-                    gdocs: {width: "213px", height: "160px"},
-                    video: {width: "213px", height: "160px"},
-                    audio: {width: "100%", height: "30px"},
-                    flash: {width: "213px", height: "160px"},
-                    object: {width: "213px", height: "160px"},
-                    pdf: {width: "213px", height: "160px"},
-                    other: {width: "213px", height: "160px"}
-                },
-                previewSettingsSmall: {
-                    image: {width: "auto", height: "auto", 'max-width': "100%", 'max-height': "100%"},
-                    html: {width: "100%", height: "160px"},
-                    text: {width: "100%", height: "160px"},
-                    office: {width: "100%", height: "160px"},
-                    gdocs: {width: "100%", height: "160px"},
-                    video: {width: "100%", height: "auto"},
-                    audio: {width: "100%", height: "30px"},
-                    flash: {width: "100%", height: "auto"},
-                    object: {width: "100%", height: "auto"},
-                    pdf: {width: "100%", height: "160px"},
-                    other: {width: "100%", height: "160px"}
-                },
-                previewZoomSettings: {
-                    image: {width: "auto", height: "auto", 'max-width': "100%", 'max-height': "100%"},
-                    html: vDefaultDim,
-                    text: vDefaultDim,
-                    office: {width: "100%", height: "100%", 'max-width': "100%", 'min-height': "480px"},
-                    gdocs: {width: "100%", height: "100%", 'max-width': "100%", 'min-height': "480px"},
-                    video: {width: "auto", height: "100%", 'max-width': "100%"},
-                    audio: {width: "100%", height: "30px"},
-                    flash: {width: "auto", height: "480px"},
-                    object: {width: "auto", height: "100%", 'max-width': "100%", 'min-height': "480px"},
-                    pdf: vDefaultDim,
-                    other: {width: "auto", height: "100%", 'min-height': "480px"}
-                },
-                fileTypeSettings: {
-                    image: function (vType, vName) {
-                        return ($h.compare(vType, 'image.*') && !$h.compare(vType, /(tiff?|wmf)$/i) ||
-                            $h.compare(vName, /\.(gif|png|jpe?g)$/i));
-                    },
-                    html: function (vType, vName) {
-                        return $h.compare(vType, 'text/html') || $h.compare(vName, /\.(htm|html)$/i);
-                    },
-                    office: function (vType, vName) {
-                        return $h.compare(vType, /(word|excel|powerpoint|office)$/i) ||
-                            $h.compare(vName, /\.(docx?|xlsx?|pptx?|pps|potx?)$/i);
-                    },
-                    gdocs: function (vType, vName) {
-                        return $h.compare(vType, /(word|excel|powerpoint|office|iwork-pages|tiff?)$/i) ||
-                            $h.compare(vName, /\.(docx?|xlsx?|pptx?|pps|potx?|rtf|ods|odt|pages|ai|dxf|ttf|tiff?|wmf|e?ps)$/i);
-                    },
-                    text: function (vType, vName) {
-                        return $h.compare(vType, 'text.*') || $h.compare(vName, /\.(xml|javascript)$/i) ||
-                            $h.compare(vName, /\.(txt|md|csv|nfo|ini|json|php|js|css)$/i);
-                    },
-                    video: function (vType, vName) {
-                        return $h.compare(vType, 'video.*') && ($h.compare(vType, /(ogg|mp4|mp?g|mov|webm|3gp)$/i) ||
-                            $h.compare(vName, /\.(og?|mp4|webm|mp?g|mov|3gp)$/i));
-                    },
-                    audio: function (vType, vName) {
-                        return $h.compare(vType, 'audio.*') && ($h.compare(vName, /(ogg|mp3|mp?g|wav)$/i) ||
-                            $h.compare(vName, /\.(og?|mp3|mp?g|wav)$/i));
-                    },
-                    flash: function (vType, vName) {
-                        return $h.compare(vType, 'application/x-shockwave-flash', true) || $h.compare(vName, /\.(swf)$/i);
-                    },
-                    pdf: function (vType, vName) {
-                        return $h.compare(vType, 'application/pdf', true) || $h.compare(vName, /\.(pdf)$/i);
-                    },
-                    object: function () {
-                        return true;
-                    },
-                    other: function () {
-                        return true;
-                    }
-                },
-                fileActionSettings: {
-                    showRemove: true,
-                    showUpload: true,
-                    showDownload: true,
-                    showZoom: true,
-                    showDrag: true,
-                    removeIcon: '<i class="glyphicon glyphicon-trash"></i>',
-                    removeClass: 'btn btn-sm btn-kv btn-default btn-outline-secondary',
-                    removeErrorClass: 'btn btn-sm btn-kv btn-danger',
-                    removeTitle: 'Remove file',
-                    uploadIcon: '<i class="glyphicon glyphicon-upload"></i>',
-                    uploadClass: 'btn btn-sm btn-kv btn-default btn-outline-secondary',
-                    uploadTitle: 'Upload file',
-                    uploadRetryIcon: '<i class="glyphicon glyphicon-repeat"></i>',
-                    uploadRetryTitle: 'Retry upload',
-                    downloadIcon: '<i class="glyphicon glyphicon-download"></i>',
-                    downloadClass: 'btn btn-sm btn-kv btn-default btn-outline-secondary',
-                    downloadTitle: 'Download file',
-                    zoomIcon: '<i class="glyphicon glyphicon-zoom-in"></i>',
-                    zoomClass: 'btn btn-sm btn-kv btn-default btn-outline-secondary',
-                    zoomTitle: 'View Details',
-                    dragIcon: '<i class="glyphicon glyphicon-move"></i>',
-                    dragClass: 'text-info',
-                    dragTitle: 'Move / Rearrange',
-                    dragSettings: {},
-                    indicatorNew: '<i class="glyphicon glyphicon-plus-sign text-warning"></i>',
-                    indicatorSuccess: '<i class="glyphicon glyphicon-ok-sign text-success"></i>',
-                    indicatorError: '<i class="glyphicon glyphicon-exclamation-sign text-danger"></i>',
-                    indicatorLoading: '<i class="glyphicon glyphicon-hourglass text-muted"></i>',
-                    indicatorNewTitle: 'Not uploaded yet',
-                    indicatorSuccessTitle: 'Uploaded',
-                    indicatorErrorTitle: 'Upload Error',
-                    indicatorLoadingTitle: 'Uploading ...'
-                }
-            };
-            $.each(self.defaults, function (key, setting) {
-                if (key === 'allowedPreviewTypes') {
-                    if (self.allowedPreviewTypes === undefined) {
-                        self.allowedPreviewTypes = setting;
-                    }
-                    return;
-                }
-                self[key] = $.extend(true, {}, setting, self[key]);
-            });
-            self._initPreviewTemplates();
-        },
-        _initPreviewTemplates: function () {
-            var self = this, cfg = self.defaults, tags = self.previewMarkupTags, tagBef, tagAft = tags.tagAfter;
-            $.each(cfg.previewContentTemplates, function (key, value) {
-                if ($h.isEmpty(self.previewTemplates[key])) {
-                    tagBef = tags.tagBefore2;
-                    if (key === 'generic' || key === 'image' || key === 'html' || key === 'text') {
-                        tagBef = tags.tagBefore1;
-                    }
-                    self.previewTemplates[key] = tagBef + value + tagAft;
-                }
-            });
-        },
-        _initPreviewCache: function () {
-            var self = this;
-            self.previewCache = {
-                data: {},
-                init: function () {
-                    var content = self.initialPreview;
-                    if (content.length > 0 && !$h.isArray(content)) {
-                        content = content.split(self.initialPreviewDelimiter);
-                    }
-                    self.previewCache.data = {
-                        content: content,
-                        config: self.initialPreviewConfig,
-                        tags: self.initialPreviewThumbTags
-                    };
-                },
-                count: function () {
-                    return !!self.previewCache.data && !!self.previewCache.data.content ?
-                        self.previewCache.data.content.length : 0;
-                },
-                get: function (i, isDisabled) {
-                    var ind = 'init_' + i, data = self.previewCache.data, config = data.config[i],
-                        content = data.content[i], previewId = self.previewInitId + '-' + ind, out, $tmp, cat, ftr,
-                        fname, ftype, frameClass, asData = $h.ifSet('previewAsData', config, self.initialPreviewAsData),
-                        parseTemplate = function (cat, dat, fn, ft, id, ftr, ind, fc, t) {
-                            fc = ' file-preview-initial ' + $h.SORT_CSS + (fc ? ' ' + fc : '');
-                            return self._generatePreviewTemplate(cat, dat, fn, ft, id, false, null, fc, ftr, ind, t);
-                        };
-                    if (!content) {
-                        return '';
-                    }
-                    isDisabled = isDisabled === undefined ? true : isDisabled;
-                    cat = $h.ifSet('type', config, self.initialPreviewFileType || 'generic');
-                    fname = $h.ifSet('filename', config, $h.ifSet('caption', config));
-                    ftype = $h.ifSet('filetype', config, cat);
-                    ftr = self.previewCache.footer(i, isDisabled, (config && config.size || null));
-                    frameClass = $h.ifSet('frameClass', config);
-                    if (asData) {
-                        out = parseTemplate(cat, content, fname, ftype, previewId, ftr, ind, frameClass);
-                    } else {
-                        out = parseTemplate('generic', content, fname, ftype, previewId, ftr, ind, frameClass, cat)
-                            .setTokens({'content': data.content[i]});
-                    }
-                    if (data.tags.length && data.tags[i]) {
-                        out = $h.replaceTags(out, data.tags[i]);
-                    }
-                    /** @namespace config.frameAttr */
-                    if (!$h.isEmpty(config) && !$h.isEmpty(config.frameAttr)) {
-                        $tmp = $(document.createElement('div')).html(out);
-                        $tmp.find('.file-preview-initial').attr(config.frameAttr);
-                        out = $tmp.html();
-                        $tmp.remove();
-                    }
-                    return out;
-                },
-                add: function (content, config, tags, append) {
-                    var data = self.previewCache.data, index;
-                    if (!$h.isArray(content)) {
-                        content = content.split(self.initialPreviewDelimiter);
-                    }
-                    if (append) {
-                        index = data.content.push(content) - 1;
-                        data.config[index] = config;
-                        data.tags[index] = tags;
-                    } else {
-                        index = content.length - 1;
-                        data.content = content;
-                        data.config = config;
-                        data.tags = tags;
-                    }
-                    self.previewCache.data = data;
-                    return index;
-                },
-                set: function (content, config, tags, append) {
-                    var data = self.previewCache.data, i, chk;
-                    if (!content || !content.length) {
-                        return;
-                    }
-                    if (!$h.isArray(content)) {
-                        content = content.split(self.initialPreviewDelimiter);
-                    }
-                    chk = content.filter(function (n) {
-                        return n !== null;
-                    });
-                    if (!chk.length) {
-                        return;
-                    }
-                    if (data.content === undefined) {
-                        data.content = [];
-                    }
-                    if (data.config === undefined) {
-                        data.config = [];
-                    }
-                    if (data.tags === undefined) {
-                        data.tags = [];
-                    }
-                    if (append) {
-                        for (i = 0; i < content.length; i++) {
-                            if (content[i]) {
-                                data.content.push(content[i]);
-                            }
-                        }
-                        for (i = 0; i < config.length; i++) {
-                            if (config[i]) {
-                                data.config.push(config[i]);
-                            }
-                        }
-                        for (i = 0; i < tags.length; i++) {
-                            if (tags[i]) {
-                                data.tags.push(tags[i]);
-                            }
-                        }
-                    } else {
-                        data.content = content;
-                        data.config = config;
-                        data.tags = tags;
-                    }
-                    self.previewCache.data = data;
-                },
-                unset: function (index) {
-                    var chk = self.previewCache.count(), rev = self.reversePreviewOrder;
-                    if (!chk) {
-                        return;
-                    }
-                    if (chk === 1) {
-                        self.previewCache.data.content = [];
-                        self.previewCache.data.config = [];
-                        self.previewCache.data.tags = [];
-                        self.initialPreview = [];
-                        self.initialPreviewConfig = [];
-                        self.initialPreviewThumbTags = [];
-                        return;
-                    }
-                    self.previewCache.data.content = $h.spliceArray(self.previewCache.data.content, index, rev);
-                    self.previewCache.data.config = $h.spliceArray(self.previewCache.data.config, index, rev);
-                    self.previewCache.data.tags = $h.spliceArray(self.previewCache.data.tags, index, rev);
-                },
-                out: function () {
-                    var html = '', caption, len = self.previewCache.count(), i, content;
-                    if (len === 0) {
-                        return {content: '', caption: ''};
-                    }
-                    for (i = 0; i < len; i++) {
-                        content = self.previewCache.get(i);
-                        html = self.reversePreviewOrder ? (content + html) : (html + content);
-                    }
-                    caption = self._getMsgSelected(len);
-                    return {content: html, caption: caption};
-                },
-                footer: function (i, isDisabled, size) {
-                    var data = self.previewCache.data || {};
-                    if ($h.isEmpty(data.content)) {
-                        return '';
-                    }
-                    if ($h.isEmpty(data.config) || $h.isEmpty(data.config[i])) {
-                        data.config[i] = {};
-                    }
-                    isDisabled = isDisabled === undefined ? true : isDisabled;
-                    var config = data.config[i], caption = $h.ifSet('caption', config), a,
-                        width = $h.ifSet('width', config, 'auto'), url = $h.ifSet('url', config, false),
-                        key = $h.ifSet('key', config, null), fs = self.fileActionSettings,
-                        initPreviewShowDel = self.initialPreviewShowDelete || false,
-                        dUrl = config.downloadUrl || self.initialPreviewDownloadUrl || '',
-                        dFil = config.filename || config.caption || '',
-                        initPreviewShowDwl = !!(dUrl),
-                        sDel = $h.ifSet('showRemove', config, $h.ifSet('showRemove', fs, initPreviewShowDel)),
-                        sDwl = $h.ifSet('showDownload', config, $h.ifSet('showDownload', fs, initPreviewShowDwl)),
-                        sZm = $h.ifSet('showZoom', config, $h.ifSet('showZoom', fs, true)),
-                        sDrg = $h.ifSet('showDrag', config, $h.ifSet('showDrag', fs, true)),
-                        dis = (url === false) && isDisabled;
-                    sDwl = sDwl && config.downloadUrl !== false && !!dUrl;
-                    a = self._renderFileActions(false, sDwl, sDel, sZm, sDrg, dis, url, key, true, dUrl, dFil);
-                    return self._getLayoutTemplate('footer').setTokens({
-                        'progress': self._renderThumbProgress(),
-                        'actions': a,
-                        'caption': caption,
-                        'size': self._getSize(size),
-                        'width': width,
-                        'indicator': ''
-                    });
-                }
-            };
-            self.previewCache.init();
-        },
-        _handler: function ($el, event, callback) {
-            var self = this, ns = self.namespace, ev = event.split(' ').join(ns + ' ') + ns;
-            if (!$el || !$el.length) {
-                return;
-            }
-            $el.off(ev).on(ev, callback);
-        },
-        _log: function (msg) {
-            var self = this, id = self.$element.attr('id');
-            if (id) {
-                msg = '"' + id + '": ' + msg;
-            }
-            if (typeof window.console.log !== "undefined") {
-                window.console.log(msg);
-            } else {
-                window.alert(msg);
-            }
-        },
-        _validate: function () {
-            var self = this, status = self.$element.attr('type') === 'file';
-            if (!status) {
-                self._log('The input "type" must be set to "file" for initializing the "bootstrap-fileinput" plugin.');
-            }
-            return status;
-        },
-        _errorsExist: function () {
-            var self = this, $err, $errList = self.$errorContainer.find('li');
-            if ($errList.length) {
-                return true;
-            }
-            $err = $(document.createElement('div')).html(self.$errorContainer.html());
-            $err.find('.kv-error-close').remove();
-            $err.find('ul').remove();
-            return !!$.trim($err.text()).length;
-        },
-        _errorHandler: function (evt, caption) {
-            var self = this, err = evt.target.error, showError = function (msg) {
-                self._showError(msg.replace('{name}', caption));
-            };
-            /** @namespace err.NOT_FOUND_ERR */
-            /** @namespace err.SECURITY_ERR */
-            /** @namespace err.NOT_READABLE_ERR */
-            if (err.code === err.NOT_FOUND_ERR) {
-                showError(self.msgFileNotFound);
-            } else if (err.code === err.SECURITY_ERR) {
-                showError(self.msgFileSecured);
-            } else if (err.code === err.NOT_READABLE_ERR) {
-                showError(self.msgFileNotReadable);
-            } else if (err.code === err.ABORT_ERR) {
-                showError(self.msgFilePreviewAborted);
-            } else {
-                showError(self.msgFilePreviewError);
-            }
-        },
-        _addError: function (msg) {
-            var self = this, $error = self.$errorContainer;
-            if (msg && $error.length) {
-                $error.html(self.errorCloseButton + msg);
-                self._handler($error.find('.kv-error-close'), 'click', function () {
-                    setTimeout(function () {
-                        if (self.showPreview && !self.getFrames().length) {
-                            self.clear();
-                        }
-                        $error.fadeOut('slow');
-                    }, 10);
-                });
-            }
-        },
-        _setValidationError: function (css) {
-            var self = this;
-            css = (css ? css + ' ' : '') + 'has-error';
-            self.$container.removeClass(css).addClass('has-error');
-            $h.addCss(self.$captionContainer, 'is-invalid');
-        },
-        _resetErrors: function (fade) {
-            var self = this, $error = self.$errorContainer;
-            self.isError = false;
-            self.$container.removeClass('has-error');
-            self.$captionContainer.removeClass('is-invalid');
-            $error.html('');
-            if (fade) {
-                $error.fadeOut('slow');
-            } else {
-                $error.hide();
-            }
-        },
-        _showFolderError: function (folders) {
-            var self = this, $error = self.$errorContainer, msg;
-            if (!folders) {
-                return;
-            }
-            if (!self.isAjaxUpload) {
-                self._clearFileInput();
-            }
-            msg = self.msgFoldersNotAllowed.replace('{n}', folders);
-            self._addError(msg);
-            self._setValidationError();
-            $error.fadeIn(800);
-            self._raise('filefoldererror', [folders, msg]);
-        },
-        _showUploadError: function (msg, params, event) {
-            var self = this, $error = self.$errorContainer, ev = event || 'fileuploaderror', e = params && params.id ?
-                '<li data-file-id="' + params.id + '">' + msg + '</li>' : '<li>' + msg + '</li>';
-            if ($error.find('ul').length === 0) {
-                self._addError('<ul>' + e + '</ul>');
-            } else {
-                $error.find('ul').append(e);
-            }
-            $error.fadeIn(800);
-            self._raise(ev, [params, msg]);
-            self._setValidationError('file-input-new');
-            return true;
-        },
-        _showError: function (msg, params, event) {
-            var self = this, $error = self.$errorContainer, ev = event || 'fileerror';
-            params = params || {};
-            params.reader = self.reader;
-            self._addError(msg);
-            $error.fadeIn(800);
-            self._raise(ev, [params, msg]);
-            if (!self.isAjaxUpload) {
-                self._clearFileInput();
-            }
-            self._setValidationError('file-input-new');
-            self.$btnUpload.attr('disabled', true);
-            return true;
-        },
-        _noFilesError: function (params) {
-            var self = this, label = self.minFileCount > 1 ? self.filePlural : self.fileSingle,
-                msg = self.msgFilesTooLess.replace('{n}', self.minFileCount).replace('{files}', label),
-                $error = self.$errorContainer;
-            self._addError(msg);
-            self.isError = true;
-            self._updateFileDetails(0);
-            $error.fadeIn(800);
-            self._raise('fileerror', [params, msg]);
-            self._clearFileInput();
-            self._setValidationError();
-        },
-        _parseError: function (operation, jqXHR, errorThrown, fileName) {
-            /** @namespace jqXHR.responseJSON */
-            var self = this, errMsg = $.trim(errorThrown + ''), textPre,
-                text = jqXHR.responseJSON !== undefined && jqXHR.responseJSON.error !== undefined ?
-                    jqXHR.responseJSON.error : jqXHR.responseText;
-            if (self.cancelling && self.msgUploadAborted) {
-                errMsg = self.msgUploadAborted;
-            }
-            if (self.showAjaxErrorDetails && text) {
-                text = $.trim(text.replace(/\n\s*\n/g, '\n'));
-                textPre = text.length ? '<pre>' + text + '</pre>' : '';
-                errMsg += errMsg ? textPre : text;
-            }
-            if (!errMsg) {
-                errMsg = self.msgAjaxError.replace('{operation}', operation);
-            }
-            self.cancelling = false;
-            return fileName ? '<b>' + fileName + ': </b>' + errMsg : errMsg;
-        },
-        _parseFileType: function (type, name) {
-            var self = this, isValid, vType, cat, i, types = self.allowedPreviewTypes || [];
-            if (type === 'application/text-plain') {
-                return 'text';
-            }
-            for (i = 0; i < types.length; i++) {
-                cat = types[i];
-                isValid = self.fileTypeSettings[cat];
-                vType = isValid(type, name) ? cat : '';
-                if (!$h.isEmpty(vType)) {
-                    return vType;
-                }
-            }
-            return 'other';
-        },
-        _getPreviewIcon: function (fname) {
-            var self = this, ext, out = null;
-            if (fname && fname.indexOf('.') > -1) {
-                ext = fname.split('.').pop();
-                if (self.previewFileIconSettings) {
-                    out = self.previewFileIconSettings[ext] || self.previewFileIconSettings[ext.toLowerCase()] || null;
-                }
-                if (self.previewFileExtSettings) {
-                    $.each(self.previewFileExtSettings, function (key, func) {
-                        if (self.previewFileIconSettings[key] && func(ext)) {
-                            out = self.previewFileIconSettings[key];
-                            //noinspection UnnecessaryReturnStatementJS
-                            return;
-                        }
-                    });
-                }
-            }
-            return out;
-        },
-        _parseFilePreviewIcon: function (content, fname) {
-            var self = this, icn = self._getPreviewIcon(fname) || self.previewFileIcon, out = content;
-            if (out.indexOf('{previewFileIcon}') > -1) {
-                out = out.setTokens({'previewFileIconClass': self.previewFileIconClass, 'previewFileIcon': icn});
-            }
-            return out;
-        },
-        _raise: function (event, params) {
-            var self = this, e = $.Event(event);
-            if (params !== undefined) {
-                self.$element.trigger(e, params);
-            } else {
-                self.$element.trigger(e);
-            }
-            if (e.isDefaultPrevented() || e.result === false) {
-                return false;
-            }
-            switch (event) {
-                // ignore these events
-                case 'filebatchuploadcomplete':
-                case 'filebatchuploadsuccess':
-                case 'fileuploaded':
-                case 'fileclear':
-                case 'filecleared':
-                case 'filereset':
-                case 'fileerror':
-                case 'filefoldererror':
-                case 'fileuploaderror':
-                case 'filebatchuploaderror':
-                case 'filedeleteerror':
-                case 'filecustomerror':
-                case 'filesuccessremove':
-                    break;
-                // receive data response via `filecustomerror` event`
-                default:
-                    if (!self.ajaxAborted) {
-                        self.ajaxAborted = e.result;
-                    }
-                    break;
-            }
-            return true;
-        },
-        _listenFullScreen: function (isFullScreen) {
-            var self = this, $modal = self.$modal, $btnFull, $btnBord;
-            if (!$modal || !$modal.length) {
-                return;
-            }
-            $btnFull = $modal && $modal.find('.btn-fullscreen');
-            $btnBord = $modal && $modal.find('.btn-borderless');
-            if (!$btnFull.length || !$btnBord.length) {
-                return;
-            }
-            $btnFull.removeClass('active').attr('aria-pressed', 'false');
-            $btnBord.removeClass('active').attr('aria-pressed', 'false');
-            if (isFullScreen) {
-                $btnFull.addClass('active').attr('aria-pressed', 'true');
-            } else {
-                $btnBord.addClass('active').attr('aria-pressed', 'true');
-            }
-            if ($modal.hasClass('file-zoom-fullscreen')) {
-                self._maximizeZoomDialog();
-            } else {
-                if (isFullScreen) {
-                    self._maximizeZoomDialog();
-                } else {
-                    $btnBord.removeClass('active').attr('aria-pressed', 'false');
-                }
-            }
-        },
-        _listen: function () {
-            var self = this, $el = self.$element, $form = self.$form, $cont = self.$container, fullScreenEvents;
-            self._handler($el, 'change', $.proxy(self._change, self));
-            if (self.showBrowse) {
-                self._handler(self.$btnFile, 'click', $.proxy(self._browse, self));
-            }
-            self._handler($cont.find('.fileinput-remove:not([disabled])'), 'click', $.proxy(self.clear, self));
-            self._handler($cont.find('.fileinput-cancel'), 'click', $.proxy(self.cancel, self));
-            self._initDragDrop();
-            self._handler($form, 'reset', $.proxy(self.clear, self));
-            if (!self.isAjaxUpload) {
-                self._handler($form, 'submit', $.proxy(self._submitForm, self));
-            }
-            self._handler(self.$container.find('.fileinput-upload'), 'click', $.proxy(self._uploadClick, self));
-            self._handler($(window), 'resize', function () {
-                self._listenFullScreen(screen.width === window.innerWidth && screen.height === window.innerHeight);
-            });
-            fullScreenEvents = 'webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange';
-            self._handler($(document), fullScreenEvents, function () {
-                self._listenFullScreen($h.checkFullScreen());
-            });
-            self._autoFitContent();
-            self._initClickable();
-        },
-        _autoFitContent: function () {
-            var width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth,
-                self = this, config = width < 400 ? (self.previewSettingsSmall || self.defaults.previewSettingsSmall) :
-                (self.previewSettings || self.defaults.previewSettings), sel;
-            $.each(config, function (cat, settings) {
-                sel = '.file-preview-frame .file-preview-' + cat;
-                self.$preview.find(sel + '.kv-preview-data,' + sel + ' .kv-preview-data').css(settings);
-            });
-        },
-        _initClickable: function () {
-            var self = this, $zone;
-            if (!self.isClickable) {
-                return;
-            }
-            $zone = self.isAjaxUpload ? self.$dropZone : self.$preview.find('.file-default-preview');
-            $h.addCss($zone, 'clickable');
-            $zone.attr('tabindex', -1);
-            self._handler($zone, 'click', function (e) {
-                var $tar = $(e.target);
-                if (!$(self.elErrorContainer + ':visible').length &&
-                    (!$tar.parents('.file-preview-thumbnails').length || $tar.parents('.file-default-preview').length)) {
-                    self.$element.trigger('click');
-                    $zone.blur();
-                }
-            });
-        },
-        _scanDroppedItems: function (item, files, path) {
-            path = path || "";
-            var self = this, i, dirReader, readDir, errorHandler = function (e) {
-                self._log('Error scanning dropped files!');
-                self._log(e);
-            };
-            if (item.isFile) {
-                item.file(function (file) {
-                    files.push(file);
-                }, errorHandler);
-            } else {
-                if (item.isDirectory) {
-                    dirReader = item.createReader();
-                    readDir = function () {
-                        dirReader.readEntries(function (entries) {
-                            if (entries && entries.length > 0) {
-                                for (i = 0; i < entries.length; i++) {
-                                    self._scanDroppedItems(entries[i], files, path + item.name + "/");
-                                }
-                                // recursively call readDir() again, since browser can only handle first 100 entries.
-                                readDir();
-                            }
-                            return null;
-                        }, errorHandler);
-                    };
-                    readDir();
-                }
-            }
-
-        },
-        _initDragDrop: function () {
-            var self = this, $zone = self.$dropZone;
-            if (self.dropZoneEnabled && self.showPreview) {
-                self._handler($zone, 'dragenter dragover', $.proxy(self._zoneDragEnter, self));
-                self._handler($zone, 'dragleave', $.proxy(self._zoneDragLeave, self));
-                self._handler($zone, 'drop', $.proxy(self._zoneDrop, self));
-                self._handler($(document), 'dragenter dragover drop', self._zoneDragDropInit);
-            }
-        },
-        _zoneDragDropInit: function (e) {
-            e.stopPropagation();
-            e.preventDefault();
-        },
-        _zoneDragEnter: function (e) {
-            var self = this, hasFiles = $.inArray('Files', e.originalEvent.dataTransfer.types) > -1;
-            self._zoneDragDropInit(e);
-            if (self.isDisabled || !hasFiles) {
-                e.originalEvent.dataTransfer.effectAllowed = 'none';
-                e.originalEvent.dataTransfer.dropEffect = 'none';
-                return;
-            }
-            $h.addCss(self.$dropZone, 'file-highlighted');
-        },
-        _zoneDragLeave: function (e) {
-            var self = this;
-            self._zoneDragDropInit(e);
-            if (self.isDisabled) {
-                return;
-            }
-            self.$dropZone.removeClass('file-highlighted');
-        },
-        _zoneDrop: function (e) {
-            /** @namespace e.originalEvent.dataTransfer */
-            var self = this, i, $el = self.$element, dataTransfer = e.originalEvent.dataTransfer,
-                files = dataTransfer.files, items = dataTransfer.items, folders = $h.getDragDropFolders(items),
-                processFiles = function () {
-                    if (!self.isAjaxUpload) {
-                        self.changeTriggered = true;
-                        $el.get(0).files = files;
-                        setTimeout(function () {
-                            self.changeTriggered = false;
-                            $el.trigger('change' + self.namespace);
-                        }, 10);
-                    } else {
-                        self._change(e, files);
-                    }
-                    self.$dropZone.removeClass('file-highlighted');
-                };
-            e.preventDefault();
-            if (self.isDisabled || $h.isEmpty(files)) {
-                return;
-            }
-            if (folders > 0) {
-                if (!self.isAjaxUpload) {
-                    self._showFolderError(folders);
-                    return;
-                }
-                files = [];
-                for (i = 0; i < items.length; i++) {
-                    var item = items[i].webkitGetAsEntry();
-                    if (item) {
-                        self._scanDroppedItems(item, files);
-                    }
-                }
-                setTimeout(function () {
-                    processFiles();
-                }, 500);
-            } else {
-                processFiles();
-            }
-        },
-        _uploadClick: function (e) {
-            var self = this, $btn = self.$container.find('.fileinput-upload'), $form,
-                isEnabled = !$btn.hasClass('disabled') && $h.isEmpty($btn.attr('disabled'));
-            if (e && e.isDefaultPrevented()) {
-                return;
-            }
-            if (!self.isAjaxUpload) {
-                if (isEnabled && $btn.attr('type') !== 'submit') {
-                    $form = $btn.closest('form');
-                    // downgrade to normal form submit if possible
-                    if ($form.length) {
-                        $form.trigger('submit');
-                    }
-                    e.preventDefault();
-                }
-                return;
-            }
-            e.preventDefault();
-            if (isEnabled) {
-                self.upload();
-            }
-        },
-        _submitForm: function () {
-            var self = this;
-            return self._isFileSelectionValid() && !self._abort({});
-        },
-        _clearPreview: function () {
-            var self = this, $p = self.$preview,
-                $thumbs = self.showUploadedThumbs ? self.getFrames(':not(.file-preview-success)') : self.getFrames();
-            $thumbs.each(function () {
-                var $thumb = $(this);
-                $thumb.remove();
-                $h.cleanZoomCache($p.find('#zoom-' + $thumb.attr('id')));
-            });
-            if (!self.getFrames().length || !self.showPreview) {
-                self._resetUpload();
-            }
-            self._validateDefaultPreview();
-        },
-        _initSortable: function () {
-            var self = this, $el = self.$preview, settings, selector = '.' + $h.SORT_CSS,
-                rev = self.reversePreviewOrder;
-            if (!window.KvSortable || $el.find(selector).length === 0) {
-                return;
-            }
-            //noinspection JSUnusedGlobalSymbols
-            settings = {
-                handle: '.drag-handle-init',
-                dataIdAttr: 'data-preview-id',
-                scroll: false,
-                draggable: selector,
-                onSort: function (e) {
-                    var oldIndex = e.oldIndex, newIndex = e.newIndex, i = 0;
-                    self.initialPreview = $h.moveArray(self.initialPreview, oldIndex, newIndex, rev);
-                    self.initialPreviewConfig = $h.moveArray(self.initialPreviewConfig, oldIndex, newIndex, rev);
-                    self.previewCache.init();
-                    self.getFrames('.file-preview-initial').each(function () {
-                        $(this).attr('data-fileindex', 'init_' + i);
-                        i++;
-                    });
-                    self._raise('filesorted', {
-                        previewId: $(e.item).attr('id'),
-                        'oldIndex': oldIndex,
-                        'newIndex': newIndex,
-                        stack: self.initialPreviewConfig
-                    });
-                }
-            };
-            if ($el.data('kvsortable')) {
-                $el.kvsortable('destroy');
-            }
-            $.extend(true, settings, self.fileActionSettings.dragSettings);
-            $el.kvsortable(settings);
-        },
-        _setPreviewContent: function (content) {
-            var self = this;
-            self.$preview.html(content);
-            self._autoFitContent();
-        },
-        _initPreview: function (isInit) {
-            var self = this, cap = self.initialCaption || '', out;
-            if (!self.previewCache.count()) {
-                self._clearPreview();
-                if (isInit) {
-                    self._setCaption(cap);
-                } else {
-                    self._initCaption();
-                }
-                return;
-            }
-            out = self.previewCache.out();
-            cap = isInit && self.initialCaption ? self.initialCaption : out.caption;
-            self._setPreviewContent(out.content);
-            self._setInitThumbAttr();
-            self._setCaption(cap);
-            self._initSortable();
-            if (!$h.isEmpty(out.content)) {
-                self.$container.removeClass('file-input-new');
-            }
-        },
-        _getZoomButton: function (type) {
-            var self = this, label = self.previewZoomButtonIcons[type], css = self.previewZoomButtonClasses[type],
-                title = ' title="' + (self.previewZoomButtonTitles[type] || '') + '" ',
-                params = title + (type === 'close' ? ' data-dismiss="modal" aria-hidden="true"' : '');
-            if (type === 'fullscreen' || type === 'borderless' || type === 'toggleheader') {
-                params += ' data-toggle="button" aria-pressed="false" autocomplete="off"';
-            }
-            return '<button type="button" class="' + css + ' btn-' + type + '"' + params + '>' + label + '</button>';
-        },
-        _getModalContent: function () {
-            var self = this;
-            return self._getLayoutTemplate('modal').setTokens({
-                'rtl': self.rtl ? ' kv-rtl' : '',
-                'zoomFrameClass': self.frameClass,
-                'heading': self.msgZoomModalHeading,
-                'prev': self._getZoomButton('prev'),
-                'next': self._getZoomButton('next'),
-                'toggleheader': self._getZoomButton('toggleheader'),
-                'fullscreen': self._getZoomButton('fullscreen'),
-                'borderless': self._getZoomButton('borderless'),
-                'close': self._getZoomButton('close')
-            });
-        },
-        _listenModalEvent: function (event) {
-            var self = this, $modal = self.$modal, getParams = function (e) {
-                return {
-                    sourceEvent: e,
-                    previewId: $modal.data('previewId'),
-                    modal: $modal
-                };
-            };
-            $modal.on(event + '.bs.modal', function (e) {
-                var $btnFull = $modal.find('.btn-fullscreen'), $btnBord = $modal.find('.btn-borderless');
-                self._raise('filezoom' + event, getParams(e));
-                if (event === 'shown') {
-                    $btnBord.removeClass('active').attr('aria-pressed', 'false');
-                    $btnFull.removeClass('active').attr('aria-pressed', 'false');
-                    if ($modal.hasClass('file-zoom-fullscreen')) {
-                        self._maximizeZoomDialog();
-                        if ($h.checkFullScreen()) {
-                            $btnFull.addClass('active').attr('aria-pressed', 'true');
-                        } else {
-                            $btnBord.addClass('active').attr('aria-pressed', 'true');
-                        }
-                    }
-                }
-            });
-        },
-        _initZoom: function () {
-            var self = this, $dialog, modalMain = self._getLayoutTemplate('modalMain'), modalId = '#' + $h.MODAL_ID;
-            if (!self.showPreview) {
-                return;
-            }
-            self.$modal = $(modalId);
-            if (!self.$modal || !self.$modal.length) {
-                $dialog = $(document.createElement('div')).html(modalMain).insertAfter(self.$container);
-                self.$modal = $(modalId).insertBefore($dialog);
-                $dialog.remove();
-            }
-            $h.initModal(self.$modal);
-            self.$modal.html(self._getModalContent());
-            $.each($h.MODAL_EVENTS, function (key, event) {
-                self._listenModalEvent(event);
-            });
-        },
-        _initZoomButtons: function () {
-            var self = this, previewId = self.$modal.data('previewId') || '', $first, $last,
-                thumbs = self.getFrames().toArray(), len = thumbs.length, $prev = self.$modal.find('.btn-prev'),
-                $next = self.$modal.find('.btn-next');
-            if (thumbs.length < 2) {
-                $prev.hide();
-                $next.hide();
-                return;
-            } else {
-                $prev.show();
-                $next.show();
-            }
-            if (!len) {
-                return;
-            }
-            $first = $(thumbs[0]);
-            $last = $(thumbs[len - 1]);
-            $prev.removeAttr('disabled');
-            $next.removeAttr('disabled');
-            if ($first.length && $first.attr('id') === previewId) {
-                $prev.attr('disabled', true);
-            }
-            if ($last.length && $last.attr('id') === previewId) {
-                $next.attr('disabled', true);
-            }
-        },
-        _maximizeZoomDialog: function () {
-            var self = this, $modal = self.$modal, $head = $modal.find('.modal-header:visible'),
-                $foot = $modal.find('.modal-footer:visible'), $body = $modal.find('.modal-body'),
-                h = $(window).height(), diff = 0;
-            $modal.addClass('file-zoom-fullscreen');
-            if ($head && $head.length) {
-                h -= $head.outerHeight(true);
-            }
-            if ($foot && $foot.length) {
-                h -= $foot.outerHeight(true);
-            }
-            if ($body && $body.length) {
-                diff = $body.outerHeight(true) - $body.height();
-                h -= diff;
-            }
-            $modal.find('.kv-zoom-body').height(h);
-        },
-        _resizeZoomDialog: function (fullScreen) {
-            var self = this, $modal = self.$modal, $btnFull = $modal.find('.btn-fullscreen'),
-                $btnBord = $modal.find('.btn-borderless');
-            if ($modal.hasClass('file-zoom-fullscreen')) {
-                $h.toggleFullScreen(false);
-                if (!fullScreen) {
-                    if (!$btnFull.hasClass('active')) {
-                        $modal.removeClass('file-zoom-fullscreen');
-                        self.$modal.find('.kv-zoom-body').css('height', self.zoomModalHeight);
-                    } else {
-                        $btnFull.removeClass('active').attr('aria-pressed', 'false');
-                    }
-                } else {
-                    if (!$btnFull.hasClass('active')) {
-                        $modal.removeClass('file-zoom-fullscreen');
-                        self._resizeZoomDialog(true);
-                        if ($btnBord.hasClass('active')) {
-                            $btnBord.removeClass('active').attr('aria-pressed', 'false');
-                        }
-                    }
-                }
-            } else {
-                if (!fullScreen) {
-                    self._maximizeZoomDialog();
-                    return;
-                }
-                $h.toggleFullScreen(true);
-            }
-            $modal.focus();
-        },
-        _setZoomContent: function ($frame, animate) {
-            var self = this, $content, tmplt, body, title, $body, $dataEl, config, pid = $frame.attr('id'),
-                $modal = self.$modal, $prev = $modal.find('.btn-prev'), $next = $modal.find('.btn-next'), $tmp,
-                $btnFull = $modal.find('.btn-fullscreen'), $btnBord = $modal.find('.btn-borderless'), cap, size,
-                $btnTogh = $modal.find('.btn-toggleheader'), $zoomPreview = self.$preview.find('#zoom-' + pid);
-            tmplt = $zoomPreview.attr('data-template') || 'generic';
-            $content = $zoomPreview.find('.kv-file-content');
-            body = $content.length ? $content.html() : '';
-            cap = $frame.data('caption') || '';
-            size = $frame.data('size') || '';
-            title = cap + ' ' + size;
-            $modal.find('.kv-zoom-title').attr('title', $('<div/>').html(title).text()).html(title);
-            $body = $modal.find('.kv-zoom-body');
-            $modal.removeClass('kv-single-content');
-            if (animate) {
-                $tmp = $body.addClass('file-thumb-loading').clone().insertAfter($body);
-                $body.html(body).hide();
-                $tmp.fadeOut('fast', function () {
-                    $body.fadeIn('fast', function () {
-                        $body.removeClass('file-thumb-loading');
-                    });
-                    $tmp.remove();
-                });
-            } else {
-                $body.html(body);
-            }
-            config = self.previewZoomSettings[tmplt];
-            if (config) {
-                $dataEl = $body.find('.kv-preview-data');
-                $h.addCss($dataEl, 'file-zoom-detail');
-                $.each(config, function (key, value) {
-                    $dataEl.css(key, value);
-                    if (($dataEl.attr('width') && key === 'width') || ($dataEl.attr('height') && key === 'height')) {
-                        $dataEl.removeAttr(key);
-                    }
-                });
-            }
-            $modal.data('previewId', pid);
-            var $img = $body.find('img');
-            if ($img.length) {
-                $h.adjustOrientedImage($img, true);
-            }
-            self._handler($prev, 'click', function () {
-                self._zoomSlideShow('prev', pid);
-            });
-            self._handler($next, 'click', function () {
-                self._zoomSlideShow('next', pid);
-            });
-            self._handler($btnFull, 'click', function () {
-                self._resizeZoomDialog(true);
-            });
-            self._handler($btnBord, 'click', function () {
-                self._resizeZoomDialog(false);
-            });
-            self._handler($btnTogh, 'click', function () {
-                var $header = $modal.find('.modal-header'), $floatBar = $modal.find('.modal-body .floating-buttons'),
-                    ht, $actions = $header.find('.kv-zoom-actions'), resize = function (height) {
-                        var $body = self.$modal.find('.kv-zoom-body'), h = self.zoomModalHeight;
-                        if ($modal.hasClass('file-zoom-fullscreen')) {
-                            h = $body.outerHeight(true);
-                            if (!height) {
-                                h = h - $header.outerHeight(true);
-                            }
-                        }
-                        $body.css('height', height ? h + height : h);
-                    };
-                if ($header.is(':visible')) {
-                    ht = $header.outerHeight(true);
-                    $header.slideUp('slow', function () {
-                        $actions.find('.btn').appendTo($floatBar);
-                        resize(ht);
-                    });
-                } else {
-                    $floatBar.find('.btn').appendTo($actions);
-                    $header.slideDown('slow', function () {
-                        resize();
-                    });
-                }
-                $modal.focus();
-            });
-            self._handler($modal, 'keydown', function (e) {
-                var key = e.which || e.keyCode;
-                if (key === 37 && !$prev.attr('disabled')) {
-                    self._zoomSlideShow('prev', pid);
-                }
-                if (key === 39 && !$next.attr('disabled')) {
-                    self._zoomSlideShow('next', pid);
-                }
-            });
-        },
-        _zoomPreview: function ($btn) {
-            var self = this, $frame, $modal = self.$modal;
-            if (!$btn.length) {
-                throw 'Cannot zoom to detailed preview!';
-            }
-            $h.initModal($modal);
-            $modal.html(self._getModalContent());
-            $frame = $btn.closest($h.FRAMES);
-            self._setZoomContent($frame);
-            $modal.modal('show');
-            self._initZoomButtons();
-        },
-        _zoomSlideShow: function (dir, previewId) {
-            var self = this, $btn = self.$modal.find('.kv-zoom-actions .btn-' + dir), $targFrame, i,
-                thumbs = self.getFrames().toArray(), len = thumbs.length, out;
-            if ($btn.attr('disabled')) {
-                return;
-            }
-            for (i = 0; i < len; i++) {
-                if ($(thumbs[i]).attr('id') === previewId) {
-                    out = dir === 'prev' ? i - 1 : i + 1;
-                    break;
-                }
-            }
-            if (out < 0 || out >= len || !thumbs[out]) {
-                return;
-            }
-            $targFrame = $(thumbs[out]);
-            if ($targFrame.length) {
-                self._setZoomContent($targFrame, true);
-            }
-            self._initZoomButtons();
-            self._raise('filezoom' + dir, {'previewId': previewId, modal: self.$modal});
-        },
-        _initZoomButton: function () {
-            var self = this;
-            self.$preview.find('.kv-file-zoom').each(function () {
-                var $el = $(this);
-                self._handler($el, 'click', function () {
-                    self._zoomPreview($el);
-                });
-            });
-        },
-        _clearObjects: function ($el) {
-            $el.find('video audio').each(function () {
-                this.pause();
-                $(this).remove();
-            });
-            $el.find('img object div').each(function () {
-                $(this).remove();
-            });
-        },
-        _clearFileInput: function () {
-            var self = this, $el = self.$element, $srcFrm, $tmpFrm, $tmpEl;
-            if ($h.isEmpty($el.files) && $h.isEmpty($el.val())) {
-                return;
-            }
-            $el.files = null;
-            $srcFrm = $el.closest('form');
-            $tmpFrm = $(document.createElement('form'));
-            $tmpEl = $(document.createElement('div'));
-            $el.before($tmpEl);
-            if ($srcFrm.length) {
-                $srcFrm.after($tmpFrm);
-            } else {
-                $tmpEl.after($tmpFrm);
-            }
-            $tmpFrm.append($el).trigger('reset');
-            $tmpEl.before($el).remove();
-            $tmpFrm.remove();
-        },
-        _resetUpload: function () {
-            var self = this;
-            self.uploadCache = {content: [], config: [], tags: [], append: true};
-            self.uploadCount = 0;
-            self.uploadStatus = {};
-            self.uploadLog = [];
-            self.uploadAsyncCount = 0;
-            self.loadedImages = [];
-            self.totalImagesCount = 0;
-            self.$btnUpload.removeAttr('disabled');
-            self._setProgress(0);
-            self.$progress.hide();
-            self._resetErrors(false);
-            self.ajaxAborted = false;
-            self.ajaxRequests = [];
-            self._resetCanvas();
-            self.cacheInitialPreview = {};
-            if (self.overwriteInitial) {
-                self.initialPreview = [];
-                self.initialPreviewConfig = [];
-                self.initialPreviewThumbTags = [];
-                self.previewCache.data = {
-                    content: [],
-                    config: [],
-                    tags: []
-                };
-            }
-        },
-        _resetCanvas: function () {
-            var self = this;
-            if (self.canvas && self.imageCanvasContext) {
-                self.imageCanvasContext.clearRect(0, 0, self.canvas.width, self.canvas.height);
-            }
-        },
-        _hasInitialPreview: function () {
-            var self = this;
-            return !self.overwriteInitial && self.previewCache.count();
-        },
-        _resetPreview: function () {
-            var self = this, out, cap;
-            if (self.previewCache.count()) {
-                out = self.previewCache.out();
-                self._setPreviewContent(out.content);
-                self._setInitThumbAttr();
-                cap = self.initialCaption ? self.initialCaption : out.caption;
-                self._setCaption(cap);
-            } else {
-                self._clearPreview();
-                self._initCaption();
-            }
-            if (self.showPreview) {
-                self._initZoom();
-                self._initSortable();
-            }
-        },
-        _clearDefaultPreview: function () {
-            var self = this;
-            self.$preview.find('.file-default-preview').remove();
-        },
-        _validateDefaultPreview: function () {
-            var self = this;
-            if (!self.showPreview || $h.isEmpty(self.defaultPreviewContent)) {
-                return;
-            }
-            self._setPreviewContent('<div class="file-default-preview">' + self.defaultPreviewContent + '</div>');
-            self.$container.removeClass('file-input-new');
-            self._initClickable();
-        },
-        _resetPreviewThumbs: function (isAjax) {
-            var self = this, out;
-            if (isAjax) {
-                self._clearPreview();
-                self.clearStack();
-                return;
-            }
-            if (self._hasInitialPreview()) {
-                out = self.previewCache.out();
-                self._setPreviewContent(out.content);
-                self._setInitThumbAttr();
-                self._setCaption(out.caption);
-                self._initPreviewActions();
-            } else {
-                self._clearPreview();
-            }
-        },
-        _getLayoutTemplate: function (t) {
-            var self = this, template = self.layoutTemplates[t];
-            if ($h.isEmpty(self.customLayoutTags)) {
-                return template;
-            }
-            return $h.replaceTags(template, self.customLayoutTags);
-        },
-        _getPreviewTemplate: function (t) {
-            var self = this, template = self.previewTemplates[t];
-            if ($h.isEmpty(self.customPreviewTags)) {
-                return template;
-            }
-            return $h.replaceTags(template, self.customPreviewTags);
-        },
-        _getOutData: function (jqXHR, responseData, filesData) {
-            var self = this;
-            jqXHR = jqXHR || {};
-            responseData = responseData || {};
-            filesData = filesData || self.filestack.slice(0) || {};
-            return {
-                form: self.formdata,
-                files: filesData,
-                filenames: self.filenames,
-                filescount: self.getFilesCount(),
-                extra: self._getExtraData(),
-                response: responseData,
-                reader: self.reader,
-                jqXHR: jqXHR
-            };
-        },
-        _getMsgSelected: function (n) {
-            var self = this, strFiles = n === 1 ? self.fileSingle : self.filePlural;
-            return n > 0 ? self.msgSelected.replace('{n}', n).replace('{files}', strFiles) : self.msgNoFilesSelected;
-        },
-        _getFrame: function (id) {
-            var self = this, $frame = $('#' + id);
-            if (!$frame.length) {
-                self._log('Invalid thumb frame with id: "' + id + '".');
-                return null;
-            }
-            return $frame;
-        },
-        _getThumbs: function (css) {
-            css = css || '';
-            return this.getFrames(':not(.file-preview-initial)' + css);
-        },
-        _getExtraData: function (previewId, index) {
-            var self = this, data = self.uploadExtraData;
-            if (typeof self.uploadExtraData === "function") {
-                data = self.uploadExtraData(previewId, index);
-            }
-            return data;
-        },
-        _initXhr: function (xhrobj, previewId, fileCount) {
-            var self = this;
-            if (xhrobj.upload) {
-                xhrobj.upload.addEventListener('progress', function (event) {
-                    var pct = 0, total = event.total, position = event.loaded || event.position;
-                    /** @namespace event.lengthComputable */
-                    if (event.lengthComputable) {
-                        pct = Math.floor(position / total * 100);
-                    }
-                    if (previewId) {
-                        self._setAsyncUploadStatus(previewId, pct, fileCount);
-                    } else {
-                        self._setProgress(pct);
-                    }
-                }, false);
-            }
-            return xhrobj;
-        },
-        _initAjaxSettings: function () {
-            var self = this;
-            self._ajaxSettings = $.extend(true, {}, self.ajaxSettings);
-            self._ajaxDeleteSettings = $.extend(true, {}, self.ajaxDeleteSettings);
-        },
-        _mergeAjaxCallback: function (funcName, srcFunc, type) {
-            var self = this, settings = self._ajaxSettings, flag = self.mergeAjaxCallbacks, targFunc;
-            if (type === 'delete') {
-                settings = self._ajaxDeleteSettings;
-                flag = self.mergeAjaxDeleteCallbacks;
-            }
-            targFunc = settings[funcName];
-            if (flag && typeof targFunc === "function") {
-                if (flag === 'before') {
-                    settings[funcName] = function () {
-                        targFunc.apply(this, arguments);
-                        srcFunc.apply(this, arguments);
-                    };
-                } else {
-                    settings[funcName] = function () {
-                        srcFunc.apply(this, arguments);
-                        targFunc.apply(this, arguments);
-                    };
-                }
-            } else {
-                settings[funcName] = srcFunc;
-            }
-        },
-        _ajaxSubmit: function (fnBefore, fnSuccess, fnComplete, fnError, previewId, index) {
-            var self = this, settings;
-            if (!self._raise('filepreajax', [previewId, index])) {
-                return;
-            }
-            self._uploadExtra(previewId, index);
-            self._initAjaxSettings();
-            self._mergeAjaxCallback('beforeSend', fnBefore);
-            self._mergeAjaxCallback('success', fnSuccess);
-            self._mergeAjaxCallback('complete', fnComplete);
-            self._mergeAjaxCallback('error', fnError);
-            settings = $.extend(true, {}, {
-                xhr: function () {
-                    var xhrobj = $.ajaxSettings.xhr();
-                    return self._initXhr(xhrobj, previewId, self.getFileStack().length);
-                },
-                url: index && self.uploadUrlThumb ? self.uploadUrlThumb : self.uploadUrl,
-                type: 'POST',
-                dataType: 'json',
-                data: self.formdata,
-                cache: false,
-                processData: false,
-                contentType: false
-            }, self._ajaxSettings);
-            self.ajaxRequests.push($.ajax(settings));
-        },
-        _mergeArray: function (prop, content) {
-            var self = this, arr1 = $h.cleanArray(self[prop]), arr2 = $h.cleanArray(content);
-            self[prop] = arr1.concat(arr2);
-        },
-        _initUploadSuccess: function (out, $thumb, allFiles) {
-            var self = this, append, data, index, $div, $newCache, content, config, tags, i;
-            if (!self.showPreview || typeof out !== 'object' || $.isEmptyObject(out)) {
-                return;
-            }
-            if (out.initialPreview !== undefined && out.initialPreview.length > 0) {
-                self.hasInitData = true;
-                content = out.initialPreview || [];
-                config = out.initialPreviewConfig || [];
-                tags = out.initialPreviewThumbTags || [];
-                append = out.append === undefined || out.append;
-                if (content.length > 0 && !$h.isArray(content)) {
-                    content = content.split(self.initialPreviewDelimiter);
-                }
-                self._mergeArray('initialPreview', content);
-                self._mergeArray('initialPreviewConfig', config);
-                self._mergeArray('initialPreviewThumbTags', tags);
-                if ($thumb !== undefined) {
-                    if (!allFiles) {
-                        index = self.previewCache.add(content, config[0], tags[0], append);
-                        data = self.previewCache.get(index, false);
-                        $div = $(document.createElement('div')).html(data).hide().insertAfter($thumb);
-                        $newCache = $div.find('.kv-zoom-cache');
-                        if ($newCache && $newCache.length) {
-                            $newCache.insertAfter($thumb);
-                        }
-                        $thumb.fadeOut('slow', function () {
-                            var $newThumb = $div.find('.file-preview-frame');
-                            if ($newThumb && $newThumb.length) {
-                                $newThumb.insertBefore($thumb).fadeIn('slow').css('display:inline-block');
-                            }
-                            self._initPreviewActions();
-                            self._clearFileInput();
-                            $h.cleanZoomCache(self.$preview.find('#zoom-' + $thumb.attr('id')));
-                            $thumb.remove();
-                            $div.remove();
-                            self._initSortable();
-                        });
-                    } else {
-                        i = $thumb.attr('data-fileindex');
-                        self.uploadCache.content[i] = content[0];
-                        self.uploadCache.config[i] = config[0] || [];
-                        self.uploadCache.tags[i] = tags[0] || [];
-                        self.uploadCache.append = append;
-                    }
-                } else {
-                    self.previewCache.set(content, config, tags, append);
-                    self._initPreview();
-                    self._initPreviewActions();
-                }
-            }
-        },
-        _initSuccessThumbs: function () {
-            var self = this;
-            if (!self.showPreview) {
-                return;
-            }
-            self._getThumbs($h.FRAMES + '.file-preview-success').each(function () {
-                var $thumb = $(this), $preview = self.$preview, $remove = $thumb.find('.kv-file-remove');
-                $remove.removeAttr('disabled');
-                self._handler($remove, 'click', function () {
-                    var id = $thumb.attr('id'),
-                        out = self._raise('filesuccessremove', [id, $thumb.attr('data-fileindex')]);
-                    $h.cleanMemory($thumb);
-                    if (out === false) {
-                        return;
-                    }
-                    $thumb.fadeOut('slow', function () {
-                        $h.cleanZoomCache($preview.find('#zoom-' + id));
-                        $thumb.remove();
-                        if (!self.getFrames().length) {
-                            self.reset();
-                        }
-                    });
-                });
-            });
-        },
-        _checkAsyncComplete: function () {
-            var self = this, previewId, i;
-            for (i = 0; i < self.filestack.length; i++) {
-                if (self.filestack[i]) {
-                    previewId = self.previewInitId + "-" + i;
-                    if ($.inArray(previewId, self.uploadLog) === -1) {
-                        return false;
-                    }
-                }
-            }
-            return (self.uploadAsyncCount === self.uploadLog.length);
-        },
-        _uploadExtra: function (previewId, index) {
-            var self = this, data = self._getExtraData(previewId, index);
-            if (data.length === 0) {
-                return;
-            }
-            $.each(data, function (key, value) {
-                self.formdata.append(key, value);
-            });
-        },
-        _uploadSingle: function (i, isBatch) {
-            var self = this, total = self.getFileStack().length, formdata = new FormData(), outData,
-                previewId = self.previewInitId + "-" + i, $thumb, chkComplete, $btnUpload, $btnDelete,
-                hasPostData = self.filestack.length > 0 || !$.isEmptyObject(self.uploadExtraData), uploadFailed,
-                $prog = $('#' + previewId).find('.file-thumb-progress'), fnBefore, fnSuccess, fnComplete, fnError,
-                updateUploadLog, params = {id: previewId, index: i};
-            self.formdata = formdata;
-            if (self.showPreview) {
-                $thumb = $('#' + previewId + ':not(.file-preview-initial)');
-                $btnUpload = $thumb.find('.kv-file-upload');
-                $btnDelete = $thumb.find('.kv-file-remove');
-                $prog.show();
-            }
-            if (total === 0 || !hasPostData || ($btnUpload && $btnUpload.hasClass('disabled')) || self._abort(params)) {
-                return;
-            }
-            updateUploadLog = function (i, previewId) {
-                if (!uploadFailed) {
-                    self.updateStack(i, undefined);
-                }
-                self.uploadLog.push(previewId);
-                if (self._checkAsyncComplete()) {
-                    self.fileBatchCompleted = true;
-                }
-            };
-            chkComplete = function () {
-                var u = self.uploadCache, $initThumbs, i, j, len = 0, data = self.cacheInitialPreview;
-                if (!self.fileBatchCompleted) {
-                    return;
-                }
-                if (data && data.content) {
-                    len = data.content.length;
-                }
-                setTimeout(function () {
-                    var triggerReset = self.getFileStack(true).length === 0;
-                    if (self.showPreview) {
-                        self.previewCache.set(u.content, u.config, u.tags, u.append);
-                        if (len) {
-                            for (i = 0; i < u.content.length; i++) {
-                                j = i + len;
-                                data.content[j] = u.content[i];
-                                //noinspection JSUnresolvedVariable
-                                if (data.config.length) {
-                                    data.config[j] = u.config[i];
-                                }
-                                if (data.tags.length) {
-                                    data.tags[j] = u.tags[i];
-                                }
-                            }
-                            self.initialPreview = $h.cleanArray(data.content);
-                            self.initialPreviewConfig = $h.cleanArray(data.config);
-                            self.initialPreviewThumbTags = $h.cleanArray(data.tags);
-                        } else {
-                            self.initialPreview = u.content;
-                            self.initialPreviewConfig = u.config;
-                            self.initialPreviewThumbTags = u.tags;
-                        }
-                        self.cacheInitialPreview = {};
-                        if (self.hasInitData) {
-                            self._initPreview();
-                            self._initPreviewActions();
-                        }
-                    }
-                    self.unlock(triggerReset);
-                    if (triggerReset) {
-                        self._clearFileInput();
-                    }
-                    $initThumbs = self.$preview.find('.file-preview-initial');
-                    if (self.uploadAsync && $initThumbs.length) {
-                        $h.addCss($initThumbs, $h.SORT_CSS);
-                        self._initSortable();
-                    }
-                    self._raise('filebatchuploadcomplete', [self.filestack, self._getExtraData()]);
-                    self.uploadCount = 0;
-                    self.uploadStatus = {};
-                    self.uploadLog = [];
-                    self._setProgress(101);
-                    self.ajaxAborted = false;
-                }, 100);
-            };
-            fnBefore = function (jqXHR) {
-                outData = self._getOutData(jqXHR);
-                self.fileBatchCompleted = false;
-                if (!isBatch) {
-                    self.ajaxAborted = false;
-                }
-                if (self.showPreview) {
-                    if (!$thumb.hasClass('file-preview-success')) {
-                        self._setThumbStatus($thumb, 'Loading');
-                        $h.addCss($thumb, 'file-uploading');
-                    }
-                    $btnUpload.attr('disabled', true);
-                    $btnDelete.attr('disabled', true);
-                }
-                if (!isBatch) {
-                    self.lock();
-                }
-                self._raise('filepreupload', [outData, previewId, i]);
-                $.extend(true, params, outData);
-                if (self._abort(params)) {
-                    jqXHR.abort();
-                    if (!isBatch) {
-                        self._setThumbStatus($thumb, 'New');
-                        $thumb.removeClass('file-uploading');
-                        $btnUpload.removeAttr('disabled');
-                        $btnDelete.removeAttr('disabled');
-                        self.unlock();
-                    }
-                    self._setProgressCancelled();
-                }
-            };
-            fnSuccess = function (data, textStatus, jqXHR) {
-                var pid = self.showPreview && $thumb.attr('id') ? $thumb.attr('id') : previewId;
-                outData = self._getOutData(jqXHR, data);
-                $.extend(true, params, outData);
-                setTimeout(function () {
-                    if ($h.isEmpty(data) || $h.isEmpty(data.error)) {
-                        if (self.showPreview) {
-                            self._setThumbStatus($thumb, 'Success');
-                            $btnUpload.hide();
-                            self._initUploadSuccess(data, $thumb, isBatch);
-                            self._setProgress(101, $prog);
-                        }
-                        self._raise('fileuploaded', [outData, pid, i]);
-                        if (!isBatch) {
-                            self.updateStack(i, undefined);
-                        } else {
-                            updateUploadLog(i, pid);
-                        }
-                    } else {
-                        uploadFailed = true;
-                        self._showUploadError(data.error, params);
-                        self._setPreviewError($thumb, i, self.filestack[i], self.retryErrorUploads);
-                        if (!self.retryErrorUploads) {
-                            $btnUpload.hide();
-                        }
-                        if (isBatch) {
-                            updateUploadLog(i, pid);
-                        }
-                        self._setProgress(101, $('#' + pid).find('.file-thumb-progress'), self.msgUploadError);
-                    }
-                }, 100);
-            };
-            fnComplete = function () {
-                setTimeout(function () {
-                    if (self.showPreview) {
-                        $btnUpload.removeAttr('disabled');
-                        $btnDelete.removeAttr('disabled');
-                        $thumb.removeClass('file-uploading');
-                    }
-                    if (!isBatch) {
-                        self.unlock(false);
-                        self._clearFileInput();
-                    } else {
-                        chkComplete();
-                    }
-                    self._initSuccessThumbs();
-                }, 100);
-            };
-            fnError = function (jqXHR, textStatus, errorThrown) {
-                var op = self.ajaxOperations.uploadThumb,
-                    errMsg = self._parseError(op, jqXHR, errorThrown, (isBatch && self.filestack[i].name ? self.filestack[i].name : null));
-                uploadFailed = true;
-                setTimeout(function () {
-                    if (isBatch) {
-                        updateUploadLog(i, previewId);
-                    }
-                    self.uploadStatus[previewId] = 100;
-                    self._setPreviewError($thumb, i, self.filestack[i], self.retryErrorUploads);
-                    if (!self.retryErrorUploads) {
-                        $btnUpload.hide();
-                    }
-                    $.extend(true, params, self._getOutData(jqXHR));
-                    self._setProgress(101, $prog, self.msgAjaxProgressError.replace('{operation}', op));
-                    self._setProgress(101, $('#' + previewId).find('.file-thumb-progress'), self.msgUploadError);
-                    self._showUploadError(errMsg, params);
-                }, 100);
-            };
-            formdata.append(self.uploadFileAttr, self.filestack[i], self.filenames[i]);
-            formdata.append('file_id', i);
-            self._ajaxSubmit(fnBefore, fnSuccess, fnComplete, fnError, previewId, i);
-        },
-        _uploadBatch: function () {
-            var self = this, files = self.filestack, total = files.length, params = {}, fnBefore, fnSuccess, fnError,
-                fnComplete, hasPostData = self.filestack.length > 0 || !$.isEmptyObject(self.uploadExtraData),
-                setAllUploaded;
-            self.formdata = new FormData();
-            if (total === 0 || !hasPostData || self._abort(params)) {
-                return;
-            }
-            setAllUploaded = function () {
-                $.each(files, function (key) {
-                    self.updateStack(key, undefined);
-                });
-                self._clearFileInput();
-            };
-            fnBefore = function (jqXHR) {
-                self.lock();
-                var outData = self._getOutData(jqXHR);
-                self.ajaxAborted = false;
-                if (self.showPreview) {
-                    self._getThumbs().each(function () {
-                        var $thumb = $(this), $btnUpload = $thumb.find('.kv-file-upload'),
-                            $btnDelete = $thumb.find('.kv-file-remove');
-                        if (!$thumb.hasClass('file-preview-success')) {
-                            self._setThumbStatus($thumb, 'Loading');
-                            $h.addCss($thumb, 'file-uploading');
-                        }
-                        $btnUpload.attr('disabled', true);
-                        $btnDelete.attr('disabled', true);
-                    });
-                }
-                self._raise('filebatchpreupload', [outData]);
-                if (self._abort(outData)) {
-                    jqXHR.abort();
-                    self._getThumbs().each(function () {
-                        var $thumb = $(this), $btnUpload = $thumb.find('.kv-file-upload'),
-                            $btnDelete = $thumb.find('.kv-file-remove');
-                        if ($thumb.hasClass('file-preview-loading')) {
-                            self._setThumbStatus($thumb, 'New');
-                            $thumb.removeClass('file-uploading');
-                        }
-                        $btnUpload.removeAttr('disabled');
-                        $btnDelete.removeAttr('disabled');
-                    });
-                    self._setProgressCancelled();
-                }
-            };
-            fnSuccess = function (data, textStatus, jqXHR) {
-                /** @namespace data.errorkeys */
-                var outData = self._getOutData(jqXHR, data), key = 0,
-                    $thumbs = self._getThumbs(':not(.file-preview-success)'),
-                    keys = $h.isEmpty(data) || $h.isEmpty(data.errorkeys) ? [] : data.errorkeys;
-
-                if ($h.isEmpty(data) || $h.isEmpty(data.error)) {
-                    self._raise('filebatchuploadsuccess', [outData]);
-                    setAllUploaded();
-                    if (self.showPreview) {
-                        $thumbs.each(function () {
-                            var $thumb = $(this);
-                            self._setThumbStatus($thumb, 'Success');
-                            $thumb.removeClass('file-uploading');
-                            $thumb.find('.kv-file-upload').hide().removeAttr('disabled');
-                        });
-                        self._initUploadSuccess(data);
-                    } else {
-                        self.reset();
-                    }
-                    self._setProgress(101);
-                } else {
-                    if (self.showPreview) {
-                        $thumbs.each(function () {
-                            var $thumb = $(this), i = $thumb.attr('data-fileindex');
-                            $thumb.removeClass('file-uploading');
-                            $thumb.find('.kv-file-upload').removeAttr('disabled');
-                            $thumb.find('.kv-file-remove').removeAttr('disabled');
-                            if (keys.length === 0 || $.inArray(key, keys) !== -1) {
-                                self._setPreviewError($thumb, i, self.filestack[i], self.retryErrorUploads);
-                                if (!self.retryErrorUploads) {
-                                    $thumb.find('.kv-file-upload').hide();
-                                    self.updateStack(i, undefined);
-                                }
-                            } else {
-                                $thumb.find('.kv-file-upload').hide();
-                                self._setThumbStatus($thumb, 'Success');
-                                self.updateStack(i, undefined);
-                            }
-                            if (!$thumb.hasClass('file-preview-error') || self.retryErrorUploads) {
-                                key++;
-                            }
-                        });
-                        self._initUploadSuccess(data);
-                    }
-                    self._showUploadError(data.error, outData, 'filebatchuploaderror');
-                    self._setProgress(101, self.$progress, self.msgUploadError);
-                }
-            };
-            fnComplete = function () {
-                self.unlock();
-                self._initSuccessThumbs();
-                self._clearFileInput();
-                self._raise('filebatchuploadcomplete', [self.filestack, self._getExtraData()]);
-            };
-            fnError = function (jqXHR, textStatus, errorThrown) {
-                var outData = self._getOutData(jqXHR), op = self.ajaxOperations.uploadBatch,
-                    errMsg = self._parseError(op, jqXHR, errorThrown);
-                self._showUploadError(errMsg, outData, 'filebatchuploaderror');
-                self.uploadFileCount = total - 1;
-                if (!self.showPreview) {
-                    return;
-                }
-                self._getThumbs().each(function () {
-                    var $thumb = $(this), key = $thumb.attr('data-fileindex');
-                    $thumb.removeClass('file-uploading');
-                    if (self.filestack[key] !== undefined) {
-                        self._setPreviewError($thumb);
-                    }
-                });
-                self._getThumbs().removeClass('file-uploading');
-                self._getThumbs(' .kv-file-upload').removeAttr('disabled');
-                self._getThumbs(' .kv-file-delete').removeAttr('disabled');
-                self._setProgress(101, self.$progress, self.msgAjaxProgressError.replace('{operation}', op));
-            };
-            $.each(files, function (key, data) {
-                if (!$h.isEmpty(files[key])) {
-                    self.formdata.append(self.uploadFileAttr, data, self.filenames[key]);
-                }
-            });
-            self._ajaxSubmit(fnBefore, fnSuccess, fnComplete, fnError);
-        },
-        _uploadExtraOnly: function () {
-            var self = this, params = {}, fnBefore, fnSuccess, fnComplete, fnError;
-            self.formdata = new FormData();
-            if (self._abort(params)) {
-                return;
-            }
-            fnBefore = function (jqXHR) {
-                self.lock();
-                var outData = self._getOutData(jqXHR);
-                self._raise('filebatchpreupload', [outData]);
-                self._setProgress(50);
-                params.data = outData;
-                params.xhr = jqXHR;
-                if (self._abort(params)) {
-                    jqXHR.abort();
-                    self._setProgressCancelled();
-                }
-            };
-            fnSuccess = function (data, textStatus, jqXHR) {
-                var outData = self._getOutData(jqXHR, data);
-                if ($h.isEmpty(data) || $h.isEmpty(data.error)) {
-                    self._raise('filebatchuploadsuccess', [outData]);
-                    self._clearFileInput();
-                    self._initUploadSuccess(data);
-                    self._setProgress(101);
-                } else {
-                    self._showUploadError(data.error, outData, 'filebatchuploaderror');
-                }
-            };
-            fnComplete = function () {
-                self.unlock();
-                self._clearFileInput();
-                self._raise('filebatchuploadcomplete', [self.filestack, self._getExtraData()]);
-            };
-            fnError = function (jqXHR, textStatus, errorThrown) {
-                var outData = self._getOutData(jqXHR), op = self.ajaxOperations.uploadExtra,
-                    errMsg = self._parseError(op, jqXHR, errorThrown);
-                params.data = outData;
-                self._showUploadError(errMsg, outData, 'filebatchuploaderror');
-                self._setProgress(101, self.$progress, self.msgAjaxProgressError.replace('{operation}', op));
-            };
-            self._ajaxSubmit(fnBefore, fnSuccess, fnComplete, fnError);
-        },
-        _deleteFileIndex: function ($frame) {
-            var self = this, ind = $frame.attr('data-fileindex'), rev = self.reversePreviewOrder;
-            if (ind.substring(0, 5) === 'init_') {
-                ind = parseInt(ind.replace('init_', ''));
-                self.initialPreview = $h.spliceArray(self.initialPreview, ind, rev);
-                self.initialPreviewConfig = $h.spliceArray(self.initialPreviewConfig, ind, rev);
-                self.initialPreviewThumbTags = $h.spliceArray(self.initialPreviewThumbTags, ind, rev);
-                self.getFrames().each(function () {
-                    var $nFrame = $(this), nInd = $nFrame.attr('data-fileindex');
-                    if (nInd.substring(0, 5) === 'init_') {
-                        nInd = parseInt(nInd.replace('init_', ''));
-                        if (nInd > ind) {
-                            nInd--;
-                            $nFrame.attr('data-fileindex', 'init_' + nInd);
-                        }
-                    }
-                });
-                if (self.uploadAsync) {
-                    self.cacheInitialPreview = self.getPreview();
-                }
-            }
-        },
-        _initFileActions: function () {
-            var self = this, $preview = self.$preview;
-            if (!self.showPreview) {
-                return;
-            }
-            self._initZoomButton();
-            self.getFrames(' .kv-file-remove').each(function () {
-                var $el = $(this), $frame = $el.closest($h.FRAMES), hasError, id = $frame.attr('id'),
-                    ind = $frame.attr('data-fileindex'), n, cap, status;
-                self._handler($el, 'click', function () {
-                    status = self._raise('filepreremove', [id, ind]);
-                    if (status === false || !self._validateMinCount()) {
-                        return false;
-                    }
-                    hasError = $frame.hasClass('file-preview-error');
-                    $h.cleanMemory($frame);
-                    $frame.fadeOut('slow', function () {
-                        $h.cleanZoomCache($preview.find('#zoom-' + id));
-                        self.updateStack(ind, undefined);
-                        self._clearObjects($frame);
-                        $frame.remove();
-                        if (id && hasError) {
-                            self.$errorContainer.find('li[data-file-id="' + id + '"]').fadeOut('fast', function () {
-                                $(this).remove();
-                                if (!self._errorsExist()) {
-                                    self._resetErrors();
-                                }
-                            });
-                        }
-                        self._clearFileInput();
-                        var filestack = self.getFileStack(true), chk = self.previewCache.count(),
-                            len = filestack.length, hasThumb = self.showPreview && self.getFrames().length;
-                        if (len === 0 && chk === 0 && !hasThumb) {
-                            self.reset();
-                        } else {
-                            n = chk + len;
-                            cap = n > 1 ? self._getMsgSelected(n) : (filestack[0] ? self._getFileNames()[0] : '');
-                            self._setCaption(cap);
-                        }
-                        self._raise('fileremoved', [id, ind]);
-                    });
-                });
-            });
-            self.getFrames(' .kv-file-upload').each(function () {
-                var $el = $(this);
-                self._handler($el, 'click', function () {
-                    var $frame = $el.closest($h.FRAMES), ind = $frame.attr('data-fileindex');
-                    self.$progress.hide();
-                    if ($frame.hasClass('file-preview-error') && !self.retryErrorUploads) {
-                        return;
-                    }
-                    self._uploadSingle(ind, false);
-                });
-            });
-        },
-        _initPreviewActions: function () {
-            var self = this, $preview = self.$preview, deleteExtraData = self.deleteExtraData || {},
-                btnRemove = $h.FRAMES + ' .kv-file-remove', settings = self.fileActionSettings,
-                origClass = settings.removeClass, errClass = settings.removeErrorClass,
-                resetProgress = function () {
-                    var hasFiles = self.isAjaxUpload ? self.previewCache.count() : self.$element.get(0).files.length;
-                    if (!$preview.find($h.FRAMES).length && !hasFiles) {
-                        self._setCaption('');
-                        self.reset();
-                        self.initialCaption = '';
-                    }
-                };
-            self._initZoomButton();
-            $preview.find(btnRemove).each(function () {
-                var $el = $(this), vUrl = $el.data('url') || self.deleteUrl, vKey = $el.data('key'),
-                    fnBefore, fnSuccess, fnError;
-                if ($h.isEmpty(vUrl) || vKey === undefined) {
-                    return;
-                }
-                var $frame = $el.closest($h.FRAMES), cache = self.previewCache.data,
-                    settings, params, index = $frame.attr('data-fileindex'), config, extraData;
-                index = parseInt(index.replace('init_', ''));
-                config = $h.isEmpty(cache.config) && $h.isEmpty(cache.config[index]) ? null : cache.config[index];
-                extraData = $h.isEmpty(config) || $h.isEmpty(config.extra) ? deleteExtraData : config.extra;
-                if (typeof extraData === "function") {
-                    extraData = extraData();
-                }
-                params = {id: $el.attr('id'), key: vKey, extra: extraData};
-                fnBefore = function (jqXHR) {
-                    self.ajaxAborted = false;
-                    self._raise('filepredelete', [vKey, jqXHR, extraData]);
-                    if (self._abort()) {
-                        jqXHR.abort();
-                    } else {
-                        $el.removeClass(errClass);
-                        $h.addCss($frame, 'file-uploading');
-                        $h.addCss($el, 'disabled ' + origClass);
-                    }
-                };
-                fnSuccess = function (data, textStatus, jqXHR) {
-                    var n, cap;
-                    if (!$h.isEmpty(data) && !$h.isEmpty(data.error)) {
-                        params.jqXHR = jqXHR;
-                        params.response = data;
-                        self._showError(data.error, params, 'filedeleteerror');
-                        $frame.removeClass('file-uploading');
-                        $el.removeClass('disabled ' + origClass).addClass(errClass);
-                        resetProgress();
-                        return;
-                    }
-                    $frame.removeClass('file-uploading').addClass('file-deleted');
-                    $frame.fadeOut('slow', function () {
-                        index = parseInt(($frame.attr('data-fileindex')).replace('init_', ''));
-                        self.previewCache.unset(index);
-                        self._deleteFileIndex($frame);
-                        n = self.previewCache.count();
-                        cap = n > 0 ? self._getMsgSelected(n) : '';
-                        self._setCaption(cap);
-                        self._raise('filedeleted', [vKey, jqXHR, extraData]);
-                        $h.cleanZoomCache($preview.find('#zoom-' + $frame.attr('id')));
-                        self._clearObjects($frame);
-                        $frame.remove();
-                        resetProgress();
-                    });
-                };
-                fnError = function (jqXHR, textStatus, errorThrown) {
-                    var op = self.ajaxOperations.deleteThumb, errMsg = self._parseError(op, jqXHR, errorThrown);
-                    params.jqXHR = jqXHR;
-                    params.response = {};
-                    self._showError(errMsg, params, 'filedeleteerror');
-                    $frame.removeClass('file-uploading');
-                    $el.removeClass('disabled ' + origClass).addClass(errClass);
-                    resetProgress();
-                };
-                self._initAjaxSettings();
-                self._mergeAjaxCallback('beforeSend', fnBefore, 'delete');
-                self._mergeAjaxCallback('success', fnSuccess, 'delete');
-                self._mergeAjaxCallback('error', fnError, 'delete');
-                settings = $.extend(true, {}, {
-                    url: vUrl,
-                    type: 'POST',
-                    dataType: 'json',
-                    data: $.extend(true, {}, {key: vKey}, extraData)
-                }, self._ajaxDeleteSettings);
-                self._handler($el, 'click', function () {
-                    if (!self._validateMinCount()) {
-                        return false;
-                    }
-                    self.ajaxAborted = false;
-                    self._raise('filebeforedelete', [vKey, extraData]);
-                    //noinspection JSUnresolvedVariable,JSHint
-                    if (self.ajaxAborted instanceof Promise) {
-                        self.ajaxAborted.then(function (result) {
-                            if (!result) {
-                                $.ajax(settings);
-                            }
-                        });
-                    } else {
-                        if (!self.ajaxAborted) {
-                            $.ajax(settings);
-                        }
-                    }
-                });
-            });
-        },
-        _hideFileIcon: function () {
-            var self = this;
-            if (self.overwriteInitial) {
-                self.$captionContainer.removeClass('icon-visible');
-            }
-        },
-        _showFileIcon: function () {
-            var self = this;
-            $h.addCss(self.$captionContainer, 'icon-visible');
-        },
-        _getSize: function (bytes) {
-            var self = this, size = parseFloat(bytes), i, func = self.fileSizeGetter, sizes, out;
-            if (!$.isNumeric(bytes) || !$.isNumeric(size)) {
-                return '';
-            }
-            if (typeof func === 'function') {
-                out = func(size);
-            } else {
-                if (size === 0) {
-                    out = '0.00 B';
-                } else {
-                    i = Math.floor(Math.log(size) / Math.log(1024));
-                    sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-                    out = (size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + sizes[i];
-                }
-            }
-            return self._getLayoutTemplate('size').replace('{sizeText}', out);
-        },
-        _generatePreviewTemplate: function (cat, data, fname, ftype, previewId, isError, size, frameClass, foot, ind, templ) {
-            var self = this, caption = self.slug(fname), prevContent, zoomContent = '', styleAttribs = '',
-                screenW = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth,
-                config = screenW < 400 ? (self.previewSettingsSmall[cat] || self.defaults.previewSettingsSmall[cat]) :
-                    (self.previewSettings[cat] || self.defaults.previewSettings[cat]),
-                footer = foot || self._renderFileFooter(caption, size, 'auto', isError),
-                hasIconSetting = self._getPreviewIcon(fname), typeCss = 'type-default',
-                forcePrevIcon = hasIconSetting && self.preferIconicPreview,
-                forceZoomIcon = hasIconSetting && self.preferIconicZoomPreview, getContent;
-            if (config) {
-                $.each(config, function (key, val) {
-                    styleAttribs += key + ':' + val + ';';
-                });
-            }
-            getContent = function (c, d, zoom, frameCss) {
-                var id = zoom ? 'zoom-' + previewId : previewId, tmplt = self._getPreviewTemplate(c),
-                    css = (frameClass || '') + ' ' + frameCss;
-                if (self.frameClass) {
-                    css = self.frameClass + ' ' + css;
-                }
-                if (zoom) {
-                    css = css.replace(' ' + $h.SORT_CSS, '');
-                }
-                tmplt = self._parseFilePreviewIcon(tmplt, fname);
-                if (c === 'text') {
-                    d = $h.htmlEncode(d);
-                }
-                if (cat === 'object' && !ftype) {
-                    $.each(self.defaults.fileTypeSettings, function (key, func) {
-                        if (key === 'object' || key === 'other') {
-                            return;
-                        }
-                        if (func(fname, ftype)) {
-                            typeCss = 'type-' + key;
-                        }
-                    });
-                }
-                return tmplt.setTokens({
-                    'previewId': id,
-                    'caption': caption,
-                    'frameClass': css,
-                    'type': ftype,
-                    'fileindex': ind,
-                    'typeCss': typeCss,
-                    'footer': footer,
-                    'data': d,
-                    'template': templ || cat,
-                    'style': styleAttribs ? 'style="' + styleAttribs + '"' : ''
-                });
-            };
-            ind = ind || previewId.slice(previewId.lastIndexOf('-') + 1);
-            if (self.fileActionSettings.showZoom) {
-                zoomContent = getContent((forceZoomIcon ? 'other' : cat), data, true, 'kv-zoom-thumb');
-            }
-            zoomContent = '\n' + self._getLayoutTemplate('zoomCache').replace('{zoomContent}', zoomContent);
-            prevContent = getContent((forcePrevIcon ? 'other' : cat), data, false, 'kv-preview-thumb');
-            return prevContent + zoomContent;
-        },
-        _addToPreview: function ($preview, content) {
-            var self = this;
-            return self.reversePreviewOrder ? $preview.prepend(content) : $preview.append(content);
-        },
-        _previewDefault: function (file, previewId, isDisabled) {
-            var self = this, $preview = self.$preview;
-            if (!self.showPreview) {
-                return;
-            }
-            var fname = file ? file.name : '', ftype = file ? file.type : '', content, size = file.size || 0,
-                caption = self.slug(fname), isError = isDisabled === true && !self.isAjaxUpload,
-                data = $h.objUrl.createObjectURL(file);
-            self._clearDefaultPreview();
-            content = self._generatePreviewTemplate('other', data, fname, ftype, previewId, isError, size);
-            self._addToPreview($preview, content);
-            self._setThumbAttr(previewId, caption, size);
-            if (isDisabled === true && self.isAjaxUpload) {
-                self._setThumbStatus($('#' + previewId), 'Error');
-            }
-        },
-        _previewFile: function (i, file, theFile, previewId, data, fileInfo) {
-            if (!this.showPreview) {
-                return;
-            }
-            var self = this, fname = file ? file.name : '', ftype = fileInfo.type, caption = fileInfo.name,
-                cat = self._parseFileType(ftype, fname), types = self.allowedPreviewTypes, content,
-                mimes = self.allowedPreviewMimeTypes, $preview = self.$preview, fsize = file.size || 0,
-                chkTypes = types && types.indexOf(cat) >= 0, chkMimes = mimes && mimes.indexOf(ftype) !== -1,
-                iData = (cat === 'text' || cat === 'html' || cat === 'image') ? theFile.target.result : data;
-            /** @namespace window.DOMPurify */
-            if (cat === 'html' && self.purifyHtml && window.DOMPurify) {
-                iData = window.DOMPurify.sanitize(iData);
-            }
-            if (chkTypes || chkMimes) {
-                content = self._generatePreviewTemplate(cat, iData, fname, ftype, previewId, false, fsize);
-                self._clearDefaultPreview();
-                self._addToPreview($preview, content);
-                var $img = $preview.find('#' + previewId + ' img');
-                if ($img.length && self.autoOrientImage) {
-                    $h.validateOrientation(file, function (value) {
-                        if (!value) {
-                            self._validateImage(previewId, caption, ftype, fsize, iData);
-                            return;
-                        }
-                        var $zoomImg = $preview.find('#zoom-' + previewId + ' img'), css = 'rotate-' + value;
-                        if (value > 4) {
-                            css += ($img.width() > $img.height() ? ' is-portrait-gt4' : ' is-landscape-gt4');
-                        }
-                        $h.addCss($img, css);
-                        $h.addCss($zoomImg, css);
-                        self._raise('fileimageoriented', {'$img': $img, 'file': file});
-                        self._validateImage(previewId, caption, ftype, fsize, iData);
-                        $h.adjustOrientedImage($img);
-                    });
-                } else {
-                    self._validateImage(previewId, caption, ftype, fsize, iData);
-                }
-            } else {
-                self._previewDefault(file, previewId);
-            }
-            self._setThumbAttr(previewId, caption, fsize);
-            self._initSortable();
-        },
-        _setThumbAttr: function (id, caption, size) {
-            var self = this, $frame = $('#' + id);
-            if ($frame.length) {
-                size = size && size > 0 ? self._getSize(size) : '';
-                $frame.data({'caption': caption, 'size': size});
-            }
-        },
-        _setInitThumbAttr: function () {
-            var self = this, data = self.previewCache.data, len = self.previewCache.count(), config,
-                caption, size, previewId;
-            if (len === 0) {
-                return;
-            }
-            for (var i = 0; i < len; i++) {
-                config = data.config[i];
-                previewId = self.previewInitId + '-' + 'init_' + i;
-                caption = $h.ifSet('caption', config, $h.ifSet('filename', config));
-                size = $h.ifSet('size', config);
-                self._setThumbAttr(previewId, caption, size);
-            }
-        },
-        _slugDefault: function (text) {
-            return $h.isEmpty(text) ? '' : String(text).replace(/[\[\]\/\{}:;#%=\(\)\*\+\?\\\^\$\|<>&"']/g, '_');
-        },
-        _updateFileDetails: function (numFiles) {
-            var self = this, $el = self.$element, fileStack = self.getFileStack(),
-                name = ($h.isIE(9) && $h.findFileName($el.val())) ||
-                    ($el[0].files[0] && $el[0].files[0].name) || (fileStack.length && fileStack[0].name) || '',
-                label = self.slug(name), n = self.isAjaxUpload ? fileStack.length : numFiles,
-                nFiles = self.previewCache.count() + n, log = n === 1 ? label : self._getMsgSelected(nFiles);
-            if (self.isError) {
-                self.$previewContainer.removeClass('file-thumb-loading');
-                self.$previewStatus.html('');
-                self.$captionContainer.removeClass('icon-visible');
-            } else {
-                self._showFileIcon();
-            }
-            self._setCaption(log, self.isError);
-            self.$container.removeClass('file-input-new file-input-ajax-new');
-            if (arguments.length === 1) {
-                self._raise('fileselect', [numFiles, label]);
-            }
-            if (self.previewCache.count()) {
-                self._initPreviewActions();
-            }
-        },
-        _setThumbStatus: function ($thumb, status) {
-            var self = this;
-            if (!self.showPreview) {
-                return;
-            }
-            var icon = 'indicator' + status, msg = icon + 'Title',
-                css = 'file-preview-' + status.toLowerCase(),
-                $indicator = $thumb.find('.file-upload-indicator'),
-                config = self.fileActionSettings;
-            $thumb.removeClass('file-preview-success file-preview-error file-preview-loading');
-            if (status === 'Success') {
-                $thumb.find('.file-drag-handle').remove();
-            }
-            $indicator.html(config[icon]);
-            $indicator.attr('title', config[msg]);
-            $thumb.addClass(css);
-            if (status === 'Error' && !self.retryErrorUploads) {
-                $thumb.find('.kv-file-upload').attr('disabled', true);
-            }
-        },
-        _setProgressCancelled: function () {
-            var self = this;
-            self._setProgress(101, self.$progress, self.msgCancelled);
-        },
-        _setProgress: function (p, $el, error) {
-            var self = this, pct = Math.min(p, 100), out, pctLimit = self.progressUploadThreshold,
-                t = p <= 100 ? self.progressTemplate : self.progressCompleteTemplate,
-                template = pct < 100 ? self.progressTemplate : (error ? self.progressErrorTemplate : t);
-            $el = $el || self.$progress;
-            if (!$h.isEmpty(template)) {
-                if (pctLimit && pct > pctLimit && p <= 100) {
-                    out = template.setTokens({'percent': pctLimit, 'status': self.msgUploadThreshold});
-                } else {
-                    out = template.setTokens({'percent': pct, 'status': (p > 100 ? self.msgUploadEnd : pct + '%')});
-                }
-                $el.html(out);
-                if (error) {
-                    $el.find('[role="progressbar"]').html(error);
-                }
-            }
-        },
-        _setFileDropZoneTitle: function () {
-            var self = this, $zone = self.$container.find('.file-drop-zone'), title = self.dropZoneTitle, strFiles;
-            if (self.isClickable) {
-                strFiles = $h.isEmpty(self.$element.attr('multiple')) ? self.fileSingle : self.filePlural;
-                title += self.dropZoneClickTitle.replace('{files}', strFiles);
-            }
-            $zone.find('.' + self.dropZoneTitleClass).remove();
-            if (!self.showPreview || $zone.length === 0 || self.getFileStack().length > 0 || !self.dropZoneEnabled ||
-                (!self.isAjaxUpload && self.$element.files)) {
-                return;
-            }
-            if ($zone.find($h.FRAMES).length === 0 && $h.isEmpty(self.defaultPreviewContent)) {
-                $zone.prepend('<div class="' + self.dropZoneTitleClass + '">' + title + '</div>');
-            }
-            self.$container.removeClass('file-input-new');
-            $h.addCss(self.$container, 'file-input-ajax-new');
-        },
-        _setAsyncUploadStatus: function (previewId, pct, total) {
-            var self = this, sum = 0;
-            self._setProgress(pct, $('#' + previewId).find('.file-thumb-progress'));
-            self.uploadStatus[previewId] = pct;
-            $.each(self.uploadStatus, function (key, value) {
-                sum += value;
-            });
-            self._setProgress(Math.floor(sum / total));
-        },
-        _validateMinCount: function () {
-            var self = this, len = self.isAjaxUpload ? self.getFileStack().length : self.$element.get(0).files.length;
-            if (self.validateInitialCount && self.minFileCount > 0 && self._getFileCount(len - 1) < self.minFileCount) {
-                self._noFilesError({});
-                return false;
-            }
-            return true;
-        },
-        _getFileCount: function (fileCount) {
-            var self = this, addCount = 0;
-            if (self.validateInitialCount && !self.overwriteInitial) {
-                addCount = self.previewCache.count();
-                fileCount += addCount;
-            }
-            return fileCount;
-        },
-        _getFileId: function (file) {
-            var self = this, custom = self.generateFileId, relativePath;
-            if (typeof custom === 'function') {
-                return custom(file, event);
-            }
-            if (!file) {
-                return null;
-            }
-            /** @namespace file.webkitRelativePath */
-            relativePath = String(file.webkitRelativePath || file.fileName || file.name || null);
-            if (!relativePath) {
-                return null;
-            }
-            return (file.size + '-' + relativePath.replace(/[^0-9a-zA-Z_-]/img, ''));
-        },
-        _getFileName: function (file) {
-            return file && file.name ? this.slug(file.name) : undefined;
-        },
-        _getFileIds: function (skipNull) {
-            var self = this;
-            return self.fileids.filter(function (n) {
-                return (skipNull ? n !== undefined : n !== undefined && n !== null);
-            });
-        },
-        _getFileNames: function (skipNull) {
-            var self = this;
-            return self.filenames.filter(function (n) {
-                return (skipNull ? n !== undefined : n !== undefined && n !== null);
-            });
-        },
-        _setPreviewError: function ($thumb, i, val, repeat) {
-            var self = this;
-            if (i !== undefined) {
-                self.updateStack(i, val);
-            }
-            if (!self.showPreview) {
-                return;
-            }
-            if (self.removeFromPreviewOnError && !repeat) {
-                $thumb.remove();
-                return;
-            } else {
-                self._setThumbStatus($thumb, 'Error');
-            }
-            self._refreshUploadButton($thumb, repeat);
-        },
-        _refreshUploadButton: function ($thumb, repeat) {
-            var self = this, $btn = $thumb.find('.kv-file-upload'), cfg = self.fileActionSettings,
-                icon = cfg.uploadIcon, title = cfg.uploadTitle;
-            if (!$btn.length) {
-                return;
-            }
-            if (repeat) {
-                icon = cfg.uploadRetryIcon;
-                title = cfg.uploadRetryTitle;
-            }
-            $btn.attr('title', title).html(icon);
-        },
-        _checkDimensions: function (i, chk, $img, $thumb, fname, type, params) {
-            var self = this, msg, dim, tag = chk === 'Small' ? 'min' : 'max', limit = self[tag + 'Image' + type],
-                $imgEl, isValid;
-            if ($h.isEmpty(limit) || !$img.length) {
-                return;
-            }
-            $imgEl = $img[0];
-            dim = (type === 'Width') ? $imgEl.naturalWidth || $imgEl.width : $imgEl.naturalHeight || $imgEl.height;
-            isValid = chk === 'Small' ? dim >= limit : dim <= limit;
-            if (isValid) {
-                return;
-            }
-            msg = self['msgImage' + type + chk].setTokens({'name': fname, 'size': limit});
-            self._showUploadError(msg, params);
-            self._setPreviewError($thumb, i, null);
-        },
-        _validateImage: function (previewId, fname, ftype, fsize, iData) {
-            var self = this, $preview = self.$preview, params, w1, w2, $thumb = $preview.find("#" + previewId),
-                i = $thumb.attr('data-fileindex'), $img = $thumb.find('img'), exifObject;
-            fname = fname || 'Untitled';
-            $img.one('load', function () {
-                w1 = $thumb.width();
-                w2 = $preview.width();
-                if (w1 > w2) {
-                    $img.css('width', '100%');
-                }
-                params = {ind: i, id: previewId};
-                self._checkDimensions(i, 'Small', $img, $thumb, fname, 'Width', params);
-                self._checkDimensions(i, 'Small', $img, $thumb, fname, 'Height', params);
-                if (!self.resizeImage) {
-                    self._checkDimensions(i, 'Large', $img, $thumb, fname, 'Width', params);
-                    self._checkDimensions(i, 'Large', $img, $thumb, fname, 'Height', params);
-                }
-                self._raise('fileimageloaded', [previewId]);
+    function runIfPresent(handle) {
+        // From the spec: "Wait until any invocations of this algorithm started before this one have completed."
+        // So if we're currently running a task, we'll need to delay this invocation.
+        if (currentlyRunningATask) {
+            // Delay by doing a setTimeout. setImmediate was tried instead, but in Firefox 7 it generated a
+            // "too much recursion" error.
+            setTimeout(runIfPresent, 0, handle);
+        } else {
+            var task = tasksByHandle[handle];
+            if (task) {
+                currentlyRunningATask = true;
                 try {
-                    exifObject = window.piexif ? window.piexif.load(iData) : null;
-                } catch (err) {
-                    exifObject = null;
+                    run(task);
+                } finally {
+                    clearImmediate(handle);
+                    currentlyRunningATask = false;
                 }
-                self.loadedImages.push({
-                    ind: i,
-                    img: $img,
-                    thumb: $thumb,
-                    pid: previewId,
-                    typ: ftype,
-                    siz: fsize,
-                    validated: false,
-                    imgData: iData,
-                    exifObj: exifObject
-                });
-                $thumb.data('exif', exifObject);
-                self._validateAllImages();
-            }).one('error', function () {
-                self._raise('fileimageloaderror', [previewId]);
-            }).each(function () {
-                if (this.complete) {
-                    $(this).trigger('load');
-                } else {
-                    if (this.error) {
-                        $(this).trigger('error');
-                    }
-                }
-            });
-        },
-        _validateAllImages: function () {
-            var self = this, i, counter = {val: 0}, numImgs = self.loadedImages.length, config,
-                fsize, minSize = self.resizeIfSizeMoreThan;
-            if (numImgs !== self.totalImagesCount) {
-                return;
             }
-            self._raise('fileimagesloaded');
-            if (!self.resizeImage) {
-                return;
-            }
-            for (i = 0; i < self.loadedImages.length; i++) {
-                config = self.loadedImages[i];
-                if (config.validated) {
-                    continue;
-                }
-                fsize = config.siz;
-                if (fsize && fsize > minSize * 1000) {
-                    self._getResizedImage(config, counter, numImgs);
-                }
-                self.loadedImages[i].validated = true;
-            }
-        },
-        _getResizedImage: function (config, counter, numImgs) {
-            var self = this, img = $(config.img)[0], width = img.naturalWidth, height = img.naturalHeight, blob,
-                ratio = 1, maxWidth = self.maxImageWidth || width, maxHeight = self.maxImageHeight || height,
-                isValidImage = !!(width && height), chkWidth, chkHeight, canvas = self.imageCanvas, dataURI,
-                context = self.imageCanvasContext, type = config.typ, pid = config.pid, ind = config.ind,
-                $thumb = config.thumb, throwError, msg, exifObj = config.exifObj, exifStr;
-            throwError = function (msg, params, ev) {
-                if (self.isAjaxUpload) {
-                    self._showUploadError(msg, params, ev);
-                } else {
-                    self._showError(msg, params, ev);
-                }
-                self._setPreviewError($thumb, ind);
+        }
+    }
+
+    function installNextTickImplementation() {
+        registerImmediate = function(handle) {
+            process.nextTick(function () { runIfPresent(handle); });
+        };
+    }
+
+    function canUsePostMessage() {
+        // The test against `importScripts` prevents this implementation from being installed inside a web worker,
+        // where `global.postMessage` means something completely different and can't be used for this purpose.
+        if (global.postMessage && !global.importScripts) {
+            var postMessageIsAsynchronous = true;
+            var oldOnMessage = global.onmessage;
+            global.onmessage = function() {
+                postMessageIsAsynchronous = false;
             };
-            if (!self.filestack[ind] || !isValidImage || (width <= maxWidth && height <= maxHeight)) {
-                if (isValidImage && self.filestack[ind]) {
-                    self._raise('fileimageresized', [pid, ind]);
-                }
-                counter.val++;
-                if (counter.val === numImgs) {
-                    self._raise('fileimagesresized');
-                }
-                if (!isValidImage) {
-                    throwError(self.msgImageResizeError, {id: pid, 'index': ind}, 'fileimageresizeerror');
-                    return;
-                }
-            }
-            type = type || self.resizeDefaultImageType;
-            chkWidth = width > maxWidth;
-            chkHeight = height > maxHeight;
-            if (self.resizePreference === 'width') {
-                ratio = chkWidth ? maxWidth / width : (chkHeight ? maxHeight / height : 1);
-            } else {
-                ratio = chkHeight ? maxHeight / height : (chkWidth ? maxWidth / width : 1);
-            }
-            self._resetCanvas();
-            width *= ratio;
-            height *= ratio;
-            canvas.width = width;
-            canvas.height = height;
-            try {
-                context.drawImage(img, 0, 0, width, height);
-                dataURI = canvas.toDataURL(type, self.resizeQuality);
-                if (exifObj) {
-                    exifStr = window.piexif.dump(exifObj);
-                    dataURI = window.piexif.insert(exifStr, dataURI);
-                }
-                blob = $h.dataURI2Blob(dataURI);
-                self.filestack[ind] = blob;
-                self._raise('fileimageresized', [pid, ind]);
-                counter.val++;
-                if (counter.val === numImgs) {
-                    self._raise('fileimagesresized', [undefined, undefined]);
-                }
-                if (!(blob instanceof Blob)) {
-                    throwError(self.msgImageResizeError, {id: pid, 'index': ind}, 'fileimageresizeerror');
-                }
-            }
-            catch (err) {
-                counter.val++;
-                if (counter.val === numImgs) {
-                    self._raise('fileimagesresized', [undefined, undefined]);
-                }
-                msg = self.msgImageResizeException.replace('{errors}', err.message);
-                throwError(msg, {id: pid, 'index': ind}, 'fileimageresizeexception');
-            }
-        },
-        _initBrowse: function ($container) {
-            var self = this;
-            if (self.showBrowse) {
-                self.$btnFile = $container.find('.btn-file');
-                self.$btnFile.append(self.$element);
-            } else {
-                self.$element.hide();
-            }
-        },
-        _initCaption: function () {
-            var self = this, cap = self.initialCaption || '';
-            if (self.overwriteInitial || $h.isEmpty(cap)) {
-                self.$caption.val('');
-                return false;
-            }
-            self._setCaption(cap);
-            return true;
-        },
-        _setCaption: function (content, isError) {
-            var self = this, title, out, icon, n, cap, stack = self.getFileStack();
-            if (!self.$caption.length) {
-                return;
-            }
-            self.$captionContainer.removeClass('icon-visible');
-            if (isError) {
-                title = $('<div>' + self.msgValidationError + '</div>').text();
-                n = stack.length;
-                if (n) {
-                    cap = n === 1 && stack[0] ? self._getFileNames()[0] : self._getMsgSelected(n);
-                } else {
-                    cap = self._getMsgSelected(self.msgNo);
-                }
-                out = $h.isEmpty(content) ? cap : content;
-                icon = '<span class="' + self.msgValidationErrorClass + '">' + self.msgValidationErrorIcon + '</span>';
-            } else {
-                if ($h.isEmpty(content)) {
-                    return;
-                }
-                title = $('<div>' + content + '</div>').text();
-                out = title;
-                icon = self._getLayoutTemplate('fileIcon');
-            }
-            self.$captionContainer.addClass('icon-visible');
-            self.$caption.attr('title', title).val(out);
-            self.$captionIcon.html(icon);
-        },
-        _createContainer: function () {
-            var self = this, attribs = {"class": 'file-input file-input-new' + (self.rtl ? ' kv-rtl' : '')},
-                $container = $(document.createElement("div")).attr(attribs).html(self._renderMain());
-            self.$element.before($container);
-            self._initBrowse($container);
-            if (self.theme) {
-                $container.addClass('theme-' + self.theme);
-            }
-            return $container;
-        },
-        _refreshContainer: function () {
-            var self = this, $container = self.$container;
-            $container.before(self.$element);
-            $container.html(self._renderMain());
-            self._initBrowse($container);
-            self._validateDisabled();
-        },
-        _validateDisabled: function () {
-            var self = this;
-            self.$caption.attr({readonly: self.isDisabled});
-        },
-        _renderMain: function () {
-            var self = this,
-                dropCss = self.dropZoneEnabled ? ' file-drop-zone' : 'file-drop-disabled',
-                close = !self.showClose ? '' : self._getLayoutTemplate('close'),
-                preview = !self.showPreview ? '' : self._getLayoutTemplate('preview')
-                    .setTokens({'class': self.previewClass, 'dropClass': dropCss}),
-                css = self.isDisabled ? self.captionClass + ' file-caption-disabled' : self.captionClass,
-                caption = self.captionTemplate.setTokens({'class': css + ' kv-fileinput-caption'});
-            return self.mainTemplate.setTokens({
-                'class': self.mainClass + (!self.showBrowse && self.showCaption ? ' no-browse' : ''),
-                'preview': preview,
-                'close': close,
-                'caption': caption,
-                'upload': self._renderButton('upload'),
-                'remove': self._renderButton('remove'),
-                'cancel': self._renderButton('cancel'),
-                'browse': self._renderButton('browse')
-            });
+            global.postMessage("", "*");
+            global.onmessage = oldOnMessage;
+            return postMessageIsAsynchronous;
+        }
+    }
 
-        },
-        _renderButton: function (type) {
-            var self = this, tmplt = self._getLayoutTemplate('btnDefault'), css = self[type + 'Class'],
-                title = self[type + 'Title'], icon = self[type + 'Icon'], label = self[type + 'Label'],
-                status = self.isDisabled ? ' disabled' : '', btnType = 'button';
-            switch (type) {
-                case 'remove':
-                    if (!self.showRemove) {
-                        return '';
-                    }
-                    break;
-                case 'cancel':
-                    if (!self.showCancel) {
-                        return '';
-                    }
-                    css += ' kv-hidden';
-                    break;
-                case 'upload':
-                    if (!self.showUpload) {
-                        return '';
-                    }
-                    if (self.isAjaxUpload && !self.isDisabled) {
-                        tmplt = self._getLayoutTemplate('btnLink').replace('{href}', self.uploadUrl);
-                    } else {
-                        btnType = 'submit';
-                    }
-                    break;
-                case 'browse':
-                    if (!self.showBrowse) {
-                        return '';
-                    }
-                    tmplt = self._getLayoutTemplate('btnBrowse');
-                    break;
-                default:
-                    return '';
-            }
+    function installPostMessageImplementation() {
+        // Installs an event handler on `global` for the `message` event: see
+        // * https://developer.mozilla.org/en/DOM/window.postMessage
+        // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
 
-            css += type === 'browse' ? ' btn-file' : ' fileinput-' + type + ' fileinput-' + type + '-button';
-            if (!$h.isEmpty(label)) {
-                label = ' <span class="' + self.buttonLabelClass + '">' + label + '</span>';
+        var messagePrefix = "setImmediate$" + Math.random() + "$";
+        var onGlobalMessage = function(event) {
+            if (event.source === global &&
+                typeof event.data === "string" &&
+                event.data.indexOf(messagePrefix) === 0) {
+                runIfPresent(+event.data.slice(messagePrefix.length));
             }
-            return tmplt.setTokens({
-                'type': btnType, 'css': css, 'title': title, 'status': status, 'icon': icon, 'label': label
-            });
-        },
-        _renderThumbProgress: function () {
-            var self = this;
-            return '<div class="file-thumb-progress kv-hidden">' +
-                self.progressTemplate.setTokens({'percent': '0', 'status': self.msgUploadBegin}) +
-                '</div>';
-        },
-        _renderFileFooter: function (caption, size, width, isError) {
-            var self = this, config = self.fileActionSettings, rem = config.showRemove, drg = config.showDrag,
-                upl = config.showUpload, zoom = config.showZoom, out,
-                template = self._getLayoutTemplate('footer'), tInd = self._getLayoutTemplate('indicator'),
-                ind = isError ? config.indicatorError : config.indicatorNew,
-                title = isError ? config.indicatorErrorTitle : config.indicatorNewTitle,
-                indicator = tInd.setTokens({'indicator': ind, 'indicatorTitle': title});
-            size = self._getSize(size);
-            if (self.isAjaxUpload) {
-                out = template.setTokens({
-                    'actions': self._renderFileActions(upl, false, rem, zoom, drg, false, false, false),
-                    'caption': caption,
-                    'size': size,
-                    'width': width,
-                    'progress': self._renderThumbProgress(),
-                    'indicator': indicator
-                });
-            } else {
-                out = template.setTokens({
-                    'actions': self._renderFileActions(false, false, false, zoom, drg, false, false, false),
-                    'caption': caption,
-                    'size': size,
-                    'width': width,
-                    'progress': '',
-                    'indicator': indicator
-                });
-            }
-            out = $h.replaceTags(out, self.previewThumbTags);
-            return out;
-        },
-        _renderFileActions: function (showUpl, showDwn, showDel, showZoom, showDrag, disabled, url, key, isInit, dUrl, dFile) {
-            if (!showUpl && !showDwn && !showDel && !showZoom && !showDrag) {
-                return '';
-            }
-            var self = this, vUrl = url === false ? '' : ' data-url="' + url + '"',
-                vKey = key === false ? '' : ' data-key="' + key + '"', btnDelete = '', btnUpload = '', btnDownload = '',
-                btnZoom = '', btnDrag = '', css, template = self._getLayoutTemplate('actions'),
-                config = self.fileActionSettings,
-                otherButtons = self.otherActionButtons.setTokens({'dataKey': vKey, 'key': key}),
-                removeClass = disabled ? config.removeClass + ' disabled' : config.removeClass;
-            if (showDel) {
-                btnDelete = self._getLayoutTemplate('actionDelete').setTokens({
-                    'removeClass': removeClass,
-                    'removeIcon': config.removeIcon,
-                    'removeTitle': config.removeTitle,
-                    'dataUrl': vUrl,
-                    'dataKey': vKey,
-                    'key': key
-                });
-            }
-            if (showUpl) {
-                btnUpload = self._getLayoutTemplate('actionUpload').setTokens({
-                    'uploadClass': config.uploadClass,
-                    'uploadIcon': config.uploadIcon,
-                    'uploadTitle': config.uploadTitle
-                });
-            }
-            if (showDwn) {
-                btnDownload = self._getLayoutTemplate('actionDownload').setTokens({
-                    'downloadClass': config.downloadClass,
-                    'downloadIcon': config.downloadIcon,
-                    'downloadTitle': config.downloadTitle,
-                    'downloadUrl': dUrl || self.initialPreviewDownloadUrl
-                });
-                btnDownload = btnDownload.setTokens({'filename': dFile, 'key': key});
-            }
-            if (showZoom) {
-                btnZoom = self._getLayoutTemplate('actionZoom').setTokens({
-                    'zoomClass': config.zoomClass,
-                    'zoomIcon': config.zoomIcon,
-                    'zoomTitle': config.zoomTitle
-                });
-            }
-            if (showDrag && isInit) {
-                css = 'drag-handle-init ' + config.dragClass;
-                btnDrag = self._getLayoutTemplate('actionDrag').setTokens({
-                    'dragClass': css,
-                    'dragTitle': config.dragTitle,
-                    'dragIcon': config.dragIcon
-                });
-            }
-            return template.setTokens({
-                'delete': btnDelete,
-                'upload': btnUpload,
-                'download': btnDownload,
-                'zoom': btnZoom,
-                'drag': btnDrag,
-                'other': otherButtons
-            });
-        },
-        _browse: function (e) {
-            var self = this;
-            self._raise('filebrowse');
-            if (e && e.isDefaultPrevented()) {
-                return;
-            }
-            if (self.isError && !self.isAjaxUpload) {
-                self.clear();
-            }
-            self.$captionContainer.focus();
-        },
-        _filterDuplicate: function (file, files, fileIds) {
-            var self = this, fileId = self._getFileId(file);
+        };
 
-            if (fileId && fileIds && fileIds.indexOf(fileId) > -1) {
-                return;
-            }
-            if (!fileIds) {
-                fileIds = [];
-            }
-            files.push(file);
-            fileIds.push(fileId);
-        },
-        _change: function (e) {
-            var self = this;
-            if (self.changeTriggered) {
-                return;
-            }
-            var $el = self.$element, isDragDrop = arguments.length > 1, isAjaxUpload = self.isAjaxUpload,
-                tfiles = [], files = isDragDrop ? arguments[1] : $el.get(0).files, total,
-                maxCount = !isAjaxUpload && $h.isEmpty($el.attr('multiple')) ? 1 : self.maxFileCount,
-                len, ctr = self.filestack.length, isSingleUpload = $h.isEmpty($el.attr('multiple')),
-                flagSingle = (isSingleUpload && ctr > 0), fileIds = self._getFileIds(),
-                throwError = function (mesg, file, previewId, index) {
-                    var p1 = $.extend(true, {}, self._getOutData({}, {}, files), {id: previewId, index: index}),
-                        p2 = {id: previewId, index: index, file: file, files: files};
-                    return isAjaxUpload ? self._showUploadError(mesg, p1) : self._showError(mesg, p2);
-                },
-                maxCountCheck = function (n, m) {
-                    var msg = self.msgFilesTooMany.replace('{m}', m).replace('{n}', n);
-                    self.isError = throwError(msg, null, null, null);
-                    self.$captionContainer.removeClass('icon-visible');
-                    self._setCaption('', true);
-                    self.$container.removeClass('file-input-new file-input-ajax-new');
-                };
-            self.reader = null;
-            self._resetUpload();
-            self._hideFileIcon();
-            if (self.dropZoneEnabled) {
-                self.$container.find('.file-drop-zone .' + self.dropZoneTitleClass).remove();
-            }
-            if (isAjaxUpload) {
-                $.each(files, function (vKey, vFile) {
-                    self._filterDuplicate(vFile, tfiles, fileIds);
-                });
-            } else {
-                if (e.target && e.target.files === undefined) {
-                    files = e.target.value ? [{name: e.target.value.replace(/^.+\\/, '')}] : [];
-                } else {
-                    files = e.target.files || {};
-                }
-                tfiles = files;
-            }
-            if ($h.isEmpty(tfiles) || tfiles.length === 0) {
-                if (!isAjaxUpload) {
-                    self.clear();
-                }
-                self._raise('fileselectnone');
-                return;
-            }
-            self._resetErrors();
-            len = tfiles.length;
-            total = self._getFileCount(isAjaxUpload ? (self.getFileStack().length + len) : len);
-            if (maxCount > 0 && total > maxCount) {
-                if (!self.autoReplace || len > maxCount) {
-                    maxCountCheck((self.autoReplace && len > maxCount ? len : total), maxCount);
-                    return;
-                }
-                if (total > maxCount) {
-                    self._resetPreviewThumbs(isAjaxUpload);
-                }
-            } else {
-                if (!isAjaxUpload || flagSingle) {
-                    self._resetPreviewThumbs(false);
-                    if (flagSingle) {
-                        self.clearStack();
-                    }
-                } else {
-                    if (isAjaxUpload && ctr === 0 && (!self.previewCache.count() || self.overwriteInitial)) {
-                        self._resetPreviewThumbs(true);
-                    }
-                }
-            }
-            if (self.isPreviewable) {
-                self.readFiles(tfiles);
-            } else {
-                self._updateFileDetails(1);
-            }
-        },
-        _abort: function (params) {
-            var self = this, data;
-            if (self.ajaxAborted && typeof self.ajaxAborted === "object" && self.ajaxAborted.message !== undefined) {
-                data = $.extend(true, {}, self._getOutData(), params);
-                data.abortData = self.ajaxAborted.data || {};
-                data.abortMessage = self.ajaxAborted.message;
-                self._setProgress(101, self.$progress, self.msgCancelled);
-                self._showUploadError(self.ajaxAborted.message, data, 'filecustomerror');
-                self.cancel();
-                return true;
-            }
-            return !!self.ajaxAborted;
-        },
-        _resetFileStack: function () {
-            var self = this, i = 0, newstack = [], newnames = [], newids = [];
-            self._getThumbs().each(function () {
-                var $thumb = $(this), ind = $thumb.attr('data-fileindex'), file = self.filestack[ind],
-                    pid = $thumb.attr('id');
-                if (ind === '-1' || ind === -1) {
-                    return;
-                }
-                if (file !== undefined) {
-                    newstack[i] = file;
-                    newnames[i] = self._getFileName(file);
-                    newids[i] = self._getFileId(file);
-                    $thumb.attr({'id': self.previewInitId + '-' + i, 'data-fileindex': i});
-                    i++;
-                } else {
-                    $thumb.attr({'id': 'uploaded-' + $h.uniqId(), 'data-fileindex': '-1'});
-                }
-                self.$preview.find('#zoom-' + pid).attr({
-                    'id': 'zoom-' + $thumb.attr('id'),
-                    'data-fileindex': $thumb.attr('data-fileindex')
-                });
-            });
-            self.filestack = newstack;
-            self.filenames = newnames;
-            self.fileids = newids;
-        },
-        _isFileSelectionValid: function (cnt) {
-            var self = this;
-            cnt = cnt || 0;
-            if (self.required && !self.getFilesCount()) {
-                self.$errorContainer.html('');
-                self._showUploadError(self.msgFileRequired);
-                return false;
-            }
-            if (self.minFileCount > 0 && self._getFileCount(cnt) < self.minFileCount) {
-                self._noFilesError({});
-                return false;
-            }
-            return true;
-        },
-        clearStack: function () {
-            var self = this;
-            self.filestack = [];
-            self.filenames = [];
-            self.fileids = [];
-            return self.$element;
-        },
-        updateStack: function (i, file) {
-            var self = this;
-            self.filestack[i] = file;
-            self.filenames[i] = self._getFileName(file);
-            self.fileids[i] = file && self._getFileId(file) || null;
-            return self.$element;
-        },
-        addToStack: function (file) {
-            var self = this;
-            self.filestack.push(file);
-            self.filenames.push(self._getFileName(file));
-            self.fileids.push(self._getFileId(file));
-            return self.$element;
-        },
-        getFileStack: function (skipNull) {
-            var self = this;
-            return self.filestack.filter(function (n) {
-                return (skipNull ? n !== undefined : n !== undefined && n !== null);
-            });
-        },
-        getFilesCount: function () {
-            var self = this, len = self.isAjaxUpload ? self.getFileStack().length : self.$element.get(0).files.length;
-            return self._getFileCount(len);
-        },
-        readFiles: function (files) {
-            this.reader = new FileReader();
-            var self = this, $el = self.$element, $preview = self.$preview, reader = self.reader,
-                $container = self.$previewContainer, $status = self.$previewStatus, msgLoading = self.msgLoading,
-                msgProgress = self.msgProgress, previewInitId = self.previewInitId, numFiles = files.length,
-                settings = self.fileTypeSettings, ctr = self.filestack.length, readFile,
-                fileTypes = self.allowedFileTypes, typLen = fileTypes ? fileTypes.length : 0,
-                fileExt = self.allowedFileExtensions, strExt = $h.isEmpty(fileExt) ? '' : fileExt.join(', '),
-                maxPreviewSize = self.maxFilePreviewSize && parseFloat(self.maxFilePreviewSize),
-                canPreview = $preview.length && (!maxPreviewSize || isNaN(maxPreviewSize)),
-                throwError = function (msg, file, previewId, index) {
-                    var p1 = $.extend(true, {}, self._getOutData({}, {}, files), {id: previewId, index: index}),
-                        p2 = {id: previewId, index: index, file: file, files: files}, $thumb;
-                    self._previewDefault(file, previewId, true);
-                    if (self.isAjaxUpload) {
-                        self.addToStack(undefined);
-                        setTimeout(function () {
-                            readFile(index + 1);
-                        }, 100);
-                    } else {
-                        numFiles = 0;
-                    }
-                    self._initFileActions();
-                    $thumb = $('#' + previewId);
-                    $thumb.find('.kv-file-upload').hide();
-                    if (self.removeFromPreviewOnError) {
-                        $thumb.remove();
-                    }
-                    self.isError = self.isAjaxUpload ? self._showUploadError(msg, p1) : self._showError(msg, p2);
-                    self._updateFileDetails(numFiles);
-                };
+        if (global.addEventListener) {
+            global.addEventListener("message", onGlobalMessage, false);
+        } else {
+            global.attachEvent("onmessage", onGlobalMessage);
+        }
 
-            self.loadedImages = [];
-            self.totalImagesCount = 0;
+        registerImmediate = function(handle) {
+            global.postMessage(messagePrefix + handle, "*");
+        };
+    }
 
-            $.each(files, function (key, file) {
-                var func = self.fileTypeSettings.image;
-                if (func && func(file.type)) {
-                    self.totalImagesCount++;
-                }
-            });
-            readFile = function (i) {
-                if ($h.isEmpty($el.attr('multiple'))) {
-                    numFiles = 1;
-                }
-                if (i >= numFiles) {
-                    if (self.isAjaxUpload && self.filestack.length > 0) {
-                        self._raise('filebatchselected', [self.getFileStack()]);
-                    } else {
-                        self._raise('filebatchselected', [files]);
-                    }
-                    $container.removeClass('file-thumb-loading');
-                    $status.html('');
-                    return;
-                }
-                var node = ctr + i, previewId = previewInitId + "-" + node, file = files[i], fSizeKB, j, msg,
-                    fnText = settings.text, fnImage = settings.image, fnHtml = settings.html, typ, chk, typ1, typ2,
-                    caption = file.name ? self.slug(file.name) : '', fileSize = (file.size || 0) / 1000,
-                    fileExtExpr = '', previewData = $h.objUrl.createObjectURL(file), fileCount = 0, strTypes = '',
-                    func, knownTypes = 0, isText, isHtml, isImage, txtFlag, processFileLoaded = function () {
-                        var msg = msgProgress.setTokens({
-                            'index': i + 1,
-                            'files': numFiles,
-                            'percent': 50,
-                            'name': caption
-                        });
-                        setTimeout(function () {
-                            $status.html(msg);
-                            self._updateFileDetails(numFiles);
-                            readFile(i + 1);
-                        }, 100);
-                        self._raise('fileloaded', [file, previewId, i, reader]);
-                    };
-                if (typLen > 0) {
-                    for (j = 0; j < typLen; j++) {
-                        typ1 = fileTypes[j];
-                        typ2 = self.msgFileTypes[typ1] || typ1;
-                        strTypes += j === 0 ? typ2 : ', ' + typ2;
-                    }
-                }
-                if (caption === false) {
-                    readFile(i + 1);
-                    return;
-                }
-                if (caption.length === 0) {
-                    msg = self.msgInvalidFileName.replace('{name}', $h.htmlEncode(file.name));
-                    throwError(msg, file, previewId, i);
-                    return;
-                }
-                if (!$h.isEmpty(fileExt)) {
-                    fileExtExpr = new RegExp('\\.(' + fileExt.join('|') + ')$', 'i');
-                }
-                fSizeKB = fileSize.toFixed(2);
-                if (self.maxFileSize > 0 && fileSize > self.maxFileSize) {
-                    msg = self.msgSizeTooLarge.setTokens({
-                        'name': caption,
-                        'size': fSizeKB,
-                        'maxSize': self.maxFileSize
-                    });
-                    throwError(msg, file, previewId, i);
-                    return;
-                }
-                if (self.minFileSize !== null && fileSize <= $h.getNum(self.minFileSize)) {
-                    msg = self.msgSizeTooSmall.setTokens({
-                        'name': caption,
-                        'size': fSizeKB,
-                        'minSize': self.minFileSize
-                    });
-                    throwError(msg, file, previewId, i);
-                    return;
-                }
-                if (!$h.isEmpty(fileTypes) && $h.isArray(fileTypes)) {
-                    for (j = 0; j < fileTypes.length; j += 1) {
-                        typ = fileTypes[j];
-                        func = settings[typ];
-                        fileCount += !func || (typeof func !== 'function') ? 0 : (func(file.type, file.name) ? 1 : 0);
-                    }
-                    if (fileCount === 0) {
-                        msg = self.msgInvalidFileType.setTokens({'name': caption, 'types': strTypes});
-                        throwError(msg, file, previewId, i);
-                        return;
-                    }
-                }
-                if (fileCount === 0 && !$h.isEmpty(fileExt) && $h.isArray(fileExt) && !$h.isEmpty(fileExtExpr)) {
-                    chk = $h.compare(caption, fileExtExpr);
-                    fileCount += $h.isEmpty(chk) ? 0 : chk.length;
-                    if (fileCount === 0) {
-                        msg = self.msgInvalidFileExtension.setTokens({'name': caption, 'extensions': strExt});
-                        throwError(msg, file, previewId, i);
-                        return;
-                    }
-                }
-                if (!self.showPreview) {
-                    if (self.isAjaxUpload) {
-                        self.addToStack(file);
-                    }
-                    setTimeout(function () {
-                        readFile(i + 1);
-                        self._updateFileDetails(numFiles);
-                    }, 100);
-                    self._raise('fileloaded', [file, previewId, i, reader]);
-                    return;
-                }
-                if (!canPreview && fileSize > maxPreviewSize) {
-                    self.addToStack(file);
-                    $container.addClass('file-thumb-loading');
-                    self._previewDefault(file, previewId);
-                    self._initFileActions();
-                    self._updateFileDetails(numFiles);
-                    readFile(i + 1);
-                    return;
-                }
-                if ($preview.length && FileReader !== undefined) {
-                    isText = fnText(file.type, caption);
-                    isHtml = fnHtml(file.type, caption);
-                    isImage = fnImage(file.type, caption);
-                    $status.html(msgLoading.replace('{index}', i + 1).replace('{files}', numFiles));
-                    $container.addClass('file-thumb-loading');
-                    reader.onerror = function (evt) {
-                        self._errorHandler(evt, caption);
-                    };
-                    reader.onload = function (theFile) {
-                        var hex, fileInfo, uint, byte, bytes = [], contents, mime, readTextImage = function (textFlag) {
-                            var newReader = new FileReader();
-                            newReader.onerror = function (theFileNew) {
-                                self._errorHandler(theFileNew, caption);
-                            };
-                            newReader.onload = function (theFileNew) {
-                                self._previewFile(i, file, theFileNew, previewId, previewData, fileInfo);
-                                self._initFileActions();
-                                processFileLoaded();
-                            };
-                            if (textFlag) {
-                                newReader.readAsText(file, self.textEncoding);
-                            } else {
-                                newReader.readAsDataURL(file);
-                            }
-                        };
-                        fileInfo = {'name': caption, 'type': file.type};
-                        $.each(settings, function (key, func) {
-                            if (key !== 'object' && key !== 'other' && func(file.type, caption)) {
-                                knownTypes++;
-                            }
-                        });
-                        if (knownTypes === 0) {// auto detect mime types from content if no known file types detected
-                            uint = new Uint8Array(theFile.target.result);
-                            for (j = 0; j < uint.length; j++) {
-                                byte = uint[j].toString(16);
-                                bytes.push(byte);
-                            }
-                            hex = bytes.join('').toLowerCase().substring(0, 8);
-                            mime = $h.getMimeType(hex, '', '');
-                            if ($h.isEmpty(mime)) { // look for ascii text content
-                                contents = $h.arrayBuffer2String(reader.result);
-                                mime = $h.isSvg(contents) ? 'image/svg+xml' : $h.getMimeType(hex, contents, file.type);
-                            }
-                            fileInfo = {'name': caption, 'type': mime};
-                            isText = fnText(mime, '');
-                            isHtml = fnHtml(mime, '');
-                            isImage = fnImage(mime, '');
-                            txtFlag = isText || isHtml;
-                            if (txtFlag || isImage) {
-                                readTextImage(txtFlag);
-                                return;
-                            }
-                        }
-                        self._previewFile(i, file, theFile, previewId, previewData, fileInfo);
-                        self._initFileActions();
-                        processFileLoaded();
-                    };
-                    reader.onprogress = function (data) {
-                        if (data.lengthComputable) {
-                            var fact = (data.loaded / data.total) * 100, progress = Math.ceil(fact);
-                            msg = msgProgress.setTokens({
-                                'index': i + 1,
-                                'files': numFiles,
-                                'percent': progress,
-                                'name': caption
-                            });
-                            setTimeout(function () {
-                                $status.html(msg);
-                            }, 100);
-                        }
-                    };
+    function installMessageChannelImplementation() {
+        var channel = new MessageChannel();
+        channel.port1.onmessage = function(event) {
+            var handle = event.data;
+            runIfPresent(handle);
+        };
 
-                    if (isText || isHtml) {
-                        reader.readAsText(file, self.textEncoding);
-                    } else {
-                        if (isImage) {
-                            reader.readAsDataURL(file);
-                        } else {
-                            reader.readAsArrayBuffer(file);
-                        }
-                    }
-                } else {
-                    self._previewDefault(file, previewId);
-                    setTimeout(function () {
-                        readFile(i + 1);
-                        self._updateFileDetails(numFiles);
-                    }, 100);
-                    self._raise('fileloaded', [file, previewId, i, reader]);
-                }
-                self.addToStack(file);
+        registerImmediate = function(handle) {
+            channel.port2.postMessage(handle);
+        };
+    }
+
+    function installReadyStateChangeImplementation() {
+        var html = doc.documentElement;
+        registerImmediate = function(handle) {
+            // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
+            // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
+            var script = doc.createElement("script");
+            script.onreadystatechange = function () {
+                runIfPresent(handle);
+                script.onreadystatechange = null;
+                html.removeChild(script);
+                script = null;
             };
+            html.appendChild(script);
+        };
+    }
 
-            readFile(0);
-            self._updateFileDetails(numFiles, false);
-        },
-        lock: function () {
-            var self = this;
-            self._resetErrors();
-            self.disable();
-            if (self.showRemove) {
-                self.$container.find('.fileinput-remove').hide();
-            }
-            if (self.showCancel) {
-                self.$container.find('.fileinput-cancel').show();
-            }
-            self._raise('filelock', [self.filestack, self._getExtraData()]);
-            return self.$element;
-        },
-        unlock: function (reset) {
-            var self = this;
-            if (reset === undefined) {
-                reset = true;
-            }
-            self.enable();
-            if (self.showCancel) {
-                self.$container.find('.fileinput-cancel').hide();
-            }
-            if (self.showRemove) {
-                self.$container.find('.fileinput-remove').show();
-            }
-            if (reset) {
-                self._resetFileStack();
-            }
-            self._raise('fileunlock', [self.filestack, self._getExtraData()]);
-            return self.$element;
-        },
-        cancel: function () {
-            var self = this, xhr = self.ajaxRequests, len = xhr.length, i;
-            if (len > 0) {
-                for (i = 0; i < len; i += 1) {
-                    self.cancelling = true;
-                    xhr[i].abort();
-                }
-            }
-            self._setProgressCancelled();
-            self._getThumbs().each(function () {
-                var $thumb = $(this), ind = $thumb.attr('data-fileindex');
-                $thumb.removeClass('file-uploading');
-                if (self.filestack[ind] !== undefined) {
-                    $thumb.find('.kv-file-upload').removeClass('disabled').removeAttr('disabled');
-                    $thumb.find('.kv-file-remove').removeClass('disabled').removeAttr('disabled');
-                }
-                self.unlock();
-            });
-            return self.$element;
-        },
-        clear: function () {
-            var self = this, cap;
-            if (!self._raise('fileclear')) {
-                return;
-            }
-            self.$btnUpload.removeAttr('disabled');
-            self._getThumbs().find('video,audio,img').each(function () {
-                $h.cleanMemory($(this));
-            });
-            self._resetUpload();
-            self.clearStack();
-            self._clearFileInput();
-            self._resetErrors(true);
-            if (self._hasInitialPreview()) {
-                self._showFileIcon();
-                self._resetPreview();
-                self._initPreviewActions();
-                self.$container.removeClass('file-input-new');
-            } else {
-                self._getThumbs().each(function () {
-                    self._clearObjects($(this));
-                });
-                if (self.isAjaxUpload) {
-                    self.previewCache.data = {};
-                }
-                self.$preview.html('');
-                cap = (!self.overwriteInitial && self.initialCaption.length > 0) ? self.initialCaption : '';
-                self.$caption.attr('title', '').val(cap);
-                $h.addCss(self.$container, 'file-input-new');
-                self._validateDefaultPreview();
-            }
-            if (self.$container.find($h.FRAMES).length === 0) {
-                if (!self._initCaption()) {
-                    self.$captionContainer.removeClass('icon-visible');
-                }
-            }
-            self._hideFileIcon();
-            self._raise('filecleared');
-            self.$captionContainer.focus();
-            self._setFileDropZoneTitle();
-            return self.$element;
-        },
-        reset: function () {
-            var self = this;
-            if (!self._raise('filereset')) {
-                return;
-            }
-            self._resetPreview();
-            self.$container.find('.fileinput-filename').text('');
-            $h.addCss(self.$container, 'file-input-new');
-            if (self.getFrames().length || self.dropZoneEnabled) {
-                self.$container.removeClass('file-input-new');
-            }
-            self.clearStack();
-            self.formdata = {};
-            self._setFileDropZoneTitle();
-            return self.$element;
-        },
-        disable: function () {
-            var self = this;
-            self.isDisabled = true;
-            self._raise('filedisabled');
-            self.$element.attr('disabled', 'disabled');
-            self.$container.find(".kv-fileinput-caption").addClass("file-caption-disabled");
-            self.$container.find(".fileinput-remove, .fileinput-upload, .file-preview-frame button")
-                .attr("disabled", true);
-            $h.addCss(self.$container.find('.btn-file'), 'disabled');
-            self._initDragDrop();
-            return self.$element;
-        },
-        enable: function () {
-            var self = this;
-            self.isDisabled = false;
-            self._raise('fileenabled');
-            self.$element.removeAttr('disabled');
-            self.$container.find(".kv-fileinput-caption").removeClass("file-caption-disabled");
-            self.$container.find(".fileinput-remove, .fileinput-upload, .file-preview-frame button")
-                .removeAttr("disabled");
-            self.$container.find('.btn-file').removeClass('disabled');
-            self._initDragDrop();
-            return self.$element;
-        },
-        upload: function () {
-            var self = this, totLen = self.getFileStack().length, i, outData, len,
-                hasExtraData = !$.isEmptyObject(self._getExtraData());
-            if (!self.isAjaxUpload || self.isDisabled || !self._isFileSelectionValid(totLen)) {
-                return;
-            }
-            self._resetUpload();
-            if (totLen === 0 && !hasExtraData) {
-                self._showUploadError(self.msgUploadEmpty);
-                return;
-            }
-            self.$progress.show();
-            self.uploadCount = 0;
-            self.uploadStatus = {};
-            self.uploadLog = [];
-            self.lock();
-            self._setProgress(2);
-            if (totLen === 0 && hasExtraData) {
-                self._uploadExtraOnly();
-                return;
-            }
-            len = self.filestack.length;
-            self.hasInitData = false;
-            if (self.uploadAsync) {
-                outData = self._getOutData();
-                self._raise('filebatchpreupload', [outData]);
-                self.fileBatchCompleted = false;
-                self.uploadCache = {content: [], config: [], tags: [], append: true};
-                self.uploadAsyncCount = self.getFileStack().length;
-                for (i = 0; i < len; i++) {
-                    self.uploadCache.content[i] = null;
-                    self.uploadCache.config[i] = null;
-                    self.uploadCache.tags[i] = null;
-                }
-                self.$preview.find('.file-preview-initial').removeClass($h.SORT_CSS);
-                self._initSortable();
-                self.cacheInitialPreview = self.getPreview();
+    function installSetTimeoutImplementation() {
+        registerImmediate = function(handle) {
+            setTimeout(runIfPresent, 0, handle);
+        };
+    }
 
-                for (i = 0; i < len; i++) {
-                    if (self.filestack[i]) {
-                        self._uploadSingle(i, true);
-                    }
-                }
-                return;
-            }
-            self._uploadBatch();
-            return self.$element;
-        },
-        destroy: function () {
-            var self = this, $form = self.$form, $cont = self.$container, $el = self.$element, ns = self.namespace;
-            $(document).off(ns);
-            $(window).off(ns);
-            if ($form && $form.length) {
-                $form.off(ns);
-            }
-            if (self.isAjaxUpload) {
-                self._clearFileInput();
-            }
-            self._cleanup();
-            self._initPreviewCache();
-            $el.insertBefore($cont).off(ns).removeData();
-            $cont.off().remove();
-            return $el;
-        },
-        refresh: function (options, triggerChange) {
-            var self = this, $el = self.$element;
-            if (typeof options !== 'object' || $h.isEmpty(options)) {
-                options = self.options;
-            } else {
-                options = $.extend(true, {}, self.options, options);
-            }
-            self._init(options, true);
-            self._listen();
-            if (triggerChange) {
-                $el.trigger('change' + self.namespace);
-            }
-            return $el;
-        },
-        zoom: function (frameId) {
-            var self = this, $frame = self._getFrame(frameId), $modal = self.$modal;
-            if (!$frame) {
-                return;
-            }
-            $h.initModal($modal);
-            $modal.html(self._getModalContent());
-            self._setZoomContent($frame);
-            $modal.modal('show');
-            self._initZoomButtons();
-        },
-        getExif: function (frameId) {
-            var self = this, $frame = self._getFrame(frameId);
-            return $frame && $frame.data('exif') || null;
-        },
-        getFrames: function (cssFilter) {
-            var self = this, $frames;
-            cssFilter = cssFilter || '';
-            $frames = self.$preview.find($h.FRAMES + cssFilter);
-            if (self.reversePreviewOrder) {
-                $frames = $($frames.get().reverse());
-            }
-            return $frames;
-        },
-        getPreview: function () {
-            var self = this;
-            return {
-                content: self.initialPreview,
-                config: self.initialPreviewConfig,
-                tags: self.initialPreviewThumbTags
-            };
-        }
-    };
+    // If supported, we should attach to the prototype of global, since that is where setTimeout et al. live.
+    var attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
+    attachTo = attachTo && attachTo.setTimeout ? attachTo : global;
 
-    $.fn.fileinput = function (option) {
-        if (!$h.hasFileAPISupport() && !$h.isIE(9)) {
-            return;
-        }
-        var args = Array.apply(null, arguments), retvals = [];
-        args.shift();
-        this.each(function () {
-            var self = $(this), data = self.data('fileinput'), options = typeof option === 'object' && option,
-                theme = options.theme || self.data('theme'), l = {}, t = {},
-                lang = options.language || self.data('language') || $.fn.fileinput.defaults.language || 'en', opt;
-            if (!data) {
-                if (theme) {
-                    t = $.fn.fileinputThemes[theme] || {};
-                }
-                if (lang !== 'en' && !$h.isEmpty($.fn.fileinputLocales[lang])) {
-                    l = $.fn.fileinputLocales[lang] || {};
-                }
-                opt = $.extend(true, {}, $.fn.fileinput.defaults, t, $.fn.fileinputLocales.en, l, options, self.data());
-                data = new FileInput(this, opt);
-                self.data('fileinput', data);
-            }
+    // Don't get fooled by e.g. browserify environments.
+    if ({}.toString.call(global.process) === "[object process]") {
+        // For Node.js before 0.9
+        installNextTickImplementation();
 
-            if (typeof option === 'string') {
-                retvals.push(data[option].apply(data, args));
-            }
-        });
-        switch (retvals.length) {
-            case 0:
-                return this;
-            case 1:
-                return retvals[0];
-            default:
-                return retvals;
-        }
-    };
+    } else if (canUsePostMessage()) {
+        // For non-IE10 modern browsers
+        installPostMessageImplementation();
 
-    $.fn.fileinput.defaults = {
-        language: 'en',
-        showCaption: true,
-        showBrowse: true,
-        showPreview: true,
-        showRemove: true,
-        showUpload: true,
-        showCancel: true,
-        showClose: true,
-        showUploadedThumbs: true,
-        browseOnZoneClick: false,
-        autoReplace: false,
-        autoOrientImage: true, // for JPEG images based on EXIF orientation tag
-        required: false,
-        rtl: false,
-        hideThumbnailContent: false,
-        generateFileId: null,
-        previewClass: '',
-        captionClass: '',
-        frameClass: 'krajee-default',
-        mainClass: 'file-caption-main',
-        mainTemplate: null,
-        purifyHtml: true,
-        fileSizeGetter: null,
-        initialCaption: '',
-        initialPreview: [],
-        initialPreviewDelimiter: '*$$*',
-        initialPreviewAsData: false,
-        initialPreviewFileType: 'image',
-        initialPreviewConfig: [],
-        initialPreviewThumbTags: [],
-        previewThumbTags: {},
-        initialPreviewShowDelete: true,
-        initialPreviewDownloadUrl: '',
-        removeFromPreviewOnError: false,
-        deleteUrl: '',
-        deleteExtraData: {},
-        overwriteInitial: true,
-        previewZoomButtonIcons: {
-            prev: '<i class="glyphicon glyphicon-triangle-left"></i>',
-            next: '<i class="glyphicon glyphicon-triangle-right"></i>',
-            toggleheader: '<i class="glyphicon glyphicon-resize-vertical"></i>',
-            fullscreen: '<i class="glyphicon glyphicon-fullscreen"></i>',
-            borderless: '<i class="glyphicon glyphicon-resize-full"></i>',
-            close: '<i class="glyphicon glyphicon-remove"></i>'
-        },
-        previewZoomButtonClasses: {
-            prev: 'btn btn-navigate',
-            next: 'btn btn-navigate',
-            toggleheader: 'btn btn-sm btn-kv btn-default btn-outline-secondary',
-            fullscreen: 'btn btn-sm btn-kv btn-default btn-outline-secondary',
-            borderless: 'btn btn-sm btn-kv btn-default btn-outline-secondary',
-            close: 'btn btn-sm btn-kv btn-default btn-outline-secondary'
-        },
-        preferIconicPreview: false,
-        preferIconicZoomPreview: false,
-        allowedPreviewTypes: undefined,
-        allowedPreviewMimeTypes: null,
-        allowedFileTypes: null,
-        allowedFileExtensions: null,
-        defaultPreviewContent: null,
-        customLayoutTags: {},
-        customPreviewTags: {},
-        previewFileIcon: '<i class="glyphicon glyphicon-file"></i>',
-        previewFileIconClass: 'file-other-icon',
-        previewFileIconSettings: {},
-        previewFileExtSettings: {},
-        buttonLabelClass: 'hidden-xs',
-        browseIcon: '<i class="glyphicon glyphicon-folder-open"></i>&nbsp;',
-        browseClass: 'btn btn-primary',
-        removeIcon: '<i class="glyphicon glyphicon-trash"></i>',
-        removeClass: 'btn btn-default btn-secondary',
-        cancelIcon: '<i class="glyphicon glyphicon-ban-circle"></i>',
-        cancelClass: 'btn btn-default btn-secondary',
-        uploadIcon: '<i class="glyphicon glyphicon-upload"></i>',
-        uploadClass: 'btn btn-default btn-secondary',
-        uploadUrl: null,
-        uploadUrlThumb: null,
-        uploadAsync: true,
-        uploadExtraData: {},
-        zoomModalHeight: 480,
-        minImageWidth: null,
-        minImageHeight: null,
-        maxImageWidth: null,
-        maxImageHeight: null,
-        resizeImage: false,
-        resizePreference: 'width',
-        resizeQuality: 0.92,
-        resizeDefaultImageType: 'image/jpeg',
-        resizeIfSizeMoreThan: 0, // in KB
-        minFileSize: 0,
-        maxFileSize: 0,
-        maxFilePreviewSize: 25600, // 25 MB
-        minFileCount: 0,
-        maxFileCount: 0,
-        validateInitialCount: false,
-        msgValidationErrorClass: 'text-danger',
-        msgValidationErrorIcon: '<i class="glyphicon glyphicon-exclamation-sign"></i> ',
-        msgErrorClass: 'file-error-message',
-        progressThumbClass: "progress-bar bg-success progress-bar-success progress-bar-striped active",
-        progressClass: "progress-bar bg-success progress-bar-success progress-bar-striped active",
-        progressCompleteClass: "progress-bar bg-success progress-bar-success",
-        progressErrorClass: "progress-bar bg-danger progress-bar-danger",
-        progressUploadThreshold: 99,
-        previewFileType: 'image',
-        elCaptionContainer: null,
-        elCaptionText: null,
-        elPreviewContainer: null,
-        elPreviewImage: null,
-        elPreviewStatus: null,
-        elErrorContainer: null,
-        errorCloseButton: $h.closeButton('kv-error-close'),
-        slugCallback: null,
-        dropZoneEnabled: true,
-        dropZoneTitleClass: 'file-drop-zone-title',
-        fileActionSettings: {},
-        otherActionButtons: '',
-        textEncoding: 'UTF-8',
-        ajaxSettings: {},
-        ajaxDeleteSettings: {},
-        showAjaxErrorDetails: true,
-        mergeAjaxCallbacks: false,
-        mergeAjaxDeleteCallbacks: false,
-        retryErrorUploads: true,
-        reversePreviewOrder: false
-    };
+    } else if (global.MessageChannel) {
+        // For web workers, where supported
+        installMessageChannelImplementation();
 
-    $.fn.fileinputLocales.en = {
-        fileSingle: 'file',
-        filePlural: 'files',
-        browseLabel: 'Browse &hellip;',
-        removeLabel: 'Remove',
-        removeTitle: 'Clear selected files',
-        cancelLabel: 'Cancel',
-        cancelTitle: 'Abort ongoing upload',
-        uploadLabel: 'Upload',
-        uploadTitle: 'Upload selected files',
-        msgNo: 'No',
-        msgNoFilesSelected: 'No files selected',
-        msgCancelled: 'Cancelled',
-        msgPlaceholder: 'Select {files}...',
-        msgZoomModalHeading: 'Detailed Preview',
-        msgFileRequired: 'You must select a file to upload.',
-        msgSizeTooSmall: 'File "{name}" (<b>{size} KB</b>) is too small and must be larger than <b>{minSize} KB</b>.',
-        msgSizeTooLarge: 'File "{name}" (<b>{size} KB</b>) exceeds maximum allowed upload size of <b>{maxSize} KB</b>.',
-        msgFilesTooLess: 'You must select at least <b>{n}</b> {files} to upload.',
-        msgFilesTooMany: 'Number of files selected for upload <b>({n})</b> exceeds maximum allowed limit of <b>{m}</b>.',
-        msgFileNotFound: 'File "{name}" not found!',
-        msgFileSecured: 'Security restrictions prevent reading the file "{name}".',
-        msgFileNotReadable: 'File "{name}" is not readable.',
-        msgFilePreviewAborted: 'File preview aborted for "{name}".',
-        msgFilePreviewError: 'An error occurred while reading the file "{name}".',
-        msgInvalidFileName: 'Invalid or unsupported characters in file name "{name}".',
-        msgInvalidFileType: 'Invalid type for file "{name}". Only "{types}" files are supported.',
-        msgInvalidFileExtension: 'Invalid extension for file "{name}". Only "{extensions}" files are supported.',
-        msgFileTypes: {
-            'image': 'image',
-            'html': 'HTML',
-            'text': 'text',
-            'video': 'video',
-            'audio': 'audio',
-            'flash': 'flash',
-            'pdf': 'PDF',
-            'object': 'object'
-        },
-        msgUploadAborted: 'The file upload was aborted',
-        msgUploadThreshold: 'Processing...',
-        msgUploadBegin: 'Initializing...',
-        msgUploadEnd: 'Done',
-        msgUploadEmpty: 'No valid data available for upload.',
-        msgUploadError: 'Error',
-        msgValidationError: 'Validation Error',
-        msgLoading: 'Loading file {index} of {files} &hellip;',
-        msgProgress: 'Loading file {index} of {files} - {name} - {percent}% completed.',
-        msgSelected: '{n} {files} selected',
-        msgFoldersNotAllowed: 'Drag & drop files only! {n} folder(s) dropped were skipped.',
-        msgImageWidthSmall: 'Width of image file "{name}" must be at least {size} px.',
-        msgImageHeightSmall: 'Height of image file "{name}" must be at least {size} px.',
-        msgImageWidthLarge: 'Width of image file "{name}" cannot exceed {size} px.',
-        msgImageHeightLarge: 'Height of image file "{name}" cannot exceed {size} px.',
-        msgImageResizeError: 'Could not get the image dimensions to resize.',
-        msgImageResizeException: 'Error while resizing the image.<pre>{errors}</pre>',
-        msgAjaxError: 'Something went wrong with the {operation} operation. Please try again later!',
-        msgAjaxProgressError: '{operation} failed',
-        ajaxOperations: {
-            deleteThumb: 'file delete',
-            uploadThumb: 'file upload',
-            uploadBatch: 'batch file upload',
-            uploadExtra: 'form data upload'
-        },
-        dropZoneTitle: 'Drag & drop files here &hellip;',
-        dropZoneClickTitle: '<br>(or click to select {files})',
-        previewZoomButtonTitles: {
-            prev: 'View previous file',
-            next: 'View next file',
-            toggleheader: 'Toggle header',
-            fullscreen: 'Toggle full screen',
-            borderless: 'Toggle borderless mode',
-            close: 'Close detailed preview'
-        }
-    };
+    } else if (doc && "onreadystatechange" in doc.createElement("script")) {
+        // For IE 6–8
+        installReadyStateChangeImplementation();
 
-    $.fn.fileinput.Constructor = FileInput;
+    } else {
+        // For older browsers
+        installSetTimeoutImplementation();
+    }
 
-    /**
-     * Convert automatically file inputs with class 'file' into a bootstrap fileinput control.
-     */
-    $(document).ready(function () {
-        var $input = $('input.file[type=file]');
-        if ($input.length) {
-            $input.fileinput();
-        }
-    });
-}));
+    attachTo.setImmediate = setImmediate;
+    attachTo.clearImmediate = clearImmediate;
+}(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(12)))
 
 /***/ }),
-
-/***/ 8:
+/* 12 */
 /***/ (function(module, exports) {
 
-/*!
- * bootstrap-fileinput v4.4.8
- * http://plugins.krajee.com/file-input
- *
- * Font Awesome 5 icon theme configuration for bootstrap-fileinput. Requires font awesome 5 assets to be loaded.
- *
- * Author: Kartik Visweswaran
- * Copyright: 2014 - 2018, Kartik Visweswaran, Krajee.com
- *
- * Licensed under the BSD 3-Clause
- * https://github.com/kartik-v/bootstrap-fileinput/blob/master/LICENSE.md
- */
-(function ($) {
-    "use strict";
+// shim for using process in browser
+var process = module.exports = {};
 
-    $.fn.fileinputThemes.fas = {
-        fileActionSettings: {
-            removeIcon: '<i class="fas fa-trash-alt"></i>',
-            uploadIcon: '<i class="fas fa-upload"></i>',
-            uploadRetryIcon: '<i class="fas fa-redo-alt"></i>',
-            downloadIcon: '<i class="fas fa-download"></i>',
-            zoomIcon: '<i class="fas fa-search-plus"></i>',
-            dragIcon: '<i class="fas fa-arrows-alt"></i>',
-            indicatorNew: '<i class="fas fa-plus-circle text-warning"></i>',
-            indicatorSuccess: '<i class="fas fa-check-circle text-success"></i>',
-            indicatorError: '<i class="fas fa-exclamation-circle text-danger"></i>',
-            indicatorLoading: '<i class="fas fa-hourglass text-muted"></i>'
-        },
-        layoutTemplates: {
-            fileIcon: '<i class="fas fa-file kv-caption-icon"></i> '
-        },
-        previewZoomButtonIcons: {
-            prev: '<i class="fas fa-caret-left fa-lg"></i>',
-            next: '<i class="fas fa-caret-right fa-lg"></i>',
-            toggleheader: '<i class="fas fa-fw fa-arrows-v"></i>',
-            fullscreen: '<i class="fas fa-fw fa-arrows-alt"></i>',
-            borderless: '<i class="fas fa-fw fa-external-link"></i>',
-            close: '<i class="fas fa-fw fa-times"></i>'
-        },
-        previewFileIcon: '<i class="fas fa-file"></i>',
-        browseIcon: '<i class="fas fa-folder-open"></i>',
-        removeIcon: '<i class="fas fa-trash-alt"></i>',
-        cancelIcon: '<i class="fas fa-ban"></i>',
-        uploadIcon: '<i class="fas fa-upload"></i>',
-        msgValidationErrorIcon: '<i class="fas fa-exclamation-circle"></i> '
-    };
-})(window.jQuery);
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
 
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+
+/***/ }),
+/* 13 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_jquery__);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+
+
+var RegistrationForm = function () {
+    function RegistrationForm() {
+        _classCallCheck(this, RegistrationForm);
+
+        this.registrationForm = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form");
+        this.closeButton = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form .close");
+        this.events();
+    }
+
+    _createClass(RegistrationForm, [{
+        key: "events",
+        value: function events() {
+            this.registrationForm.submit(this.handleFormSubmission.bind(this));
+            this.closeButton.click(this.clearErrors.bind(this));
+        }
+    }, {
+        key: "handleFormSubmission",
+        value: function handleFormSubmission(event) {
+            var self = this;
+            event.preventDefault();
+
+            var formData = this.grabFormData();
+
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default.a.ajax({
+                type: "POST",
+                url: "/register",
+                data: formData,
+                dataType: "json",
+                beforeSend: self.clearErrors,
+                encode: true,
+                success: function success(response) {
+                    window.location.href = "/";
+                }
+            }).fail(function (data) {
+                self.handleValidationErrors(data.responseJSON.errors);
+            });
+        }
+    }, {
+        key: "grabFormData",
+        value: function grabFormData() {
+            return {
+                "username": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#username").val(),
+                "email": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#email").val(),
+                "password": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#password").val(),
+                "password_confirmation": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#password_confirmation").val()
+            };
+        }
+    }, {
+        key: "handleValidationErrors",
+        value: function handleValidationErrors(errors) {
+            var errorNames = Object.keys(errors);
+
+            errorNames.forEach(function (errorName) {
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#" + errorName).addClass("is-invalid");
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form ." + errorName + "-error").fadeIn(1000, function () {
+                    __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form ." + errorName + "-error").text("" + errors[errorName]);
+                });
+            });
+        }
+    }, {
+        key: "clearErrors",
+        value: function clearErrors() {
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form .invalid-feedback").fadeOut();
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input").removeClass("is-invalid");
+        }
+    }]);
+
+    return RegistrationForm;
+}();
+
+/* harmony default export */ __webpack_exports__["a"] = (RegistrationForm);
+
+/***/ }),
+/* 14 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_jquery__);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+
+
+var LoginForm = function () {
+    function LoginForm() {
+        _classCallCheck(this, LoginForm);
+
+        this.loginForm = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form");
+        this.closeButton = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form .close");
+        this.events();
+    }
+
+    _createClass(LoginForm, [{
+        key: "events",
+        value: function events() {
+            this.loginForm.submit(this.handleFormSubmission.bind(this));
+            this.closeButton.click(this.clearErrors.bind(this));
+        }
+    }, {
+        key: "handleFormSubmission",
+        value: function handleFormSubmission(event) {
+            event.preventDefault();
+
+            var self = this;
+            var formData = this.grabFormData();
+
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default.a.ajax({
+                type: "POST",
+                url: "/login",
+                data: formData,
+                dataType: "json",
+                beforeSend: self.clearErrors,
+                encode: true
+            }).done(function (response) {
+                if (response.error) {
+                    self.handleAuthenticationError(response.error);
+                } else {
+                    window.location.href = "/";
+                }
+            }).fail(function (data) {
+                self.handleValidationErrors(data.responseJSON.errors);
+            });
+        }
+    }, {
+        key: "handleAuthenticationError",
+        value: function handleAuthenticationError(error) {
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form .auth-error").fadeIn(1000, function () {
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form .auth-error").text("" + error);
+            });
+        }
+    }, {
+        key: "handleValidationErrors",
+        value: function handleValidationErrors(errors) {
+            var errorNames = Object.keys(errors);
+
+            errorNames.forEach(function (errorName) {
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form input[name=" + errorName + "]").addClass("is-invalid");
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form ." + errorName + "-error").fadeIn(1000, function () {
+                    __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form ." + errorName + "-error").text("" + errors[errorName]);
+                });
+            });
+        }
+    }, {
+        key: "grabFormData",
+        value: function grabFormData() {
+            return {
+                "email": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#loginEmail").val(),
+                "password": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#loginPassword").val()
+            };
+        }
+    }, {
+        key: "clearErrors",
+        value: function clearErrors() {
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form .invalid-feedback").fadeOut();
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form input").removeClass("is-invalid");
+        }
+    }]);
+
+    return LoginForm;
+}();
+
+/* harmony default export */ __webpack_exports__["a"] = (LoginForm);
+
+/***/ }),
+/* 15 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_jquery__);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+
+
+var DropBoxOverlay = function () {
+    function DropBoxOverlay() {
+        _classCallCheck(this, DropBoxOverlay);
+
+        this.dropZone = __WEBPACK_IMPORTED_MODULE_0_jquery___default()("body").addClass("dropzone");
+        this.dropBoxOverlay = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".dropbox-overlay");
+        this.fileInput = __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#file-input");
+        this.events();
+    }
+
+    _createClass(DropBoxOverlay, [{
+        key: "events",
+        value: function events() {
+            this.dropZone.on("dragenter dragover dragleave drop", this.preventDefaults.bind(this));
+            this.dropZone.on("dragenter dragleave drop", this.toggleDropBoxOverlayVisibility.bind(this));
+            this.dropZone.on("drop", this.handleFileDrop.bind(this));
+        }
+    }, {
+        key: "toggleDropBoxOverlayVisibility",
+        value: function toggleDropBoxOverlayVisibility() {
+            this.dropBoxOverlay.toggleClass("dropbox-overlay--visible");
+        }
+    }, {
+        key: "handleFileDrop",
+        value: function handleFileDrop(e) {
+            var file = e.originalEvent.dataTransfer.files[0];
+
+            this.fileInput.fileinput("readFiles", [file]);
+        }
+    }, {
+        key: "preventDefaults",
+        value: function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }]);
+
+    return DropBoxOverlay;
+}();
+
+/* harmony default export */ __webpack_exports__["a"] = (DropBoxOverlay);
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
 
 /***/ })
-
-/******/ });
+/******/ ]);

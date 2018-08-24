@@ -42,7 +42,12 @@ $("#file-input").fileinput({
 $("audio").mediaelementplayer({
     alwaysShowControls: true,
     audioVolume: 'horizontal',
-    audioHeight: 40
+    audioHeight: 40,
+    audioWidth: "100%"
+});
+
+$("video").mediaelementplayer({
+    stretching: "fill"
 });
 
 
