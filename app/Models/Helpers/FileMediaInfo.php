@@ -73,6 +73,9 @@ class FileMediaInfo
                     "resolution_x" => $fileInfo["video"]["resolution_x"],
                     "resolution_y" => $fileInfo["video"]["resolution_y"]
                 ];
+                if (array_key_exists("bits_per_sample", $fileInfo["video"])) {
+                    $videoParameters["bits_per_sample"] = $fileInfo["video"]["bits_per_sample"];
+                }
 
                 $metaData["fileformat"] = $fileInfo["fileformat"];
                 $metaData["video"] = $videoParameters;

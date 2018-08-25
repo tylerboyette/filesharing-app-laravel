@@ -9,6 +9,7 @@ require('./bootstrap');
 import RegistrationForm from "./modules/RegistrationForm";
 import LoginForm from "./modules/LoginForm";
 import DropBoxOverlay from "./modules/DropBoxOverlay";
+import DetailsTable from "./modules/DetailsTable";
 
 $.ajaxSetup({
     headers: {
@@ -17,6 +18,10 @@ $.ajaxSetup({
 });
 let registrationForm = new RegistrationForm();
 let loginForm = new LoginForm();
+
+if ($(".details-table").length) {
+    let detailsTable = new DetailsTable();
+}
 
 let isAdvancedUpload = function() {
     let div = document.createElement("div");

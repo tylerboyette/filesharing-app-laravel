@@ -18141,3 +18141,17 @@ Reference: http://blog.rrwd.nl/2015/04/04/the-screen-reader-text-class-why-and-h
   height: 100%;
 }
 
+.file {
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  padding: 15px;
+  border-radius: 0.25rem;
+}
+
+.details-table {
+  display: none;
+}
+
+.details-table--visible {
+  display: block;
+}
+

@@ -23,7 +23,7 @@
                         </div>
                         @if (array_key_exists("mime_type", $file->meta_data) && explode("/", $file->meta_data["mime_type"])[0] === "image")
                             <div class="image-preview mb-2">
-                                <img class="img-fluid" src="{{ asset("storage/image_previews/$file->storage_name") }}" alt="Thumbnail">
+                                <img class="img-fluid" src="{{ asset("storage/image_previews/$file->storage_name") }}" alt="{{ $file->original_name }}">
                             </div>
                         @elseif (array_key_exists("mime_type", $file->meta_data) && explode("/", $file->meta_data["mime_type"])[0] === "audio")
                             <div class="audio-preview mb-2">
