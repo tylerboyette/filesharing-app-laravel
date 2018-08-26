@@ -18155,3 +18155,9 @@ Reference: http://blog.rrwd.nl/2015/04/04/the-screen-reader-text-class-why-and-h
   display: block;
 }
 
+.user-files {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+

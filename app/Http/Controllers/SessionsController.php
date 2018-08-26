@@ -7,11 +7,20 @@ use Illuminate\Support\Facades\Auth;
 
 class SessionsController extends Controller
 {
+    /**
+     * Create a new controller instance
+     */
     public function __construct()
     {
         $this->middleware("guest", ["except" => "destroy"]);
     }
 
+    /**
+     * Log user in
+     *
+     * @param LoginRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function store(LoginRequest $request)
     {
         $credentials = $request->only("email", "password");
@@ -23,6 +32,11 @@ class SessionsController extends Controller
         return response()->json(["success" => "Logged in."]);
     }
 
+    /**
+     * Log user out
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function destroy()
     {
         auth()->logout();
