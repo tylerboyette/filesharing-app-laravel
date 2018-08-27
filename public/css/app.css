@@ -18161,3 +18161,9 @@ Reference: http://blog.rrwd.nl/2015/04/04/the-screen-reader-text-class-why-and-h
   margin: 0;
 }
 
+.comment-section {
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  padding: 15px;
+  border-radius: 0.25rem;
+}
+

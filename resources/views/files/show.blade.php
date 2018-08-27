@@ -1,7 +1,7 @@
 @extends("layouts.master")
 
 @section("content")
-    <div class="file mt-2">
+    <div class="file mt-2 mb-2">
         <div class="media">
             <div class="media-left mr-3">
                 @if($file->user_id)
@@ -137,6 +137,21 @@
                 </div>
                 <a class="btn btn-primary" href="/download/{{ $file->id }}/{{ $file->original_name }}" role="button">Download</a>
             </div>
+        </div>
+    </div>
+    <div class="comment-section bg-light">
+        <div class="comment-form">
+            <form action="/comments" method="post">
+                {{ csrf_field() }}
+                <div class="form-group">
+                    <label for="comment-content">Add a comment</label>
+                    <textarea class="form-control" rows="3" id="comment-content" name="content"></textarea>
+                    <input type="hidden" name="file_id" value="{{ $file->id }}">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Add a comment</button>
+                </div>
+            </form>
         </div>
     </div>
 @endsection
