@@ -2,8 +2,8 @@ import $ from "jquery";
 
 class RegistrationForm {
     constructor() {
-        this.registrationForm = $(".register-form");
-        this.closeButton = $(".register-form .close");
+        this.registrationForm = $("#register-form");
+        this.closeButton = this.registrationForm.find(".close");
         this.events();
     }
 
@@ -23,7 +23,7 @@ class RegistrationForm {
             url: "/register",
             data: formData,
             dataType: "json",
-            beforeSend: self.clearErrors,
+            beforeSend: self.clearErrors.bind(self),
             encode: true,
             success: function(response) {
                 window.location.href = "/";
@@ -48,15 +48,15 @@ class RegistrationForm {
 
         errorNames.forEach( (errorName) => {
             $(`#${errorName}`).addClass("is-invalid");
-            $(`.register-form .${errorName}-error`).fadeIn(1000, function () {
-                $(`.register-form .${errorName}-error`).text(`${errors[errorName]}`);
+            this.registrationForm.find(`.${errorName}-error`).fadeIn(1000, function() {
+                $(this).text(`${errors[errorName]}`);
             })
         });
     }
 
     clearErrors() {
-        $(".register-form .invalid-feedback").fadeOut();
-        $(".register-form input").removeClass("is-invalid");
+        this.registrationForm.find(".invalid-feedback").fadeOut();
+        this.registrationForm.find("input").removeClass("is-invalid");
     }
 }
 

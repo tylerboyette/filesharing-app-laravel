@@ -20,6 +20,6 @@ class CommentsController extends Controller
 
         $comment->save();
 
-        return back();
+        return response()->json();
     }
 }

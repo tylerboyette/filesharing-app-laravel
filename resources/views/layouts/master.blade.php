@@ -14,7 +14,7 @@
             <div class="modal" id="registerModal" tabindex="-1" role="dialog">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
-                        <form method="post" class="register-form" action="/register">
+                        <form method="post" id="register-form" action="/register">
                             <div class="modal-header">
                                 <h5 class="modal-title">Registration</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -63,7 +63,7 @@
             <div class="modal" id="loginModal" tabindex="-1" role="dialog">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
-                        <form method="post" class="login-form" action="/login">
+                        <form method="post" id="login-form" action="/login">
                             <div class="modal-header">
                                 <h5 class="modal-title">Logging in</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">

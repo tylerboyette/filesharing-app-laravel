@@ -12995,7 +12995,7 @@ Popper.Defaults = Defaults;
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(4);
-module.exports = __webpack_require__(17);
+module.exports = __webpack_require__(18);
 
 
 /***/ }),
@@ -13008,6 +13008,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__modules_LoginForm__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__modules_DropBoxOverlay__ = __webpack_require__(15);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__modules_DetailsTable__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__modules_CommentForm__ = __webpack_require__(17);
 
 /**
  * First, we will load all of this project's Javascript utilities and other
@@ -13016,6 +13017,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
  */
 
 __webpack_require__(5);
+
 
 
 
@@ -13031,6 +13033,10 @@ var loginForm = new __WEBPACK_IMPORTED_MODULE_1__modules_LoginForm__["a" /* defa
 
 if ($(".details-table").length) {
     var detailsTable = new __WEBPACK_IMPORTED_MODULE_3__modules_DetailsTable__["a" /* default */]();
+}
+
+if ($("#comment-form").length) {
+    var commentForm = new __WEBPACK_IMPORTED_MODULE_4__modules_CommentForm__["a" /* default */]();
 }
 
 var isAdvancedUpload = function () {
@@ -30520,8 +30526,8 @@ var RegistrationForm = function () {
     function RegistrationForm() {
         _classCallCheck(this, RegistrationForm);
 
-        this.registrationForm = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form");
-        this.closeButton = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form .close");
+        this.registrationForm = __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#register-form");
+        this.closeButton = this.registrationForm.find(".close");
         this.events();
     }
 
@@ -30544,7 +30550,7 @@ var RegistrationForm = function () {
                 url: "/register",
                 data: formData,
                 dataType: "json",
-                beforeSend: self.clearErrors,
+                beforeSend: self.clearErrors.bind(self),
                 encode: true,
                 success: function success(response) {
                     window.location.href = "/";
@@ -30566,20 +30572,22 @@ var RegistrationForm = function () {
     }, {
         key: "handleValidationErrors",
         value: function handleValidationErrors(errors) {
+            var _this = this;
+
             var errorNames = Object.keys(errors);
 
             errorNames.forEach(function (errorName) {
                 __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#" + errorName).addClass("is-invalid");
-                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form ." + errorName + "-error").fadeIn(1000, function () {
-                    __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form ." + errorName + "-error").text("" + errors[errorName]);
+                _this.registrationForm.find("." + errorName + "-error").fadeIn(1000, function () {
+                    __WEBPACK_IMPORTED_MODULE_0_jquery___default()(this).text("" + errors[errorName]);
                 });
             });
         }
     }, {
         key: "clearErrors",
         value: function clearErrors() {
-            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form .invalid-feedback").fadeOut();
-            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".register-form input").removeClass("is-invalid");
+            this.registrationForm.find(".invalid-feedback").fadeOut();
+            this.registrationForm.find("input").removeClass("is-invalid");
         }
     }]);
 
@@ -30605,8 +30613,8 @@ var LoginForm = function () {
     function LoginForm() {
         _classCallCheck(this, LoginForm);
 
-        this.loginForm = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form");
-        this.closeButton = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form .close");
+        this.loginForm = __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#login-form");
+        this.closeButton = this.loginForm.find(".close");
         this.events();
     }
 
@@ -30629,7 +30637,7 @@ var LoginForm = function () {
                 url: "/login",
                 data: formData,
                 dataType: "json",
-                beforeSend: self.clearErrors,
+                beforeSend: self.clearErrors.bind(self),
                 encode: true
             }).done(function (response) {
                 if (response.error) {
@@ -30644,19 +30652,21 @@ var LoginForm = function () {
     }, {
         key: "handleAuthenticationError",
         value: function handleAuthenticationError(error) {
-            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form .auth-error").fadeIn(1000, function () {
-                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form .auth-error").text("" + error);
+            this.loginForm.find(".auth-error").fadeIn(1000, function () {
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(this).text("" + error);
             });
         }
     }, {
         key: "handleValidationErrors",
         value: function handleValidationErrors(errors) {
+            var _this = this;
+
             var errorNames = Object.keys(errors);
 
             errorNames.forEach(function (errorName) {
-                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form input[name=" + errorName + "]").addClass("is-invalid");
-                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form ." + errorName + "-error").fadeIn(1000, function () {
-                    __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form ." + errorName + "-error").text("" + errors[errorName]);
+                _this.loginForm.find("input[name=" + errorName + "]").addClass("is-invalid");
+                _this.loginForm.find("." + errorName + "-error").fadeIn(1000, function () {
+                    __WEBPACK_IMPORTED_MODULE_0_jquery___default()(this).text("" + errors[errorName]);
                 });
             });
         }
@@ -30671,8 +30681,8 @@ var LoginForm = function () {
     }, {
         key: "clearErrors",
         value: function clearErrors() {
-            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form .invalid-feedback").fadeOut();
-            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".login-form input").removeClass("is-invalid");
+            this.loginForm.find(".invalid-feedback").fadeOut();
+            this.loginForm.find("input").removeClass("is-invalid");
         }
     }]);
 
@@ -30777,6 +30787,89 @@ var DetailsTable = function () {
 
 /***/ }),
 /* 17 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_jquery__);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+
+
+var CommentForm = function () {
+    function CommentForm() {
+        _classCallCheck(this, CommentForm);
+
+        this.commentForm = __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#comment-form");
+        this.events();
+    }
+
+    _createClass(CommentForm, [{
+        key: "events",
+        value: function events() {
+            this.commentForm.submit(this.handleFormSubmission.bind(this));
+        }
+    }, {
+        key: "handleFormSubmission",
+        value: function handleFormSubmission(event) {
+            var self = this;
+            event.preventDefault();
+
+            var formData = this.grabFormData();
+
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default.a.ajax({
+                type: "POST",
+                url: "/comments",
+                data: formData,
+                dataType: "json",
+                beforeSend: self.clearErrors.bind(self),
+                encode: true,
+                success: function success(response) {
+                    console.log("All fine");
+                }
+            }).fail(function (data) {
+                self.handleValidationErrors(data.responseJSON.errors);
+            });
+        }
+    }, {
+        key: "handleValidationErrors",
+        value: function handleValidationErrors(errors) {
+            var _this = this;
+
+            var errorNames = Object.keys(errors);
+
+            errorNames.forEach(function (errorName) {
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#comment-" + errorName).addClass("is-invalid");
+                _this.commentForm.find(".comment-" + errorName + "-error").fadeIn(1000, function () {
+                    __WEBPACK_IMPORTED_MODULE_0_jquery___default()(this).text("" + errors[errorName]);
+                });
+            });
+        }
+    }, {
+        key: "clearErrors",
+        value: function clearErrors() {
+            this.commentForm.find(".invalid-feedback").fadeOut();
+            this.commentForm.find("textarea").removeClass("is-invalid");
+        }
+    }, {
+        key: "grabFormData",
+        value: function grabFormData() {
+            return {
+                "content": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#comment-content").val(),
+                "file_id": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#comment-file_id").val()
+            };
+        }
+    }]);
+
+    return CommentForm;
+}();
+
+/* harmony default export */ __webpack_exports__["a"] = (CommentForm);
+
+/***/ }),
+/* 18 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin

@@ -140,18 +140,17 @@
         </div>
     </div>
     <div class="comment-section bg-light">
-        <div class="comment-form">
-            <form action="/comments" method="post">
+            <form action="/comments" method="post" id="comment-form">
                 {{ csrf_field() }}
                 <div class="form-group">
                     <label for="comment-content">Add a comment</label>
                     <textarea class="form-control" rows="3" id="comment-content" name="content"></textarea>
-                    <input type="hidden" name="file_id" value="{{ $file->id }}">
+                    <input type="hidden" name="file_id" id="comment-file_id" value="{{ $file->id }}">
+                    <div class="invalid-feedback comment-content-error"></div>
                 </div>
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">Add a comment</button>
                 </div>
             </form>
-        </div>
     </div>
 @endsection

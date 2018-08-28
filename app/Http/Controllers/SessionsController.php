@@ -41,6 +41,6 @@ class SessionsController extends Controller
     {
         auth()->logout();
 
-        return redirect()->home();
+        return back();
     }
 }

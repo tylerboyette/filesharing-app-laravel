@@ -10,6 +10,7 @@ import RegistrationForm from "./modules/RegistrationForm";
 import LoginForm from "./modules/LoginForm";
 import DropBoxOverlay from "./modules/DropBoxOverlay";
 import DetailsTable from "./modules/DetailsTable";
+import CommentForm from "./modules/CommentForm";
 
 $.ajaxSetup({
     headers: {
@@ -21,6 +22,10 @@ let loginForm = new LoginForm();
 
 if ($(".details-table").length) {
     let detailsTable = new DetailsTable();
+}
+
+if ($("#comment-form").length) {
+    let commentForm = new CommentForm();
 }
 
 let isAdvancedUpload = function() {
@@ -54,7 +59,3 @@ $("audio").mediaelementplayer({
 $("video").mediaelementplayer({
     stretching: "fill"
 });
-
-
-
-

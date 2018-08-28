@@ -2,8 +2,8 @@ import $ from "jquery";
 
 class LoginForm {
     constructor() {
-        this.loginForm = $(".login-form");
-        this.closeButton = $(".login-form .close");
+        this.loginForm = $("#login-form");
+        this.closeButton = this.loginForm.find(".close");
         this.events();
     }
 
@@ -23,7 +23,7 @@ class LoginForm {
             url: "/login",
             data: formData,
             dataType: "json",
-            beforeSend: self.clearErrors,
+            beforeSend: self.clearErrors.bind(self),
             encode: true
         })
             .done(function(response) {
@@ -39,8 +39,8 @@ class LoginForm {
     }
 
     handleAuthenticationError(error) {
-        $(".login-form .auth-error").fadeIn(1000, () => {
-            $(".login-form .auth-error").text(`${error}`);
+        this.loginForm.find(".auth-error").fadeIn(1000, function() {
+            $(this).text(`${error}`);
         });
     }
 
@@ -48,10 +48,10 @@ class LoginForm {
         let errorNames = Object.keys(errors);
 
         errorNames.forEach( (errorName) => {
-            $(`.login-form input[name=${errorName}]`).addClass("is-invalid");
-            $(`.login-form .${errorName}-error`).fadeIn(1000, function () {
-                $(`.login-form .${errorName}-error`).text(`${errors[errorName]}`);
-            })
+            this.loginForm.find(`input[name=${errorName}]`).addClass("is-invalid");
+            this.loginForm.find(`.${errorName}-error`).fadeIn(1000, function() {
+               $(this).text(`${errors[errorName]}`);
+            });
         });
     }
 
@@ -63,8 +63,8 @@ class LoginForm {
     }
 
     clearErrors() {
-        $(".login-form .invalid-feedback").fadeOut();
-        $(".login-form input").removeClass("is-invalid");
+        this.loginForm.find(".invalid-feedback").fadeOut();
+        this.loginForm.find("input").removeClass("is-invalid");
     }
 }
 
