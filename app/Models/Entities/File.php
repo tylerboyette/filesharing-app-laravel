@@ -23,4 +23,14 @@ class File extends Model
     {
         return $this->belongsTo("App\Models\Entities\User");
     }
+
+    /**
+     * Get comments for the file
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function comments()
+    {
+        return $this->hasMany("App\Models\Entities\Comment");
+    }
 }

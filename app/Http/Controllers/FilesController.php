@@ -54,11 +54,11 @@ class FilesController extends Controller
      *
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function showFilesList()
+    public function index()
     {
         $lastFiles = File::orderBy("id", "desc")->take(100)->get();
 
-        return view("files.showFilesList", ["files" => $lastFiles]);
+        return view("files.index", ["files" => $lastFiles]);
     }
 
     /**

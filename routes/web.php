@@ -26,7 +26,7 @@ Route::post("/users/{id}", "UsersController@updateAvatar");
 Route::post("/upload", "FilesController@store");
 
 Route::get("/files/{id}", "FilesController@show");
-Route::get("/files", "FilesController@showFilesList");
+Route::get("/files", "FilesController@index");
 
 Route::get("/download/{id}/{originalName}", "FilesController@downloadFile");
 

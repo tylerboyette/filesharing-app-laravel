@@ -16,7 +16,11 @@ class FileService
     protected $fileIcon;
     protected $imagePreview;
 
-    public function __construct(FileMediaInfo $fileMediaInfo, FileIcon $fileIcon, ImagePreview $imagePreview)
+    public function __construct(
+        FileMediaInfo $fileMediaInfo,
+        FileIcon $fileIcon,
+        ImagePreview $imagePreview
+    )
     {
         $this->getId3 = new \getID3();
         $this->fileMediaInfo = $fileMediaInfo;
@@ -52,15 +56,6 @@ class FileService
            "has_related_icon" => $hasRelatedIcon,
            "user_id" => $this->getUploaderId()
         ]);
-    }
-
-    /**
-     * TODO
-     *
-     * @param $image
-     */
-    public function createImagePreview($image) {
-
     }
 
     /**

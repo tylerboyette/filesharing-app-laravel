@@ -9,7 +9,7 @@
                         @if($file->user_id)
                             <img class="uploader-avatar" src="{{ asset("storage/avatars/{$file->user->avatar_name}") }}" alt="Avatar">
                         @else
-                            <img class="uploader-avatar" src="{{ asset("storage/avatars/anon.jpg") }}" alt="">
+                            <img class="uploader-avatar" src="{{ asset("storage/avatars/anon.jpg") }}" alt="Avatar">
                         @endif
                     </div>
                     <div class="media-body">
