@@ -139,12 +139,12 @@
             </div>
         </div>
     </div>
+
     <div class="comment-section bg-light">
             <form action="/comments" method="post" id="comment-form">
                 {{ csrf_field() }}
                 <div class="form-group">
-                    <label for="comment-content">Add a comment</label>
-                    <textarea class="form-control" rows="3" id="comment-content" name="content"></textarea>
+                    <textarea class="form-control" rows="3" id="comment-content" name="content" placeholder="Add a comment..."></textarea>
                     <input type="hidden" name="file_id" id="comment-file_id" value="{{ $file->id }}">
                     <div class="invalid-feedback comment-content-error"></div>
                 </div>
@@ -167,8 +167,22 @@
                                 <div class="comment-info">
                                     <span class="comment-info__author-name"><b>{{ $comment->user ? $comment->user->username : "Anonymous" }}</b></span>
                                     <span class="comment-info__date">{{ $comment->created_at->format("M j, Y H:i") }}</span>
-                                    <div class="comment-content">
+                                    <div class="comment-content mb-2">
                                         {{ $comment->content }}
+                                    </div>
+                                    <span class="reply-link">Reply</span>
+                                    <div class="reply-form">
+                                        <form action="/comments" method="post">
+                                            {{ csrf_field() }}
+                                            <div class="form-group">
+                                                <textarea class="form-control" rows="3" id="comment-content" name="content" placeholder="Add a reply..."></textarea>
+                                                <input type="hidden" name="file_id" id="comment-file_id" value="{{ $file->id }}">
+                                                <div class="invalid-feedback comment-content-error"></div>
+                                            </div>
+                                            <div class="form-group">
+                                                <button type="submit" class="btn btn-primary">Add a comment</button>
+                                            </div>
+                                        </form>
                                     </div>
                                 </div>
                             </div>

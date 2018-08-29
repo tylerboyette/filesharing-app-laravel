@@ -30803,6 +30803,7 @@ var CommentForm = function () {
         _classCallCheck(this, CommentForm);
 
         this.commentForm = __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#comment-form");
+        this.replyLinks = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".reply-link");
         this.events();
     }
 
@@ -30810,6 +30811,11 @@ var CommentForm = function () {
         key: "events",
         value: function events() {
             this.commentForm.submit(this.handleFormSubmission.bind(this));
+            this.replyLinks.each(function () {
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(this).click(function () {
+                    __WEBPACK_IMPORTED_MODULE_0_jquery___default()(this).siblings(".reply-form").toggleClass("reply-form--is-visible");
+                });
+            });
         }
     }, {
         key: "handleFormSubmission",

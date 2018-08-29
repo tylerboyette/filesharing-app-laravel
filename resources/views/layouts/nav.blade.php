@@ -8,7 +8,7 @@
                 <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
             </li>
 
-            @if (!Auth::check())
+            @guest
                 <li class="nav-item">
                     <a class="nav-link" href="#loginModal" data-toggle="modal" data-target="#loginModal">Sign In</a>
                 </li>
@@ -16,9 +16,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="#registerModal" data-toggle="modal" data-target="#registerModal">Sign Up</a>
                 </li>
-            @endif
+            @endguest
 
-            @if (Auth::check())
+            @auth
                 <li class="nav-item">
                     <a href="/users/{{ Auth::user()->id }}" class="nav-link">{{ Auth::user()->username }}</a>
                 </li>
@@ -26,7 +26,7 @@
                 <li class="nav-item">
                     <a href="/logout" class="nav-link">Sign Out</a>
                 </li>
-            @endif
+            @endauth
         </ul>
     </div>
 </nav>

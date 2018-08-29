@@ -133,3 +133,20 @@
   padding: 15px;
   border-radius: 0.25rem;
 }
+
+.reply-link {
+  color: #4b89c5;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.reply-form {
+  display: none;
+
+  &--is-visible {
+    display: block;
+  }
+}

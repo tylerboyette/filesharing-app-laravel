@@ -10,7 +10,7 @@
     <main class="container">
         @yield("content")
 
-        @if (!Auth::check())
+        @guest
             <div class="modal" id="registerModal" tabindex="-1" role="dialog">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
@@ -97,7 +97,7 @@
 
                 </div>
             </div>
-        @endif
+        @endguest
     </main>
 
     <script src="{{ asset("js/app.js") }}"></script>

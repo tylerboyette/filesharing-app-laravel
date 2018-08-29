@@ -3,11 +3,17 @@ import $ from "jquery";
 class CommentForm {
     constructor() {
         this.commentForm = $("#comment-form");
+        this.replyLinks = $(".reply-link");
         this.events();
     }
 
     events() {
         this.commentForm.submit(this.handleFormSubmission.bind(this));
+        this.replyLinks.each(function() {
+            $(this).click(function() {
+               $(this).siblings(".reply-form").toggleClass("reply-form--is-visible");
+            });
+        })
     }
 
     handleFormSubmission(event) {

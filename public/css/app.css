@@ -18167,3 +18167,20 @@ Reference: http://blog.rrwd.nl/2015/04/04/the-screen-reader-text-class-why-and-h
   border-radius: 0.25rem;
 }
 
+.reply-link {
+  color: #4b89c5;
+  cursor: pointer;
+}
+
+.reply-link:hover {
+  text-decoration: underline;
+}
+
+.reply-form {
+  display: none;
+}
+
+.reply-form--is-visible {
+  display: block;
+}
+
