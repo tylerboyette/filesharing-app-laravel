@@ -30820,10 +30820,9 @@ var CommentForm = function () {
     }, {
         key: "handleFormSubmission",
         value: function handleFormSubmission(event) {
-            console.log(event.target);
-            var self = this;
             event.preventDefault();
-
+            this.targetForm = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(event.target);
+            var self = this;
             var formData = this.grabFormData();
 
             __WEBPACK_IMPORTED_MODULE_0_jquery___default.a.ajax({
@@ -30843,7 +30842,7 @@ var CommentForm = function () {
     }, {
         key: "handleSuccess",
         value: function handleSuccess(fileId) {
-            __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#comment-content").val("");
+            this.targetForm.find(".comment-content").val("");
             __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".comment-list-container").load("/files/" + fileId + "/comments", this.loadCallback.bind(this));
         }
     }, {
@@ -30854,8 +30853,8 @@ var CommentForm = function () {
             var errorNames = Object.keys(errors);
 
             errorNames.forEach(function (errorName) {
-                __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#comment-" + errorName).addClass("is-invalid");
-                _this.commentForm.find(".comment-" + errorName + "-error").fadeIn(1000, function () {
+                _this.targetForm.find(".comment-" + errorName).addClass("is-invalid");
+                _this.targetForm.find(".comment-" + errorName + "-error").fadeIn(1000, function () {
                     __WEBPACK_IMPORTED_MODULE_0_jquery___default()(this).text("" + errors[errorName]);
                 });
             });
@@ -30863,15 +30862,15 @@ var CommentForm = function () {
     }, {
         key: "clearErrors",
         value: function clearErrors() {
-            this.commentForm.find(".invalid-feedback").fadeOut();
-            this.commentForm.find("textarea").removeClass("is-invalid");
+            this.targetForm.find(".invalid-feedback").fadeOut();
+            this.targetForm.find("textarea").removeClass("is-invalid");
         }
     }, {
         key: "grabFormData",
         value: function grabFormData() {
             return {
-                "content": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#comment-content").val(),
-                "file_id": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#comment-file_id").val()
+                "content": this.targetForm.find(".comment-content").val(),
+                "file_id": this.targetForm.find(".comment-file_id").val()
             };
         }
     }, {

@@ -1,8 +1,8 @@
 <form action="/comments" method="post" id="comment-form">
     {{ csrf_field() }}
     <div class="form-group">
-        <textarea class="form-control" rows="3" id="comment-content" name="content" placeholder="Add a comment..."></textarea>
-        <input type="hidden" name="file_id" id="comment-file_id" value="{{ $file->id }}">
+        <textarea class="form-control comment-content" rows="3" name="content" placeholder="Add a comment..."></textarea>
+        <input type="hidden" name="file_id" class="comment-file_id" value="{{ $file->id }}">
         <div class="invalid-feedback comment-content-error"></div>
     </div>
     <div class="form-group">

@@ -17,10 +17,9 @@ class CommentForm {
     }
 
     handleFormSubmission(event) {
-        console.log(event.target);
-        let self = this;
         event.preventDefault();
-
+        this.targetForm = $(event.target);
+        let self = this;
         let formData = this.grabFormData();
 
         $.ajax({
@@ -40,7 +39,7 @@ class CommentForm {
     }
 
     handleSuccess(fileId) {
-        $("#comment-content").val("");
+        this.targetForm.find(".comment-content").val("");
         $(".comment-list-container").load(`/files/${fileId}/comments`, this.loadCallback.bind(this));
     }
 
@@ -48,22 +47,22 @@ class CommentForm {
         let errorNames = Object.keys(errors);
 
         errorNames.forEach( (errorName) => {
-            $(`#comment-${errorName}`).addClass("is-invalid");
-            this.commentForm.find(`.comment-${errorName}-error`).fadeIn(1000, function() {
+            this.targetForm.find(`.comment-${errorName}`).addClass("is-invalid");
+            this.targetForm.find(`.comment-${errorName}-error`).fadeIn(1000, function() {
                $(this).text(`${errors[errorName]}`);
             });
         });
     }
 
     clearErrors() {
-        this.commentForm.find(".invalid-feedback").fadeOut();
-        this.commentForm.find("textarea").removeClass("is-invalid");
+        this.targetForm.find(".invalid-feedback").fadeOut();
+        this.targetForm.find("textarea").removeClass("is-invalid");
     }
 
     grabFormData() {
         return {
-            "content": $("#comment-content").val(),
-            "file_id": $("#comment-file_id").val()
+            "content": this.targetForm.find(".comment-content").val(),
+            "file_id": this.targetForm.find(".comment-file_id").val()
         }
     }
 
