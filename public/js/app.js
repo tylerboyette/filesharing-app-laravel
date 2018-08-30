@@ -30833,11 +30833,17 @@ var CommentForm = function () {
                 beforeSend: self.clearErrors.bind(self),
                 encode: true,
                 success: function success(response) {
-                    console.log("All fine");
+                    self.handleSuccess(formData.file_id);
                 }
             }).fail(function (data) {
                 self.handleValidationErrors(data.responseJSON.errors);
             });
+        }
+    }, {
+        key: "handleSuccess",
+        value: function handleSuccess(fileId) {
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#comment-content").val("");
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".comment-list-container").load("/files/" + fileId + "/comments");
         }
     }, {
         key: "handleValidationErrors",

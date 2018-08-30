@@ -13,7 +13,7 @@
                     <b>{{ $file->user_id ? $file->user->username : "Anonymous" }}</b>
                 </div>
                 <div class="file-info__file-name">
-                    <span>{{ $file->original_name }}</span>
+                    <span><a href="/files/{{ $file->id }}">{{ $file->original_name }}</a></span>
                 </div>
             </div>
             @if (array_key_exists("mime_type", $file->meta_data) && explode("/", $file->meta_data["mime_type"])[0] === "image")

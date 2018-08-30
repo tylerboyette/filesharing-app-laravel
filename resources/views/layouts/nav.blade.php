@@ -27,6 +27,9 @@
                     <a href="/logout" class="nav-link">Sign Out</a>
                 </li>
             @endauth
+            <li class="nav-item">
+                <a class="nav-link" href="/files">Files</a>
+            </li>
         </ul>
     </div>
 </nav>

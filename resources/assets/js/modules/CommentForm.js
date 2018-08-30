@@ -30,12 +30,17 @@ class CommentForm {
             beforeSend: self.clearErrors.bind(self),
             encode: true,
             success: function(response) {
-                console.log("All fine");
+                self.handleSuccess(formData.file_id);
             }
         })
             .fail(function(data) {
                 self.handleValidationErrors(data.responseJSON.errors);
             });
+    }
+
+    handleSuccess(fileId) {
+        $("#comment-content").val("");
+        $(".comment-list-container").load(`/files/${fileId}/comments`);
     }
 
     handleValidationErrors(errors) {
