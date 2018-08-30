@@ -30820,6 +30820,7 @@ var CommentForm = function () {
     }, {
         key: "handleFormSubmission",
         value: function handleFormSubmission(event) {
+            console.log(event.target);
             var self = this;
             event.preventDefault();
 
@@ -30843,7 +30844,7 @@ var CommentForm = function () {
         key: "handleSuccess",
         value: function handleSuccess(fileId) {
             __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#comment-content").val("");
-            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".comment-list-container").load("/files/" + fileId + "/comments");
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".comment-list-container").load("/files/" + fileId + "/comments", this.loadCallback.bind(this));
         }
     }, {
         key: "handleValidationErrors",
@@ -30872,6 +30873,16 @@ var CommentForm = function () {
                 "content": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#comment-content").val(),
                 "file_id": __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#comment-file_id").val()
             };
+        }
+    }, {
+        key: "loadCallback",
+        value: function loadCallback() {
+            this.replyLinks = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".reply-link");
+            this.replyLinks.each(function () {
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(this).click(function () {
+                    __WEBPACK_IMPORTED_MODULE_0_jquery___default()(this).siblings(".reply-form").toggleClass("reply-form--is-visible");
+                });
+            });
         }
     }]);
 

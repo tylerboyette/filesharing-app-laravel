@@ -13,10 +13,11 @@ class CommentForm {
             $(this).click(function() {
                $(this).siblings(".reply-form").toggleClass("reply-form--is-visible");
             });
-        })
+        });
     }
 
     handleFormSubmission(event) {
+        console.log(event.target);
         let self = this;
         event.preventDefault();
 
@@ -30,7 +31,7 @@ class CommentForm {
             beforeSend: self.clearErrors.bind(self),
             encode: true,
             success: function(response) {
-                self.handleSuccess(formData.file_id);
+                self.handleSuccess(formData.file_id)
             }
         })
             .fail(function(data) {
@@ -40,7 +41,7 @@ class CommentForm {
 
     handleSuccess(fileId) {
         $("#comment-content").val("");
-        $(".comment-list-container").load(`/files/${fileId}/comments`);
+        $(".comment-list-container").load(`/files/${fileId}/comments`, this.loadCallback.bind(this));
     }
 
     handleValidationErrors(errors) {
@@ -64,6 +65,15 @@ class CommentForm {
             "content": $("#comment-content").val(),
             "file_id": $("#comment-file_id").val()
         }
+    }
+
+    loadCallback() {
+        this.replyLinks = $(".reply-link");
+        this.replyLinks.each(function() {
+            $(this).click(function() {
+                $(this).siblings(".reply-form").toggleClass("reply-form--is-visible");
+            });
+        });
     }
 }
 
