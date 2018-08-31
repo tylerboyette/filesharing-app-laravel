@@ -14,20 +14,10 @@
                 <div class="comment-content mb-2">{{ $comment->content }}</div>
                 <span class="reply-link">Reply</span>
                 <div class="reply-form">
-                    <form action="/comments" method="post">
-                        {{ csrf_field() }}
-                        <div class="form-group">
-                            <textarea class="form-control reply-content" rows="3" name="content" placeholder="Add a reply..."></textarea>
-                            <input type="hidden" name="file_id" class="comment-file_id" value="{{ $file->id }}">
-                            <input type="hidden" name="parent_id" class="comment-parent_id" value="{{ $comment->id }}">
-                            <div class="invalid-feedback reply-content-error"></div>
-                        </div>
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary">Add a reply</button>
-                        </div>
-                    </form>
+                    @include("files.partials.reply.form")
                 </div>
             </div>
+            @include("files.partials.reply.list")
         </div>
     </div>
 </li>

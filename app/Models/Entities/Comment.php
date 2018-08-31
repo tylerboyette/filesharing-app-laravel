@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Comment extends Model
 {
     protected $fillable = [
-      "content", "user_id", "file_id"
+      "content", "user_id", "file_id", "parent_id"
     ];
 
     /**
@@ -35,7 +35,7 @@ class Comment extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function children()
+    public function replies()
     {
         return $this->hasMany('App\Models\Entities\Comment', 'parent_id');
     }

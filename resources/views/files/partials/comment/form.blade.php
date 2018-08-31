@@ -1,4 +1,4 @@
-<form action="/comments" method="post" id="comment-form">
+<form action="/comments" method="post" class="comment-form">
     {{ csrf_field() }}
     <div class="form-group">
         <textarea class="form-control comment-content" rows="3" name="content" placeholder="Add a comment..."></textarea>

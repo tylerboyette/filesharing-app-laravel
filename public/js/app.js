@@ -13035,7 +13035,7 @@ if ($(".details-table").length) {
     var detailsTable = new __WEBPACK_IMPORTED_MODULE_3__modules_DetailsTable__["a" /* default */]();
 }
 
-if ($("#comment-form").length) {
+if ($(".comment-form").length) {
     var commentForm = new __WEBPACK_IMPORTED_MODULE_4__modules_CommentForm__["a" /* default */]();
 }
 
@@ -30802,7 +30802,7 @@ var CommentForm = function () {
     function CommentForm() {
         _classCallCheck(this, CommentForm);
 
-        this.commentForm = __WEBPACK_IMPORTED_MODULE_0_jquery___default()("#comment-form");
+        this.commentForms = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".comment-form");
         this.replyLinks = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".reply-link");
         this.events();
     }
@@ -30810,7 +30810,12 @@ var CommentForm = function () {
     _createClass(CommentForm, [{
         key: "events",
         value: function events() {
-            this.commentForm.submit(this.handleFormSubmission.bind(this));
+            var _this = this;
+
+            this.commentForms.each(function (index, form) {
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(form).submit(_this.preventDefaults);
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(form).submit(_this.handleFormSubmission.bind(_this));
+            });
             this.replyLinks.each(function () {
                 __WEBPACK_IMPORTED_MODULE_0_jquery___default()(this).click(function () {
                     __WEBPACK_IMPORTED_MODULE_0_jquery___default()(this).siblings(".reply-form").toggleClass("reply-form--is-visible");
@@ -30820,8 +30825,8 @@ var CommentForm = function () {
     }, {
         key: "handleFormSubmission",
         value: function handleFormSubmission(event) {
-            event.preventDefault();
             this.targetForm = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(event.target);
+            console.log(this.targetForm);
             var self = this;
             var formData = this.grabFormData();
 
@@ -30842,19 +30847,24 @@ var CommentForm = function () {
     }, {
         key: "handleSuccess",
         value: function handleSuccess(fileId) {
+            var _this2 = this;
+
             this.targetForm.find(".comment-content").val("");
-            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".comment-list-container").load("/files/" + fileId + "/comments", this.loadCallback.bind(this));
+            __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".comment-list-container").load("/files/" + fileId + "/comments", function () {
+                _this2.refreshCommentForms.call(_this2);
+                _this2.refreshReplyLinks.call(_this2);
+            });
         }
     }, {
         key: "handleValidationErrors",
         value: function handleValidationErrors(errors) {
-            var _this = this;
+            var _this3 = this;
 
             var errorNames = Object.keys(errors);
 
             errorNames.forEach(function (errorName) {
-                _this.targetForm.find(".comment-" + errorName).addClass("is-invalid");
-                _this.targetForm.find(".comment-" + errorName + "-error").fadeIn(1000, function () {
+                _this3.targetForm.find(".comment-" + errorName).addClass("is-invalid");
+                _this3.targetForm.find(".comment-" + errorName + "-error").fadeIn(1000, function () {
                     __WEBPACK_IMPORTED_MODULE_0_jquery___default()(this).text("" + errors[errorName]);
                 });
             });
@@ -30870,18 +30880,36 @@ var CommentForm = function () {
         value: function grabFormData() {
             return {
                 "content": this.targetForm.find(".comment-content").val(),
-                "file_id": this.targetForm.find(".comment-file_id").val()
+                "file_id": this.targetForm.find(".comment-file_id").val(),
+                "parent_id": this.targetForm.find(".comment-parent_id").val() || null
             };
         }
     }, {
-        key: "loadCallback",
-        value: function loadCallback() {
+        key: "refreshReplyLinks",
+        value: function refreshReplyLinks() {
             this.replyLinks = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".reply-link");
             this.replyLinks.each(function () {
                 __WEBPACK_IMPORTED_MODULE_0_jquery___default()(this).click(function () {
                     __WEBPACK_IMPORTED_MODULE_0_jquery___default()(this).siblings(".reply-form").toggleClass("reply-form--is-visible");
                 });
             });
+        }
+    }, {
+        key: "refreshCommentForms",
+        value: function refreshCommentForms() {
+            var _this4 = this;
+
+            this.commentForms = __WEBPACK_IMPORTED_MODULE_0_jquery___default()(".comment-list-container").find(".comment-form");
+            this.commentForms.each(function (index, form) {
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(form).submit(_this4.preventDefaults);
+                __WEBPACK_IMPORTED_MODULE_0_jquery___default()(form).submit(_this4.handleFormSubmission.bind(_this4));
+            });
+        }
+    }, {
+        key: "preventDefaults",
+        value: function preventDefaults(e) {
+            e.stopPropagation();
+            e.preventDefault();
         }
     }]);
 

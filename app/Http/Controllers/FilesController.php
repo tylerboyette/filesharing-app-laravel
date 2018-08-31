@@ -45,8 +45,9 @@ class FilesController extends Controller
     public function show($id)
     {
         $file = File::where("id", $id)->firstOrFail();
+        $comments = $file->comments()->where("parent_id", null)->get();
 
-        return view("files.show", ["file" => $file]);
+        return view("files.show", ["file" => $file, "comments" => $comments]);
     }
 
     /**

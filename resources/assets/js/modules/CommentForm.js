@@ -2,13 +2,16 @@ import $ from "jquery";
 
 class CommentForm {
     constructor() {
-        this.commentForm = $("#comment-form");
+        this.commentForms = $(".comment-form");
         this.replyLinks = $(".reply-link");
         this.events();
     }
 
     events() {
-        this.commentForm.submit(this.handleFormSubmission.bind(this));
+        this.commentForms.each((index, form) => {
+            $(form).submit(this.preventDefaults);
+            $(form).submit(this.handleFormSubmission.bind(this));
+        });
         this.replyLinks.each(function() {
             $(this).click(function() {
                $(this).siblings(".reply-form").toggleClass("reply-form--is-visible");
@@ -17,8 +20,8 @@ class CommentForm {
     }
 
     handleFormSubmission(event) {
-        event.preventDefault();
         this.targetForm = $(event.target);
+        console.log(this.targetForm);
         let self = this;
         let formData = this.grabFormData();
 
@@ -40,7 +43,10 @@ class CommentForm {
 
     handleSuccess(fileId) {
         this.targetForm.find(".comment-content").val("");
-        $(".comment-list-container").load(`/files/${fileId}/comments`, this.loadCallback.bind(this));
+        $(".comment-list-container").load(`/files/${fileId}/comments`, () => {
+            this.refreshCommentForms.call(this);
+            this.refreshReplyLinks.call(this);
+        });
     }
 
     handleValidationErrors(errors) {
@@ -62,17 +68,31 @@ class CommentForm {
     grabFormData() {
         return {
             "content": this.targetForm.find(".comment-content").val(),
-            "file_id": this.targetForm.find(".comment-file_id").val()
+            "file_id": this.targetForm.find(".comment-file_id").val(),
+            "parent_id": this.targetForm.find(".comment-parent_id").val() || null
         }
     }
 
-    loadCallback() {
+    refreshReplyLinks() {
         this.replyLinks = $(".reply-link");
         this.replyLinks.each(function() {
             $(this).click(function() {
                 $(this).siblings(".reply-form").toggleClass("reply-form--is-visible");
             });
         });
+    }
+
+    refreshCommentForms() {
+        this.commentForms = $(".comment-list-container").find(".comment-form");
+        this.commentForms.each((index, form) => {
+            $(form).submit(this.preventDefaults);
+            $(form).submit(this.handleFormSubmission.bind(this));
+        });
+    }
+
+    preventDefaults(e) {
+       e.stopPropagation();
+       e.preventDefault();
     }
 }
 

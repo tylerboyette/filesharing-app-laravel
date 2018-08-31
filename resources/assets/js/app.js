@@ -24,7 +24,7 @@ if ($(".details-table").length) {
     let detailsTable = new DetailsTable();
 }
 
-if ($("#comment-form").length) {
+if ($(".comment-form").length) {
     let commentForm = new CommentForm();
 }
 

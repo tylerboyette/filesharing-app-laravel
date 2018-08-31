@@ -16,7 +16,8 @@ class CommentsController extends Controller
         $comment = Comment::create([
             "content" => $request->input("content"),
             "file_id" => $request->input("file_id"),
-            "user_id" => $user_id
+            "user_id" => $user_id,
+            "parent_id" => $request->input("parent_id")
         ]);
 
         $comment->save();
@@ -27,7 +28,8 @@ class CommentsController extends Controller
     public function show($fileId)
     {
         $file = File::where("id", $fileId)->firstOrFail();
+        $comments = $file->comments()->where("parent_id", null)->get();
 
-        return view("files.partials.comment.list", ["file" => $file]);
+        return view("files.partials.comment.list", ["comments" => $comments, "file" => $file]);
     }
 }
