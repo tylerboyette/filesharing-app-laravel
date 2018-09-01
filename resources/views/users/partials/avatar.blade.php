@@ -1,0 +1,1 @@
+<img src="{{ asset("storage/avatars/$user->avatar_name") }}" id="avatar" class="avatar avatar--centered avatar--bordered" alt="Avatar">

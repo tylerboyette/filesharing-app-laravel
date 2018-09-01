@@ -13053,8 +13053,21 @@ $("#file-input").fileinput({
     uploadUrl: "/upload",
     showUploadedThumbs: false,
     showPreview: false,
+    showAjaxErrorDetails: true,
     elErrorContainer: ".file-upload-errors",
     maxFileCount: 1
+});
+
+$("#avatar-upload").fileinput({
+    theme: "fas",
+    uploadUrl: "/users/avatar",
+    dropZoneEnabled: false,
+    allowedFileExtensions: ["jpg", "png", "jpeg"],
+    maxFileCount: 1
+});
+
+$("#avatar-upload").on("fileuploaded", function () {
+    location.reload();
 });
 
 $("audio").mediaelementplayer({

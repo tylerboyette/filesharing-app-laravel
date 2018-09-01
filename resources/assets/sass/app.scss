@@ -5,9 +5,18 @@
 @import "~mediaelement/src/css/mediaelementplayer";
 
 .avatar {
-  width: 300px;
-  height: 300px;
-  border: 1px solid black;
+  width: 100px;
+  height: 100px;
+
+  &--centered {
+    margin: 0 auto;
+  }
+
+  &--bordered {
+    border-radius: 5px;
+    border: 3px solid #fff;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+  }
 }
 
 .vertical-center {
@@ -149,4 +158,8 @@
   &--is-visible {
     display: block;
   }
+}
+
+.profile-left {
+  height: 300px;
 }

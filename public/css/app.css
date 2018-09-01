@@ -18032,9 +18032,19 @@ Reference: http://blog.rrwd.nl/2015/04/04/the-screen-reader-text-class-why-and-h
 /* End: Error */
 
 .avatar {
-  width: 300px;
-  height: 300px;
-  border: 1px solid black;
+  width: 100px;
+  height: 100px;
+}
+
+.avatar--centered {
+  margin: 0 auto;
+}
+
+.avatar--bordered {
+  border-radius: 5px;
+  border: 3px solid #fff;
+  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
 .vertical-center {
@@ -18182,5 +18192,9 @@ Reference: http://blog.rrwd.nl/2015/04/04/the-screen-reader-text-class-why-and-h
 
 .reply-form--is-visible {
   display: block;
+}
+
+.profile-left {
+  height: 300px;
 }
 

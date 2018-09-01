@@ -21,8 +21,10 @@ class UsersController extends Controller
     public function show($id)
     {
         $user = User::where("id", $id)->firstOrFail();
+        $files = $user->files;
+        $fileCount = $files->count();
 
-        return view("users.show", ["user" => $user]);
+        return view("users.show", ["user" => $user, "files" => $files, "fileCount" => $fileCount]);
     }
 
     public function updateAvatar(AvatarUpdateRequest $request)
@@ -30,19 +32,18 @@ class UsersController extends Controller
         $avatar = $request->file("avatar");
         if (!is_null($avatar)) {
             $this->avatarService->handleUploadedAvatar($avatar);
-            $filename = $this->avatarService->makeAvatarName($avatar);
 
             $user = Auth::user();
 
             $previousUserAvatarName = $user->avatar_name;
 
             // Saving new avatar to the database
-            $user->avatar_name = $filename;
+            $user->avatar_name = $this->avatarService->getAvatarName();
             $user->save();
 
             $this->avatarService->deleteAvatarFromStorage($previousUserAvatarName);
         }
 
-        return back();
+        return response()->json(["success" => "success"]);
     }
 }
