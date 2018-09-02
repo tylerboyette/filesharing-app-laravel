@@ -13,7 +13,7 @@ class FileIcon
         );
     }
 
-    public function hasRelatedIcon(string $fileExtension)
+    public function hasRelatedIcon(string $fileExtension): bool
     {
         return in_array($fileExtension,$this->supportedFileExtensions) ? true : false;
     }
