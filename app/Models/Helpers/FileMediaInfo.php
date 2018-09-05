@@ -17,6 +17,7 @@ class FileMediaInfo
     {
         // Getting the file info using library getId3
         $fileInfo = $this->getId3->analyze($pathToFile);
+        dd($fileInfo);
 
         $fileMetaData = [];
 
