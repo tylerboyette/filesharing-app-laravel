@@ -38,7 +38,7 @@ class ImagePreview
 
             return $preview;
         } else {
-            $preview->resize(null,550, function($constraint) {
+            $preview->resize(null, 550, function($constraint) {
                 $constraint->aspectRatio();
             });
 

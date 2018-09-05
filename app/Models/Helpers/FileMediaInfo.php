@@ -5,10 +5,12 @@ namespace App\Models\Helpers;
 class FileMediaInfo
 {
     protected $getId3;
+    protected $metaDataGrabber;
 
-    public function __construct()
+    public function __construct(MetaDataGrabber $metaDataGrabber)
     {
         $this->getId3 = new \getID3();
+        $this->metaDataGrabber = $metaDataGrabber;
     }
 
     public function bundleFileMetaData(string $pathToFile): array
@@ -26,7 +28,7 @@ class FileMediaInfo
             $fileType = explode("/", $mimeType)[0];
 
             // Getting additional meta data for media files
-            $fileMetaData = $this->grabMetaDataByFileType($fileType, $fileInfo);
+            $fileMetaData = $this->metaDataGrabber->grabMetaDataByFileType($fileType, $fileInfo);
 
             // Storing MIME-type in meta data
             $fileMetaData["mime_type"] = $mimeType;
@@ -35,53 +37,5 @@ class FileMediaInfo
         $fileMetaData["filesize"] = $fileInfo["filesize"];
 
         return $fileMetaData;
-    }
-
-    protected function grabMetaDataByFileType(string $fileType, array $fileInfo): array
-    {
-        $metaData = [];
-
-        switch ($fileType) {
-            case "audio":
-                $audioParameters = [
-                    "bitrate" => $fileInfo["audio"]["bitrate"],
-                    "sample_rate" => $fileInfo["audio"]["sample_rate"],
-                    "channels_count" => $fileInfo["audio"]["channels"],
-                    "codec" => $fileInfo["audio"]["codec"]
-                ];
-
-                $metaData["playtime_string"] = $fileInfo["playtime_string"];
-                $metaData["audio"] = $audioParameters;
-                break;
-            case "video":
-                $audioParameters = [
-                    "sample_rate" => $fileInfo["audio"]["sample_rate"],
-                    "channels_count" => $fileInfo["audio"]["channels"],
-                    "codec" => $fileInfo["audio"]["codec"]
-                ];
-                $videoParameters = [
-                    "resolution_x" => $fileInfo["video"]["resolution_x"],
-                    "resolution_y" => $fileInfo["video"]["resolution_y"]
-                ];
-
-                $metaData["playtime_string"] = $fileInfo["playtime_string"];
-                $metaData["audio"] = $audioParameters;
-                $metaData["video"] = $videoParameters;
-                break;
-            case "image":
-                $videoParameters = [
-                    "resolution_x" => $fileInfo["video"]["resolution_x"],
-                    "resolution_y" => $fileInfo["video"]["resolution_y"]
-                ];
-                if (array_key_exists("bits_per_sample", $fileInfo["video"])) {
-                    $videoParameters["bits_per_sample"] = $fileInfo["video"]["bits_per_sample"];
-                }
-
-                $metaData["fileformat"] = $fileInfo["fileformat"];
-                $metaData["video"] = $videoParameters;
-                break;
-        }
-
-        return $metaData;
     }
 }
