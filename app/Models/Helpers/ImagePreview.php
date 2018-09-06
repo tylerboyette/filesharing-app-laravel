@@ -7,10 +7,15 @@ use Intervention\Image\ImageManagerStatic as Image;
 class ImagePreview
 {
     protected $imageResizer;
+    protected $imagePreviewSaver;
 
-    public function __construct(ImagePreviewResizer $imageResizer)
+    public function __construct(
+        ImagePreviewResizer $imageResizer,
+        ImagePreviewSaver $imagePreviewSaver
+    )
     {
         $this->imageResizer = $imageResizer;
+        $this->imagePreviewSaver = $imagePreviewSaver;
     }
 
     public function create($pathToImage): void
@@ -22,7 +27,12 @@ class ImagePreview
         $height = $imageInfo[1];
 
         $this->imageResizer->resizePreviewBasedOnWidthHeight($preview, $width, $height);
-        $this->savePreviewToPath($preview,storage_path("app/public/image_previews/$previewName"));
+
+        $pathArray = explode("/", storage_path("app/public/image_previews/$previewName"));
+        $saveName = array_pop($pathArray);
+        $savePath = implode("/", $pathArray);
+
+        $this->imagePreviewSaver->save($preview, $savePath, $saveName);
     }
 
     protected function createPreviewName($pathToImage)
@@ -32,18 +42,5 @@ class ImagePreview
         $previewName = implode("/", $explodedPath);
 
         return $previewName;
-    }
-
-    protected function savePreviewToPath($preview, string $path)
-    {
-        $pathArray = explode("/", $path);
-        array_pop($pathArray);
-        $savePath = implode("/", $pathArray);
-
-        if (!file_exists($savePath)) {
-            mkdir($savePath, 0777, true);
-        }
-
-        $preview->save($path);
     }
 }
