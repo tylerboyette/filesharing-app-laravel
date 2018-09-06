@@ -3,11 +3,10 @@
 namespace App\Models\Services;
 
 use App\Models\Entities\File;
-use App\Models\Helpers\FileMediaInfo;
-use App\Models\Helpers\FileIcon;
-use App\Models\Helpers\ImagePreview;
+use App\Models\Helpers\FileMediaInfo\FileMediaInfo;
+use App\Models\Helpers\FileMediaInfo\FileIcon;
+use App\Models\Helpers\ImagePreview\ImagePreview;
 use Illuminate\Support\Facades\Auth;
-use Intervention\Image\ImageManagerStatic as Image;
 
 class FileService
 {

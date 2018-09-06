@@ -1,14 +1,27 @@
 <?php
 
-namespace App\Models\Helpers;
+namespace App\Models\Helpers\ImagePreview;
 
 use Intervention\Image\ImageManagerStatic as Image;
 
 class ImagePreview
 {
+    /**
+     * @var ImagePreviewResizer
+     */
     protected $imageResizer;
+
+    /**
+     * @var ImagePreviewSaver
+     */
     protected $imagePreviewSaver;
 
+    /**
+     * Create a new instance of ImagePreview
+     *
+     * @param ImagePreviewResizer $imageResizer
+     * @param ImagePreviewSaver $imagePreviewSaver
+     */
     public function __construct(
         ImagePreviewResizer $imageResizer,
         ImagePreviewSaver $imagePreviewSaver
@@ -18,7 +31,12 @@ class ImagePreview
         $this->imagePreviewSaver = $imagePreviewSaver;
     }
 
-    public function create($pathToImage): void
+    /**
+     * Create a preview given a path to image
+     *
+     * @param string $pathToImage
+     */
+    public function create(string $pathToImage): void
     {
         $preview = Image::make($pathToImage);
         $previewName = $this->createPreviewName($pathToImage);
@@ -35,7 +53,13 @@ class ImagePreview
         $this->imagePreviewSaver->save($preview, $savePath, $saveName);
     }
 
-    protected function createPreviewName($pathToImage)
+    /**
+     * Create a preview name based on $pathToImage
+     *
+     * @param $pathToImage
+     * @return string
+     */
+    protected function createPreviewName($pathToImage): string
     {
         $pathArray = explode("/", $pathToImage);
         $explodedPath = array_values(array_slice($pathArray, -3));

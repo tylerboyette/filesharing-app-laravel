@@ -5,13 +5,26 @@ namespace App\Models\Services;
 use Intervention\Image\ImageManagerStatic as Image;
 use Illuminate\Support\Facades\File;
 
-class AvatarService
+class AvatarService extends FileService
 {
+    /**
+     * @var string
+     */
     protected $avatarName;
 
-    public function handleUploadedAvatar($avatar)
+    /**
+     * @var string
+     */
+    protected $defaultAvatarName = "default.png";
+
+    /**
+     * Store an uploaded avatar
+     *
+     * @param $avatar
+     */
+    public function handleUploadedFile($avatar): void
     {
-        $this->avatarName = $this->makeAvatarName($avatar);
+        $this->avatarName = $this->makeFileName($avatar);
 
         Image::make($avatar)->fit(
             300, 300
@@ -20,19 +33,24 @@ class AvatarService
         );
     }
 
-    public function makeAvatarName($avatar)
+    /**
+     * Delete avatar from storage unless it is a default avatar
+     *
+     * @param $avatarName
+     */
+    public function deleteAvatarFromStorage($avatarName): void
     {
-        return time() . "." . $avatar->getClientOriginalExtension();
-    }
-
-    public function deleteAvatarFromStorage($avatarName)
-    {
-        if ($avatarName !== "default.png") {
+        if ($avatarName !== $this->defaultAvatarName) {
             File::delete(storage_path("app/public/avatars/" . $avatarName));
         }
     }
 
-    public function getAvatarName()
+    /**
+     * Return an avatar name
+     *
+     * @return string
+     */
+    public function getAvatarName(): string
     {
         return $this->avatarName;
     }

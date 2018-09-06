@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Helpers;
+namespace App\Models\Helpers\FileMediaInfo;
 
 class FileMediaInfo
 {
