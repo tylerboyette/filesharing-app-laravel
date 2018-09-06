@@ -9,6 +9,12 @@ use Illuminate\Support\Facades\Auth;
 
 class CommentsController extends Controller
 {
+    /**
+     * Save a comment to the database
+     *
+     * @param CommentRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function store(CommentRequest $request)
     {
         $user_id = Auth::check() ? Auth::user()->id : null;
@@ -25,6 +31,12 @@ class CommentsController extends Controller
         return response()->json();
     }
 
+    /**
+     * Return a comment list for the file
+     *
+     * @param $fileId
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function show($fileId)
     {
         $file = File::where("id", $fileId)->firstOrFail();

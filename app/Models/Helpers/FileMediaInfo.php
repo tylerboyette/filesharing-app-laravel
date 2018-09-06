@@ -4,20 +4,37 @@ namespace App\Models\Helpers;
 
 class FileMediaInfo
 {
+    /**
+     * @var \getID3
+     */
     protected $getId3;
+
+    /**
+     * @var MetaDataGrabber
+     */
     protected $metaDataGrabber;
 
+    /**
+     * Create a new FileMediaInfo
+     *
+     * @param MetaDataGrabber $metaDataGrabber
+     */
     public function __construct(MetaDataGrabber $metaDataGrabber)
     {
         $this->getId3 = new \getID3();
         $this->metaDataGrabber = $metaDataGrabber;
     }
 
+    /**
+     * Collect meta data for a file
+     *
+     * @param string $pathToFile
+     * @return array
+     */
     public function bundleFileMetaData(string $pathToFile): array
     {
         // Getting the file info using library getId3
         $fileInfo = $this->getId3->analyze($pathToFile);
-        dd($fileInfo);
 
         $fileMetaData = [];
 

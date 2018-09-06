@@ -11,11 +11,28 @@ use Intervention\Image\ImageManagerStatic as Image;
 
 class FileService
 {
-    protected $getId3;
+    /**
+     * @var FileMediaInfo
+     */
     protected $fileMediaInfo;
+
+    /**
+     * @var FileIcon
+     */
     protected $fileIcon;
+
+    /**
+     * @var ImagePreview
+     */
     protected $imagePreview;
 
+    /**
+     * Create a new FileService instance
+     *
+     * @param FileMediaInfo $fileMediaInfo
+     * @param FileIcon $fileIcon
+     * @param ImagePreview $imagePreview
+     */
     public function __construct(
         FileMediaInfo $fileMediaInfo,
         FileIcon $fileIcon,
@@ -28,7 +45,13 @@ class FileService
         $this->imagePreview = $imagePreview;
     }
 
-    public function handleUploadedFile($file)
+    /**
+     * Store an uploaded file and save it to the database
+     *
+     * @param $file
+     * @return void
+     */
+    public function handleUploadedFile($file): void
     {
         $currentYearMonth = date("Y/m");
         $fileExtension = $file->getClientOriginalExtension();
@@ -59,6 +82,8 @@ class FileService
     }
 
     /**
+     * Get the id of the uploader if the upload wasn't anonymous
+     *
      * @return int|null
      */
     public function getUploaderId()
@@ -70,6 +95,12 @@ class FileService
         return null;
     }
 
+    /**
+     * Create a name for the file
+     *
+     * @param $file
+     * @return string
+     */
     public function makeFileName($file): string
     {
         return time() . "." . $file->getClientOriginalExtension();

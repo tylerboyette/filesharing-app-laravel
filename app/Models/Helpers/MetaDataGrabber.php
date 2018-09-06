@@ -4,6 +4,13 @@ namespace App\Models\Helpers;
 
 class MetaDataGrabber
 {
+    /**
+     * Grab meta data from $fileInfo based on provided $fileType
+     *
+     * @param string $fileType
+     * @param array $fileInfo
+     * @return array
+     */
     public function grabMetaDataByFileType(string $fileType, array $fileInfo): array
     {
         $metaData = [];

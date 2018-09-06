@@ -9,7 +9,9 @@ use App\Models\Entities\File;
 
 class FilesController extends Controller
 {
-    protected $getId3;
+    /**
+     * @var FileService
+     */
     protected $fileService;
 
     /**
@@ -19,7 +21,6 @@ class FilesController extends Controller
      */
     public function __construct(FileService $fileService)
     {
-        $this->getId3 = new \getID3();
         $this->fileService = $fileService;
     }
 
