@@ -25,4 +25,34 @@ class ImagePreviewResizerTest extends TestCase
 
         $this->assertTrue($initialWidth === $outputWidth && $initialHeight === $outputHeight);
     }
+
+    /** @test */
+    public function resizes_image_of_inappropriate_width()
+    {
+        $imagePreviewResizer = new ImagePreviewResizer();
+        $image = (new FileFactory())->image("test.jpg",1200, 800);
+        $interventionImage = Image::make($image);
+
+        $imagePreviewResizer->resize($interventionImage);
+
+        $outputWidth = $interventionImage->width();
+        $outputHeight = $interventionImage->height();
+
+        $this->assertTrue($outputWidth <= 550 && $outputWidth >= $outputHeight);
+    }
+
+    /** @test */
+    public function resizes_image_of_inappropriate_height()
+    {
+        $imagePreviewResizer = new ImagePreviewResizer();
+        $image = (new FileFactory())->image("test.jpg",800, 1200);
+        $interventionImage = Image::make($image);
+
+        $imagePreviewResizer->resize($interventionImage);
+
+        $outputWidth = $interventionImage->width();
+        $outputHeight = $interventionImage->height();
+
+        $this->assertTrue($outputHeight <= 550 && $outputHeight >= $outputWidth);
+    }
 }
