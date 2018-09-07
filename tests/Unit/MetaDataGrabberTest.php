@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Models\Helpers\MetaDataGrabber;
+use App\Models\Helpers\FileMediaInfo\MetaDataGrabber;
 use Tests\TestCase;
 
 

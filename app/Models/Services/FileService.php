@@ -26,7 +26,7 @@ class FileService
     protected $imagePreview;
 
     /**
-     * Create a new FileService instance
+     * Create a new FileService instance.
      *
      * @param FileMediaInfo $fileMediaInfo
      * @param FileIcon $fileIcon
@@ -45,7 +45,7 @@ class FileService
     }
 
     /**
-     * Store an uploaded file and save it to the database
+     * Store an uploaded file and save it to the database.
      *
      * @param $file
      * @return void
@@ -81,7 +81,7 @@ class FileService
     }
 
     /**
-     * Get the id of the uploader if the upload wasn't anonymous
+     * Get the id of the uploader if the upload wasn't anonymous.
      *
      * @return int|null
      */
@@ -95,7 +95,7 @@ class FileService
     }
 
     /**
-     * Create a name for the file
+     * Create a name for the file.
      *
      * @param $file
      * @return string

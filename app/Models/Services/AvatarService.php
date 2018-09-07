@@ -18,7 +18,7 @@ class AvatarService extends FileService
     protected $defaultAvatarName = "default.png";
 
     /**
-     * Store an uploaded avatar
+     * Store an uploaded avatar.
      *
      * @param $avatar
      */
@@ -34,7 +34,7 @@ class AvatarService extends FileService
     }
 
     /**
-     * Delete avatar from storage unless it is a default avatar
+     * Delete avatar from storage unless it is a default avatar.
      *
      * @param $avatarName
      */
@@ -46,7 +46,7 @@ class AvatarService extends FileService
     }
 
     /**
-     * Return an avatar name
+     * Return an avatar name.
      *
      * @return string
      */

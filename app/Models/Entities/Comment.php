@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Comment extends Model
 {
     /**
-     * The attributes that are mass assignable
+     * The attributes that are mass assignable.
      *
      * @var array
      */
@@ -16,7 +16,7 @@ class Comment extends Model
     ];
 
     /**
-     * Get the author of the comment
+     * Get the author of the comment.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -26,7 +26,7 @@ class Comment extends Model
     }
 
     /**
-     * Get the parent comment
+     * Get the parent comment.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -36,7 +36,7 @@ class Comment extends Model
     }
 
     /**
-     * Get replies
+     * Get comment replies.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */

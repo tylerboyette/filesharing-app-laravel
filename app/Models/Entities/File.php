@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class File extends Model
 {
     /**
-     * The attributes that should cast to native types
+     * The attributes that should cast to native types.
      *
      * @var array
      */
@@ -16,7 +16,7 @@ class File extends Model
     ];
 
     /**
-     * The attributes that are mass assignable
+     * The attributes that are mass assignable.
      *
      * @var array
      */
@@ -25,7 +25,7 @@ class File extends Model
     ];
 
     /**
-     * Get the owner of the file
+     * Get the owner of the file.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -35,7 +35,7 @@ class File extends Model
     }
 
     /**
-     * Get comments for the file
+     * Get comments for the file.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */

@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use Tests\TestCase;
-use App\Models\Helpers\FileIcon;
+use App\Models\Helpers\FileMediaInfo\FileIcon;
 
 class FileIconTest extends TestCase
 {

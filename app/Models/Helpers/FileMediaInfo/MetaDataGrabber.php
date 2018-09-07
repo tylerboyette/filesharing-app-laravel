@@ -5,7 +5,7 @@ namespace App\Models\Helpers\FileMediaInfo;
 class MetaDataGrabber
 {
     /**
-     * Grab meta data from $fileInfo based on provided $fileType
+     * Grab meta data from $fileInfo based on provided $fileType.
      *
      * @param string $fileType
      * @param array $fileInfo

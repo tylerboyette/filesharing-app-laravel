@@ -17,7 +17,7 @@ class ImagePreview
     protected $imagePreviewSaver;
 
     /**
-     * Create a new instance of ImagePreview
+     * Create a new instance of ImagePreview.
      *
      * @param ImagePreviewResizer $imageResizer
      * @param ImagePreviewSaver $imagePreviewSaver
@@ -32,7 +32,7 @@ class ImagePreview
     }
 
     /**
-     * Create a preview given a path to image
+     * Create a preview given a path to image.
      *
      * @param string $pathToImage
      */
@@ -44,7 +44,7 @@ class ImagePreview
         $width = $imageInfo[0];
         $height = $imageInfo[1];
 
-        $this->imageResizer->resizePreviewBasedOnWidthHeight($preview, $width, $height);
+        $this->imageResizer->resize($preview);
 
         $pathArray = explode("/", storage_path("app/public/image_previews/$previewName"));
         $saveName = array_pop($pathArray);
@@ -54,7 +54,7 @@ class ImagePreview
     }
 
     /**
-     * Create a preview name based on $pathToImage
+     * Create a preview name based on $pathToImage.
      *
      * @param $pathToImage
      * @return string

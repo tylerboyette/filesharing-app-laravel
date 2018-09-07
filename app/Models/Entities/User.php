@@ -28,7 +28,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get files uploaded by user
+     * Get files uploaded by user.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */

@@ -15,7 +15,7 @@ class FileMediaInfo
     protected $metaDataGrabber;
 
     /**
-     * Create a new FileMediaInfo
+     * Create a new FileMediaInfo.
      *
      * @param MetaDataGrabber $metaDataGrabber
      */
@@ -26,7 +26,7 @@ class FileMediaInfo
     }
 
     /**
-     * Collect meta data for a file
+     * Collect meta data for a file.
      *
      * @param string $pathToFile
      * @return array

@@ -2,6 +2,8 @@
 
 namespace App\Models\Helpers\ImagePreview;
 
+use Intervention\Image\Image;
+
 class ImagePreviewResizer
 {
     /**
@@ -15,18 +17,16 @@ class ImagePreviewResizer
     protected $maxHeight = 550;
 
     /**
-     * Resize preview comparing the actual dimensions with $maxWidth and $maxHeight
+     * Resize preview comparing the actual dimensions with $maxWidth and $maxHeight.
      *
      * @param $preview
-     * @param int $width
-     * @param int $height
      * @return mixed
      */
-    public function resizePreviewBasedOnWidthHeight($preview, int $width, int $height)
+    public function resize(Image $preview)
     {
-        if ($width <= $this->maxWidth && $height <= $this->maxHeight) {
+        if ($preview->width() <= $this->maxWidth && $preview->height() <= $this->maxHeight) {
             return $preview;
-        } elseif ($width > $height) {
+        } elseif ($preview->width() > $preview->height()) {
             $preview->resize($this->maxWidth, null, function($constraint) {
                 $constraint->aspectRatio();
             });
