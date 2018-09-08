@@ -11,10 +11,21 @@ class ImagePreviewSaverTest extends TestCase
 {
     protected $imageSaver;
 
+    protected $pathToTestFile = "public/image_previews/test.jpg";
+
     public function setUp()
     {
         parent::setUp();
         $this->imageSaver = $this->app->make("App\Models\Helpers\ImagePreview\ImagePreviewSaver");
+    }
+
+    public function tearDown()
+    {
+        parent::tearDown();
+
+        if (Storage::disk("local")->exists($this->pathToTestFile)) {
+            Storage::disk("local")->delete($this->pathToTestFile);
+        }
     }
 
     /** @test */
@@ -22,12 +33,11 @@ class ImagePreviewSaverTest extends TestCase
     {
         $image = (new FileFactory())->image("test.jpg",500, 300);
         $interventionImage = Image::make($image);
-        Storage::fake("local");
         $savePath = storage_path("app/public/image_previews");
         $saveName = "test.jpg";
 
-        $path = $this->imageSaver->save($interventionImage, $savePath,$saveName);
+        $this->imageSaver->save($interventionImage, $savePath, $saveName);
 
-        Storage::disk("local")->assertExists($path);
+        Storage::disk("local")->assertExists($this->pathToTestFile);
     }
 }
