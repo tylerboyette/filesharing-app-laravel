@@ -48,9 +48,9 @@ class FileService
      * Store an uploaded file and save it to the database.
      *
      * @param $file
-     * @return void
+     * @return string  Path to uploaded file
      */
-    public function handleUploadedFile($file): void
+    public function handleUploadedFile($file): string
     {
         $currentYearMonth = date("Y/m");
         $fileExtension = $file->getClientOriginalExtension();
@@ -78,6 +78,8 @@ class FileService
            "has_related_icon" => $hasRelatedIcon,
            "user_id" => $this->getUploaderId()
         ]);
+
+        return $pathToFile;
     }
 
     /**
@@ -85,7 +87,7 @@ class FileService
      *
      * @return int|null
      */
-    public function getUploaderId()
+    protected function getUploaderId()
     {
         if (Auth::check()) {
             return Auth::user()->id;
@@ -100,7 +102,7 @@ class FileService
      * @param $file
      * @return string
      */
-    public function makeFileName($file): string
+    protected function makeFileName($file): string
     {
         return time() . "." . $file->getClientOriginalExtension();
     }

@@ -2,6 +2,8 @@
 
 namespace App\Models\Helpers\ImagePreview;
 
+use Intervention\Image\Image;
+
 class ImagePreviewSaver
 {
     /**
@@ -12,7 +14,7 @@ class ImagePreviewSaver
      * @param string $savePath
      * @param string $saveName
      */
-    public function save($preview, string $savePath, string $saveName): void
+    public function save(Image $preview, string $savePath, string $saveName): void
     {
         if (!file_exists($savePath)) {
             mkdir($savePath, 0777, true);

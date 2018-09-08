@@ -40,9 +40,6 @@ class ImagePreview
     {
         $preview = Image::make($pathToImage);
         $previewName = $this->createPreviewName($pathToImage);
-        $imageInfo = getimagesize($pathToImage);
-        $width = $imageInfo[0];
-        $height = $imageInfo[1];
 
         $this->imageResizer->resize($preview);
 
