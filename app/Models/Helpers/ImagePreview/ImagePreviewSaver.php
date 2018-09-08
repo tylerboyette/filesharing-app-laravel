@@ -13,13 +13,18 @@ class ImagePreviewSaver
      * @param $preview
      * @param string $savePath
      * @param string $saveName
+     * @return string  Path to the saved preview
      */
-    public function save(Image $preview, string $savePath, string $saveName): void
+    public function save(Image $preview, string $savePath, string $saveName): string
     {
         if (!file_exists($savePath)) {
             mkdir($savePath, 0777, true);
         }
 
-        $preview->save($savePath."/".$saveName);
+        $fullPath = $savePath."/".$saveName;
+
+        $preview->save($fullPath);
+
+        return $fullPath;
     }
 }

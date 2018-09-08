@@ -2,16 +2,22 @@
 
 namespace Tests\Unit;
 
-use App\Models\Helpers\FileMediaInfo\MetaDataGrabber;
 use Tests\TestCase;
 
 
 class MetaDataGrabberTest extends TestCase
 {
+    protected $metaDataGrabber;
+
+    public function setUp()
+    {
+        parent::setUp();
+        $this->metaDataGrabber = $this->app->make("App\Models\Helpers\FileMediaInfo\MetaDataGrabber");
+    }
+
     /** @test */
     public function grabs_relevant_meta_data_for_audio_file_type()
     {
-        $metaDataGrabber = new MetaDataGrabber();
         $fileType = "audio";
         $fileInfo = [
             "filename" => "test.mp3",
@@ -37,14 +43,13 @@ class MetaDataGrabberTest extends TestCase
 
         $this->assertEquals(
             $expectedOutput,
-            $metaDataGrabber->grabMetaDataByFileType($fileType, $fileInfo)
+            $this->metaDataGrabber->grabMetaDataByFileType($fileType, $fileInfo)
         );
     }
 
     /** @test */
     public function grabs_relevant_meta_data_for_video_file_type()
     {
-        $metaDataGrabber = new MetaDataGrabber();
         $fileType = "video";
         $fileInfo = [
             "filename" => "test.mp4",
@@ -78,15 +83,13 @@ class MetaDataGrabberTest extends TestCase
 
         $this->assertEquals(
             $expectedOutput,
-            $metaDataGrabber->grabMetaDataByFileType($fileType, $fileInfo)
+            $this->metaDataGrabber->grabMetaDataByFileType($fileType, $fileInfo)
         );
     }
 
     /** @test */
     public function grabs_relevant_meta_data_for_image_file_type()
     {
-        $metaDataGrabber = new MetaDataGrabber();
-
         $fileType = "image";
         $fileInfo = [
             "filename" => "test.jpg",
@@ -109,15 +112,13 @@ class MetaDataGrabberTest extends TestCase
 
         $this->assertEquals(
             $expectedOutput,
-            $metaDataGrabber->grabMetaDataByFileType($fileType, $fileInfo)
+            $this->metaDataGrabber->grabMetaDataByFileType($fileType, $fileInfo)
         );
     }
 
     /** @test */
     public function grabs_bits_per_sample_for_image_if_present()
     {
-        $metaDataGrabber = new MetaDataGrabber();
-
         $fileType = "image";
         $fileInfo = [
             "filename" => "test.jpg",
@@ -142,7 +143,7 @@ class MetaDataGrabberTest extends TestCase
 
         $this->assertEquals(
             $expectedOutput,
-            $metaDataGrabber->grabMetaDataByFileType($fileType, $fileInfo)
+            $this->metaDataGrabber->grabMetaDataByFileType($fileType, $fileInfo)
         );
     }
 }
