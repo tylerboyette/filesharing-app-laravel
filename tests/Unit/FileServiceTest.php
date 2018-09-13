@@ -5,9 +5,12 @@ namespace Tests\Unit;
 use Tests\TestCase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class FileServiceTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected $fileService;
 
     public function setUp()

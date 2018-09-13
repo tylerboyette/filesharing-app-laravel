@@ -52,7 +52,7 @@ class FileMediaInfo
             $fileMetaData["mime_type"] = $mimeType;
         }
 
-        if (array_key_exists("filesize", $fileMetaData)) {
+        if (array_key_exists("filesize", $fileInfo)) {
             $fileMetaData["filesize"] = $fileInfo["filesize"];
         }
 
