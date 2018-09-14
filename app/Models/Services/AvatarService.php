@@ -26,15 +26,19 @@ class AvatarService extends FileService
     public function handleUploadedFile($avatar): string
     {
         $this->avatarName = $this->makeFileName($avatar);
-        $savePath = "public/avatars/" . $this->avatarName;
+        $savePath = "public/avatars";
+
+        if (!file_exists(storage_path($savePath))) {
+            mkdir(storage_path($savePath), 0777, true);
+        }
 
         Image::make($avatar)->fit(
             300, 300
         )->save(
-            storage_path("app/$savePath")
+            storage_path("app/$savePath/{$this->avatarName}")
         );
 
-        return $savePath;
+        return $savePath . "/" . $this->avatarName;
     }
 
     /**
