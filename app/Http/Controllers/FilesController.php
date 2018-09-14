@@ -58,7 +58,7 @@ class FilesController extends Controller
      */
     public function index()
     {
-        $lastFiles = File::orderBy("id", "desc")->take(100)->get();
+        $lastFiles = File::orderBy("id", "desc")->take(100)->paginate(10);
 
         return view("files.index", ["files" => $lastFiles]);
     }
