@@ -15,9 +15,14 @@ Route::get('/', function () {
     return view('welcome');
 })->name("home");
 
+Route::get("/{url}", function() {
+    return redirect()->route("home");
+})->where(["url" => "register|login|upload|comments"]);
+
 Route::get("/logout", "SessionsController@destroy");
 
 Route::post("/register", "RegistrationController@store");
+
 Route::post("/login", "SessionsController@store");
 
 Route::get("/users/{id}", "UsersController@show");
