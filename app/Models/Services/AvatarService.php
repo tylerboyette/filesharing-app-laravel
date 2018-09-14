@@ -28,8 +28,8 @@ class AvatarService extends FileService
         $this->avatarName = $this->makeFileName($avatar);
         $savePath = "public/avatars";
 
-        if (!file_exists(storage_path($savePath))) {
-            mkdir(storage_path($savePath), 0777, true);
+        if (!file_exists(storage_path("app/$savePath"))) {
+            mkdir(storage_path("app/$savePath"), 0777, true);
         }
 
         Image::make($avatar)->fit(
