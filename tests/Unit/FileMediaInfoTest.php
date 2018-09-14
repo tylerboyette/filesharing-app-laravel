@@ -27,7 +27,7 @@ class FileMediaInfoTest extends TestCase
     }
 
     /** @test */
-    public function testExample()
+    public function bundles_file_metadata()
     {
         $file = UploadedFile::fake()->image($this->testFileName, 1500, 1000)->size(1000);
         $path = $file->storeAs($this->pathToTestFile, $this->testFileName);

@@ -21,11 +21,11 @@ class ImagePreviewSaverTest extends TestCase
 
     public function tearDown()
     {
-        parent::tearDown();
-
         if (Storage::disk("local")->exists($this->pathToTestFile)) {
             Storage::disk("local")->delete($this->pathToTestFile);
         }
+
+        parent::tearDown();
     }
 
     /** @test */
