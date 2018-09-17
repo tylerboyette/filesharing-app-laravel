@@ -18198,3 +18198,19 @@ Reference: http://blog.rrwd.nl/2015/04/04/the-screen-reader-text-class-why-and-h
   height: 300px;
 }
 
+.show-file-link {
+  color: inherit;
+}
+
+.show-file-link:hover {
+  text-decoration: none;
+}
+
+.show-profile-link {
+  color: inherit;
+}
+
+.show-profile-link:hover {
+  text-decoration: none;
+}
+

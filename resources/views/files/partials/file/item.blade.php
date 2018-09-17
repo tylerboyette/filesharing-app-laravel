@@ -2,7 +2,9 @@
     <div class="media">
         <div class="media-left mr-3">
             @if($file->user_id)
-                <img class="uploader-avatar" src="{{ asset("storage/avatars/{$file->user->avatar_name}") }}" alt="Avatar">
+                <a href="/users/{{ $file->user_id }}">
+                    <img class="uploader-avatar" src="{{ asset("storage/avatars/{$file->user->avatar_name}") }}" alt="Avatar">
+                </a>
             @else
                 <img class="uploader-avatar" src="{{ asset("storage/avatars/anon.jpg") }}" alt="">
             @endif
@@ -10,7 +12,11 @@
         <div class="media-body">
             <div class="file-info file-info--margin-bot">
                 <div class="file-info__uploader-name">
-                    <b>{{ $file->user_id ? $file->user->username : "Anonymous" }}</b>
+                    @if ($file->user_id)
+                        <a href="/users/{{ $file->user_id }}" class="show-profile-link"><b>{{ $file->user->username }}</b></a>
+                    @else
+                        <b>Anonymous</b>
+                    @endif
                 </div>
                 <div class="file-info__file-name">
                     <span>{{ $file->original_name }}</span>
@@ -116,22 +122,7 @@
                     </table>
                 </div>
             @endif
-            <div class="file-card file-card--flex bg-light mb-2">
-                <div class="file-card__icon mr-2">
-                    @if ($file->has_related_icon)
-                        <span class="fiv-viv fiv-icon-{{ $file->extension }} file-icon"></span>
-                    @else
-                        <span class="fiv-viv fiv-icon-blank file-icon"></span>
-                    @endif
-                </div>
-                <div class="file-card__info file-card__info--flex">
-                                <span>
-                                    <b>{{ $file->original_name }}</b>
-                                    <i>({{ $file->meta_data["filesize"]/1000 > 1000 ? round($file->meta_data['filesize']/1000000, 2) . " MB" : round($file->meta_data['filesize']/1000, 2) . " KB" }})</i>
-                                </span>
-                    <span>Uploaded {{ $file->created_at->diffForHumans() }}</span>
-                </div>
-            </div>
+            @include("files.partials.file.card")
             <a class="btn btn-primary" href="/download/{{ $file->id }}/{{ $file->original_name }}" role="button">Download</a>
         </div>
     </div>

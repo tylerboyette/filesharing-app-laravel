@@ -3,7 +3,7 @@ import $ from "jquery";
 class DetailsTable {
     constructor() {
         this.detailsButton = $(".details-button");
-        this.detailsTable = $(".details-table")
+        this.detailsTable = $(".details-table");
         this.events();
     }
 

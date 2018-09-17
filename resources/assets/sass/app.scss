@@ -163,3 +163,19 @@
 .profile-left {
   height: 300px;
 }
+
+.show-file-link {
+  color: inherit;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.show-profile-link {
+  color: inherit;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
