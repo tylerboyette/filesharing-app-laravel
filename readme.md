@@ -49,6 +49,12 @@ Run the migrations:
 $ php artisan migrate
 ```
 
+Create a symbolic link from `public/storage` to `storage/app/public`:
+
+```sh
+$ php artisan storage:link
+```
+
 ## Features
 
 * AJAX file uploading (drag and drop support included)
