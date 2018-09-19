@@ -18214,7 +18214,7 @@ Reference: http://blog.rrwd.nl/2015/04/04/the-screen-reader-text-class-why-and-h
   text-decoration: none;
 }
 
-.not-found-error {
+.custom-error {
   font-size: 35px;
   font-weight: bold;
   text-align: center;
