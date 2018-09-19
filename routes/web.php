@@ -35,7 +35,7 @@ Route::get("/files/{id}", "FilesController@show");
 Route::get("/files/{fileId}/comments", "CommentsController@show");
 Route::get("/files", "FilesController@index");
 
-Route::get("/download/{id}/{originalName}", "FilesController@downloadFile");
+Route::get("/download/{id}/{originalName}", "DownloadsController@index");
 
 Route::post("/comments", "CommentsController@store");
 
