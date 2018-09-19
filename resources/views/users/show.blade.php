@@ -10,9 +10,16 @@
             </div>
             <div class="col">
                 <div class="profile-right">
-                    <ul class="list-group">
-                        @each("files.partials.file.list-item", $files, "file")
-                    </ul>
+                    <h3 class="text-center">Files uploaded by {{ $user->username }}</h3>
+                    @if ($files->count())
+                        <ul class="list-group">
+                            @each("files.partials.file.list-item", $files, "file")
+                        </ul>
+                    @else
+                        <div class="text-center">
+                            User has not uploaded any files yet
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

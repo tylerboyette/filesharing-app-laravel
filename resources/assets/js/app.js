@@ -52,7 +52,7 @@ $("#file-input").fileinput({
 
 $("#avatar-upload").fileinput({
     theme: "fas",
-    uploadUrl: "/users/avatar",
+    uploadUrl: "/avatars",
     dropZoneEnabled: false,
     allowedFileExtensions: ["jpg", "png", "jpeg"],
     maxFileCount: 1

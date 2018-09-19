@@ -31,5 +31,8 @@
                 <a class="nav-link" href="/files">Files</a>
             </li>
         </ul>
+        <form action="/files" class="form-inline my-2 my-lg-0" method="GET">
+            <input class="form-control mr-sm-2" type="search" placeholder="Search by file name" aria-label="Search" name="keyword">
+        </form>
     </div>
 </nav>

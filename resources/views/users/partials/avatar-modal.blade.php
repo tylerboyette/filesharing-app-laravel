@@ -8,7 +8,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="/users/avatar" method="post">
+                <form action="/avatars" method="post">
                     <div class="form-group">
                         <input class="form-control" type="file" id="avatar-upload" name="avatar">
                     </div>
