@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\FileUploadRequest;
 use App\Models\Services\FileService;
 use App\Models\Entities\File;
+use Illuminate\Http\Request;
 
 
 class FilesController extends Controller
@@ -54,10 +55,15 @@ class FilesController extends Controller
     /**
      * Show last 100 uploaded files
      *
+     * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
+        if ($request->has("search")) {
+           dd(File::where("original_name", "like", "%{$request->search}%")->take(100)->paginate(10));
+        }
+
         $lastFiles = File::orderBy("id", "desc")->take(100)->paginate(10);
 
         return view("files.index", ["files" => $lastFiles]);

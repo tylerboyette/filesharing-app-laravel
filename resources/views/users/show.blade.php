@@ -1,7 +1,7 @@
 @extends("layouts.master")
 
 @section("content")
-    <div class="profile mt-2">
+    <div class="profile mt-4">
         <div class="row">
             <div class="col-4">
                 <div class="profile-left">
@@ -10,9 +10,9 @@
             </div>
             <div class="col">
                 <div class="profile-right">
-                    <h3 class="text-center">Files uploaded by {{ $user->username }}</h3>
                     @if ($files->count())
                         <ul class="list-group">
+                            <li class="list-group-item"><h5 class="text-center">Files uploaded by {{ $user->username }}</h5></li>
                             @each("files.partials.file.list-item", $files, "file")
                         </ul>
                     @else

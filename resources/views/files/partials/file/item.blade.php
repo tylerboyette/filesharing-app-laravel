@@ -1,4 +1,4 @@
-<div class="file mt-2 mb-2">
+<div class="file mt-4 mb-2">
     <div class="media">
         <div class="media-left mr-3">
             @if($file->user_id)
