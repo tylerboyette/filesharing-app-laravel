@@ -7,8 +7,12 @@
             <li class="nav-item active">
                 <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
             </li>
-
-            @guest
+            <li class="nav-item">
+                <a class="nav-link" href="/files">Files</a>
+            </li>
+        </ul>
+        @guest
+            <ul class="navbar-nav navbar-right">
                 <li class="nav-item">
                     <a class="nav-link" href="#loginModal" data-toggle="modal" data-target="#loginModal">Sign In</a>
                 </li>
@@ -16,23 +20,27 @@
                 <li class="nav-item">
                     <a class="nav-link" href="#registerModal" data-toggle="modal" data-target="#registerModal">Sign Up</a>
                 </li>
-            @endguest
+            </ul>
+        @endguest
 
-            @auth
-                <li class="nav-item">
-                    <a href="/users/{{ Auth::user()->id }}" class="nav-link">{{ Auth::user()->username }}</a>
-                </li>
+        @auth
+            <ul class="nav navbar-nav navbar-right profile-dropdown-container">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" href="#" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {{ Auth::user()->username }}
+                    </a>
 
-                <li class="nav-item">
-                    <a href="/logout" class="nav-link">Sign Out</a>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <a class="dropdown-item" href="/users/{{ Auth::user()->id }}">Profile</a>
+                        <a class="dropdown-item" href="/logout">Sign Out</a>
+                    </div>
                 </li>
-            @endauth
-            <li class="nav-item">
-                <a class="nav-link" href="/files">Files</a>
-            </li>
-        </ul>
-        <form action="/files" class="form-inline my-2 my-lg-0" method="GET">
-            <input class="form-control mr-sm-2" type="search" placeholder="Search by file name" aria-label="Search" name="search">
-        </form>
+            </ul>
+        @endauth
+        <div class="ml-3">
+            <form action="/files" class="form-inline my-2 my-lg-0" method="GET">
+                <input class="form-control mr-sm-2" type="search" placeholder="Search by file name" aria-label="Search" name="search">
+            </form>
+        </div>
     </div>
 </nav>

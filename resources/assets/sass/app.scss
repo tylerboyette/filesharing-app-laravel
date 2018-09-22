@@ -164,6 +164,17 @@
   height: 300px;
 }
 
+.profile-dropdown-container {
+  a {
+    color: rgba(0, 0, 0, 0.5);
+
+    &:hover {
+      text-decoration: none;
+      color: rgba(0, 0, 0, 0.7);
+    }
+  }
+}
+
 .show-file-link {
   color: inherit;
 
