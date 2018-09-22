@@ -61,7 +61,9 @@ class FilesController extends Controller
     public function index(Request $request)
     {
         if ($request->has("search")) {
-           dd(File::where("original_name", "like", "%{$request->search}%")->take(100)->paginate(10));
+           $searchFiles = File::where("original_name", "like", "%{$request->search}%")->take(100)->paginate(10);
+
+           return view("files.search", ["files" => $searchFiles, "search" => $request->search]);
         }
 
         $lastFiles = File::orderBy("id", "desc")->take(100)->paginate(10);
