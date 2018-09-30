@@ -18234,3 +18234,13 @@ Reference: http://blog.rrwd.nl/2015/04/04/the-screen-reader-text-class-why-and-h
           box-shadow: 0 2px 2px -2px rgba(0, 0, 0, 0.2);
 }
 
+.filesize-hint {
+  text-align: center;
+  background-color: gray;
+  color: white;
+  border-radius: 10px;
+  width: 150px;
+  font-size: 12px;
+  margin: 0 auto;
+}
+

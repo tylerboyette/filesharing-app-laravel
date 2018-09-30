@@ -18,6 +18,7 @@
                     <div class="file-upload-errors"></div>
                 </div>
             </form>
+            <div class="filesize-hint">Max file size is 100 MB</div>
         </div>
     </div>
 @endsection
