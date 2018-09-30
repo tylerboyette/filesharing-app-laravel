@@ -66,3 +66,10 @@ $ php artisan storage:link
 * Showing metadata for audio, video and image files (i.e. bit rate for audio file)
 * Preview for image files, players for audio and video files
 * AJAX comments and replies on the file page
+
+## Screenshots
+![image](https://user-images.githubusercontent.com/32432647/46261877-66329e80-c502-11e8-81a3-2d22a1a83816.png)
+![image](https://user-images.githubusercontent.com/32432647/46261884-86625d80-c502-11e8-9982-8745a45eef27.png)
+![image](https://user-images.githubusercontent.com/32432647/46261889-8bbfa800-c502-11e8-9f06-3281983c93da.png)
+![image](https://user-images.githubusercontent.com/32432647/46261891-911cf280-c502-11e8-9039-29f3e25a2d7a.png)
+![image](https://user-images.githubusercontent.com/32432647/46261895-9a0dc400-c502-11e8-8030-151a5ee102eb.png)
