@@ -13,9 +13,6 @@ You should also setup a web server in order to host your local domain. For these
 
 Сlone GitHub repository locally:
 
-```sh
-$ git clone https://github.com/Bocmah/file-sharing.git
-```
 
 cd into the project folder and install Composer dependencies by running:
 
